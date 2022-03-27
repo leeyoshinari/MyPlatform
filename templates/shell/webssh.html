@@ -1,0 +1,35 @@
+{% extends 'template.html' %}
+{% load static %}
+
+{% block title %}
+    <title>{{ host }}</title>
+{% endblock %}
+
+{% block addcss %}
+    <link rel="stylesheet" href="{% static 'shell/css/xterm.css' %}">
+    <link rel="stylesheet" href="{% static 'shell/xterm/xterm.css' %}"/>
+    <link rel="stylesheet" href="{% static 'shell/xterm/style.css' %}"/>
+{% endblock %}
+
+{% block addjs %}
+    <script src="{% static 'shell/xterm/xterm.js' %}"></script>
+{% endblock %}
+{% block addbody %}
+    {% csrf_token %}
+    <div class="container1">
+        <img src="{% static 'img/favicon.ico' %}">
+        <a href="">退出</a>
+    </div>
+    <div class="container2">
+        <div style="margin-top: 30px;">
+            <div id="django-webssh-terminal" >
+                <div id="terminal"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block backjs %}
+    <script src="{% static 'shell/js/webssh.js' %}"></script>
+{% endblock %}

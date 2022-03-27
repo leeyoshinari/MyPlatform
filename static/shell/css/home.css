@@ -1,0 +1,377 @@
+*{
+	margin: 0;
+	padding: 0;
+}
+body{
+    width: 100%;
+    height: 100%;
+}
+
+.container1 {
+	top: 0;
+	position: fixed;
+	z-index: 100;
+	width: 100%;
+	height: 30px;
+	background-color: #5bc0de;
+}
+.container1 a {
+	cursor: pointer;
+	margin-top: 3px;
+	margin-right: 1%;
+	float: right;
+	text-decoration: none;
+}
+.container1 img {
+	margin-top: 4px;
+	float: left;
+	margin-left: 1%;
+	height: 20px;
+}
+
+.container2 {
+	width: 98%;
+	height: 100%;
+	margin-left: 1%;
+	/*border: 1px solid #000000;*/
+}
+
+.container2 .detail {
+	position: absolute;
+	width: 98%;
+	top: 50px;
+	background-color: #ffffff;
+}
+
+#filter {
+    width: 100%;
+}
+#filter div {
+    float: left;
+    margin-bottom: 1%;
+    margin-left: 1%;
+}
+#filter div button {
+    height: 30px;
+    width: 110px;
+    margin-left: 1%;
+}
+
+#filter div label {
+    margin-left: 2%;
+}
+
+#filter div input {
+    height: 20px;
+    width: 20%;
+}
+
+.vertical-bar {
+	width: 99%;
+	border: 1px solid #000000;
+}
+table {
+    width: 98%;
+    table-layout: fixed;
+    margin-left: 1%;
+}
+th {
+    text-align: center;
+	font-weight: normal;
+}
+.table_style {
+    margin: auto;
+    background-color: #e2e2e2;
+}
+
+#tbody a {
+    text-decoration: none;
+    margin-left: 2%;
+    color: blue;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+tr {
+    height: 33px;
+    text-align: left;
+}
+
+tr:hover td {
+	background-color: #fcbb7a;
+}
+
+
+.file-name {
+	cursor: pointer;
+	border: none;
+	font-size: inherit;
+	background-color: transparent;
+}
+.actions {
+	color: blue;
+	cursor: pointer;
+	border: none;
+	font-size: inherit;
+	margin-right: 10px;
+	margin-left: 10px;
+	background-color: transparent;
+}
+
+.fenye {
+  bottom: 100px;
+  right: 200px;
+  height: 39px;
+  position: fixed;
+}
+.fenye ul.pagination {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+}
+
+.fenye ul.pagination li {display: inline;}
+
+.fenye ul.pagination li a {
+    color: black;
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background-color .3s;
+    border: 1px solid #ddd;
+}
+
+.fenye ul.pagination li a.active {
+    background-color: #4CAF50;
+    color: white;
+    border: 1px solid #4CAF50;
+}
+
+.fenye ul.pagination li a:hover:not(.active) {background-color: #ddd;}
+
+/* 弹窗 (background) */
+#myModal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+/* 弹窗内容 */
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: auto;
+    width: 36%;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+.modal-content img {
+	max-height: 888px;
+	max-width: 999px;
+}
+
+/* 添加动画 */
+@-webkit-keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+/* 关闭按钮 */
+.close {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 2px 16px;
+}
+
+.modal-body {padding: 2px 16px;}
+
+.modal-footer {
+    padding: 16px 20px;
+	text-align: right;
+	color: blue;
+}
+.modal-body div {
+    margin-bottom: 1%;
+    margin-top: 1%;
+}
+.modal-body label {
+    margin-left: 3%;
+    margin-right: 1%;
+}
+
+.modal-body .modal-col {
+    width: 100%;
+    float: left;
+}
+.modal-body .modal-col .label {
+    width: 120px;
+    float: left;
+}
+.modal-body .modal-col .input {
+    width: 69%;
+    float: left;
+}
+
+.modal-body input {
+    height: 20px;
+    width: 100%;
+}
+.modal-body select {
+    height: 20px;
+    width: 100%;
+}
+.modal-footer a {
+    text-decoration: none;
+    margin-left: 1%;
+    margin-right: 1%;
+}
+
+.cancel:hover,
+.cancel:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.submit:hover,
+.submit:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+#folder_name {
+	height: 30px;
+	width: 60%;
+}
+
+/* 添加动画 */
+@-webkit-keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+.domtree {
+	margin-left: 10%;
+	overflow-y: scroll;
+	white-space: nowrap;
+	max-height: 520px;
+}
+.domtree ul {
+	position: relative;
+	list-style: none;
+    margin: 0;
+    padding: 0 0 0 2em;
+}
+.domtree li {
+	position: relative;
+	cursor: pointer;
+	color: #0088ff;
+	list-style: none;
+    margin: 0;
+    padding: 0 0 0 8px;
+}
+.domtree li:hover,
+.domtree li:focus {
+	color: #d9534f;
+}
+
+.modal_cover {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, .6);
+}
+.modal_gif {
+    display: none;
+    position: absolute;
+    width: 100px;
+    z-index: 99;
+    height: 100px;
+    /* 水平垂直居中 */
+    left: 45%;
+    top: 45%;
+    transform: translate(-50%,-50%);
+    /* 超出高度右侧出现垂直滚动条 */
+    overflow:auto;
+    overflow-x:hidden;
+    background: url("loading.gif") no-repeat;
+    background-size: 80px 80px;
+}
+
+#progressBar {
+	position: absolute;
+	top: 50%;
+	left: 34%;
+	width: 20%;
+	height: 3%;
+}
+#percentage {
+	position: absolute;
+	top: 50%;
+	left: 43%;
+	font-weight: bolder;
+	font-size: large;
+	color: #d9534f;
+}
+.iframe_div {
+	display: none;
+	border:2px solid #000;
+	margin-top: 3%;
+	margin-left: 5%;
+	width: 90%;
+	max-height: 88%;
+	background-color: white;
+	position: relative;
+	z-index: 999;
+}
+#iframe_id {
+	border: none;
+	height: 830px;
+	width: 100%;
+}
+.iframe_div #close_iframe {
+	margin-right: 1%;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.iframe_div #close_iframe:hover,
+.iframe_div #close_iframe:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+

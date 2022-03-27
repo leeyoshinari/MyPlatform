@@ -1,0 +1,25 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    {% block title %}
+        <title>MyPlatform</title>
+    {% endblock %}
+    <meta charset="utf-8">
+    <link rel="shutcut icon" type="image/png" sizes="96x96" href="{% static 'img/favicon.ico' %}">
+    <script src="{% static 'js/jquery.js' %}"></script>
+
+    {% block toast %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/toast.style.css' %}">
+        <script src="{% static 'js/toast.script.js' %}"></script>
+    {% endblock %}
+
+    {% block addcss %}{% endblock %}
+    {% block addjs %}{% endblock %}
+
+</head>
+<body>
+{% block addbody %}{% endblock %}
+</body>
+{% block backjs %}{% endblock %}
+</html>

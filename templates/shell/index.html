@@ -1,0 +1,133 @@
+{% extends 'shell/home.html' %}
+{% load static %}
+
+{% block addjs %}
+    <script src="{% static 'shell/js/index.js' %}"></script>
+{% endblock %}
+
+{% block container2 %}
+    <div id="filter">
+        <div>
+            <button onclick="add_server()">Add Server</button>
+        </div>
+        <div style="width: 60%;">
+            <label>KeyWord: </label>
+            <input id="serverName" type="text" placeholder="Input Server Name or IP ~">
+{#            <label>Server IP: </label>#}
+{#            <input id="serverIP" type="text" placeholder="Input Server IP">#}
+            <button onclick="search_server()">Search</button>
+        </div>
+    </div>
+    <table id="layout-table" border="1" cellspacing="0" cellpadding="6">
+        <thead>
+            <tr class="table_style">
+                <th width=10%>组名</th>
+                <th width=12%>服务器名</th>
+                <th width=10%>服务器</th>
+                <th width=5%>用户</th>
+                <th width=10%>系统</th>
+                <th width=4%>CPU(核)</th>
+                <th width=5%>内存</th>
+                <th width=5%>磁盘</th>
+                <th width=20%>操作</th>
+            </tr>
+        </thead>
+        <tbody id="tbody">
+            {% for host in servers %}
+                <tr>
+                    <td>{{ host.fields.group_name }}</td>
+                    <td>{{ host.fields.name }}</td>
+                    <td style="text-align: center;">{{ host.fields.host }}</td>
+                    <td style="text-align: center;">{{ host.fields.user }}</td>
+                    <td>{{ host.fields.system }}</td>
+                    <td style="text-align: center;">{{ host.fields.cpu }}</td>
+                    <td style="text-align: center;">{{ host.fields.mem }}G</td>
+                    <td style="text-align: center;">{{ host.fields.disk }}</td>
+                    <td>
+                        <a target="_blank" href="{% url 'shell:open_shell' %}?ip={{ host.fields.host }}">打开shell</a>
+                        {% if host.fields.is_monitor == 0 %}
+                            <a onclick="">部署监控</a>
+                        {% else %}
+                            <a onclick="">查看监控</a>
+                            <a onclick="">停止监控</a>
+                        {% endif %}
+                        <a href="" onclick="delete_server('{{ host.pk }}')">删除</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="myModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2 id="title-name">Add Server</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-col">
+                    <div class="label">
+                        <label>GroupName: </label>
+                     </div>
+                    <div class="input">
+{#                        <input id="GroupName" type="text" placeholder="Please input server's group name">#}
+                        <select id="GroupName">
+                            <option value="" selected></option>
+                            {% for group in groups %}
+                                <option value="{{ group.pk }}">{{ group.fields.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-col">
+                    <div class="label">
+                        <label>ServerName: </label>
+                     </div>
+                    <div class="input">
+                        <input id="ServerName" type="text" placeholder="Please input server's name">
+                    </div>
+                </div>
+                <div class="modal-col">
+                    <div class="label">
+                        <label>ServerIP: </label>
+                    </div>
+                    <div class="input">
+                        <input id="ServerIP" type="text" placeholder="Please input server IP">
+                    </div>
+                </div>
+                <div class="modal-col">
+                    <div class="label">
+                        <label>Port：</label>
+                    </div>
+                    <div class="input">
+                        <input id="Port" type="text" value="22" placeholder="Please input server IP">
+                    </div>
+                </div>
+                <div class="modal-col">
+                    <div class="label">
+                        <label>UserName：</label>
+                    </div>
+                    <div class="input">
+                        <input id="UserName" type="text" value="root" placeholder="Please input server username">
+                    </div>
+                </div>
+                <div class="modal-col">
+                    <div class="label">
+                        <label>Password：</label>
+                    </div>
+                    <div class="input">
+                        <input id="Password" type="text" placeholder="Please input server password">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="cancel">取消</a>
+                <a class="submit">确定</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}

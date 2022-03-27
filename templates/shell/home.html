@@ -1,0 +1,28 @@
+{% extends 'template.html' %}
+{% load static %}
+{% block addcss %}
+    <link rel="stylesheet" href="{% static 'shell/css/home.css' %}">
+{% endblock %}
+
+{% block addjs %}
+{% endblock %}
+
+{% block addbody %}
+    {% csrf_token %}
+    <div class="container1">
+        <img src="{% static 'img/favicon.ico' %}">
+        <a href="">退出</a>
+    </div>
+    <div class="container2">
+        <div class="detail">
+            {% block container2 %}{% endblock %}
+        </div>
+    </div>
+    <div id="myModal"></div>
+{% block fenye %}
+    <div class="fenye"><ul id="paging" class="pagination"></ul></div>
+{% endblock %}
+{% endblock %}
+{% block backjs %}
+    <script src="{% static 'js/fenye.js' %}"></script>
+{% endblock %}
