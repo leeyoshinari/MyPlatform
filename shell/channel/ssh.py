@@ -19,6 +19,9 @@ class SSH:
         self.websocket = websocket
         self.message = message
         self.ssh_client = paramiko.SSHClient()
+        self.keepalive_last_time = time.time()
+        self.transport = None
+        self.channel = None
 
     def connect(self, host, user, password=None, ssh_key=None, port=22, timeout=10,
                 term='xterm', pty_width=40, pty_height=24, current_time=None):
@@ -36,23 +39,24 @@ class SSH:
             else:
                 self.ssh_client.connect(username=user, password=parse_pwd(current_time, password), hostname=host, port=port, timeout=timeout)
 
-            transport = self.ssh_client.get_transport()
-            self.channel = transport.open_session()
+            self.transport = self.ssh_client.get_transport()
+            self.channel = self.transport.open_session()
             self.channel.get_pty(term=term, width=pty_width, height=pty_height)
             self.channel.invoke_shell()
             logger.info('ssh connect success ~ ')
 
             Thread(target=self.backend_to_frontend).start()
+            Thread(target=self.heart_beat_check).start()
 
         except socket.timeout:
             logger.error('ssh connect timeout! ')
-            self.close('connect timeout ~ ')
+            self.close('Session Connect Timeout ~ ')
         except paramiko.ssh_exception.NoValidConnectionsError:
             logger.error('Unable to connect ~ ')
-            self.close('Unable to connect ~ ')
+            self.close('Unable to Connect Session ~ ')
         except paramiko.ssh_exception.AuthenticationException:
             logger.error('Username or password error ~')
-            self.close('Username or password error ~')
+            self.close('Username or Password Error ~')
         except Exception as err:
             logger.error(err)
             logger.error(traceback.format_exc())
@@ -69,11 +73,7 @@ class SSH:
     #一个是发送字符到ssh
     def django_to_ssh(self, data):
         try:
-            if data == '我':
-                self.ssh_client.close()
-                logger.info('close ssh success ~ ')
-            else:
-                self.channel.send(data)
+            self.channel.send(data)
         except Exception as err:
             logger.error(err)
             logger.error(traceback.format_exc())
@@ -86,6 +86,7 @@ class SSH:
         try:
             while True:
                 data = self.channel.recv(1024).decode('utf-8')
+                self.keepalive_last_time = time.time()
                 if not len(data):
                     break
                 self.message['code'] = 0
@@ -99,25 +100,42 @@ class SSH:
             logger.error(traceback.format_exc())
             self.close()
 
-    def close(self, msg = 'close connect ~ '):
+    def close(self, msg = 'Session is already in CLOSED state ~'):
         self.message['code'] = 1
         self.message['msg'] = msg
         self.websocket.send(json.dumps(self.message, ensure_ascii=False))
         self.ssh_client.close()
         self.websocket.close()
 
-    def shell(self, data):
-        Thread(target=self.django_to_ssh, args=(data,)).start()
-        # Thread(target=self.websocket_to_django).start()
-
-    def heart_beat(self):
+    def heart_beat_check(self):
         try:
             while True:
-                self.websocket.send('{"code": 1, "msg": 0}')
-                time.sleep(5)
-                print('heart beat ...')
-        except:
-            print('socket disconnect ~')
+                if time.time() - self.keepalive_last_time < 600 and self.ssh_client.transport:
+                    time.sleep(10)
+                    logger.info('heart beat check ... ... ')
+                    continue
+                else:
+                    self.ssh_client.close()
+                    break
+            self.message['code'] = 1
+            self.message['msg'] = 'Session is already in CLOSED state ~'
+            self.websocket.send(json.dumps(self.message, ensure_ascii=False))
+            logger.info('close ssh success ~ ')
+        except Exception as err:
+            logger.error(err)
+            logger.error(traceback.format_exc())
+            self.ssh_client.close()
+            logger.info('close ssh success ~ ')
+
+    def upload_file_by_byte(self, local_path):
+        try:
+            sftp = self.transport.open_sftp_client()
+            sftp.put(local_path, './routing.py')
+            sftp.close()
+        except Exception as err:
+            logger.error(err)
+            logger.error(traceback.format_exc())
+        logger.info('upload file success ~')
 
 
 def get_key_obj(pkeyobj, pkey_file=None, pkey_obj=None, password=None):
@@ -145,20 +163,20 @@ def connect_ssh(host, port, user, pwd, current_time):
     except socket.timeout:
         logger.error('ssh connect timeout ~')
         client.close()
-        return {'code': 1, 'msg': 'connect timeout ~'}
+        return {'code': 1, 'msg': 'Session Connect Timeout ~'}
     except paramiko.ssh_exception.NoValidConnectionsError:
-        logger.error('Unable to connect ~ ')
+        logger.error('Unable to Connect Session ~ ')
         client.close()
         return {'code': 1, 'msg': 'Unable to connect ~'}
     except paramiko.ssh_exception.AuthenticationException:
-        logger.error('Username or password error ~')
+        logger.error('Username or Password Error ~')
         client.close()
         return {'code': 1, 'msg': 'Username or password error ~'}
     except Exception as err:
         logger.error(err)
         logger.error(traceback.format_exc())
         client.close()
-        return {'code': 1, 'msg': 'connect error ~'}
+        return {'code': 1, 'msg': 'Session Connect Error ~'}
 
 
 def get_server_info(host, port, user, pwd, current_time):
@@ -247,3 +265,4 @@ def sftp_upload_file(host, port, user, pwd, current_time):
 
     client = data['client']
     sftp = paramiko.SFTPClient.from_transport(client)
+    sftp.close()

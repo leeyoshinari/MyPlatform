@@ -15,12 +15,19 @@ body{
 	height: 30px;
 	background-color: #5bc0de;
 }
+
+.float_right {
+	float: right;
+	width: 320px;
+	text-align: right;
+	margin-top: 6px;
+}
 .container1 a {
 	cursor: pointer;
-	margin-top: 3px;
-	margin-right: 1%;
-	float: right;
+	margin-right: 20px;
+	margin-left: 10px;
 	text-decoration: none;
+	color: blue;
 }
 .container1 img {
 	margin-top: 4px;

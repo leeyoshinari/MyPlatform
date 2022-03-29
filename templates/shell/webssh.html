@@ -17,8 +17,14 @@
 {% block addbody %}
     {% csrf_token %}
     <div class="container1">
-        <img src="{% static 'img/favicon.ico' %}">
-        <a href="">退出</a>
+        <div class="float_left">
+            <img src="{% static 'img/favicon.ico' %}">
+        </div>
+        <div class="float_right">
+            <a onclick="upload()">UploadFile</a>
+            <a>DownloadFile</a>
+            <a href="">Quit</a>
+        </div>
     </div>
     <div class="container2">
         <div style="margin-top: 30px;">
