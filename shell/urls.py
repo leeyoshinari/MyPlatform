@@ -22,5 +22,7 @@ urlpatterns = [
     path('open', views.openssh, name='open_shell'),
     path('add/server', views.add_server, name='add_server'),
     path('delete/server', views.delete_server, name='delete_server'),
-    path('search/server', views.search_server, name='search_server')
+    path('search/server', views.search_server, name='search_server'),
+    path('file/upload', views.upload_file, name='upload_file'),
+    path('file/download', views.download_file, name='download_file')
 ]

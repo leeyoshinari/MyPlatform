@@ -2,20 +2,26 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
-import time
+import os
+import io
 import json
 import logging
 import traceback
 from django.shortcuts import render
 from django.contrib.auth.models import User, Group
+from django.http import StreamingHttpResponse
 from django.core import serializers
 from django.db.models import Q
 from common.Result import result
 from .models import Servers
-from .channel.ssh import get_server_info
+from .channel.ssh import get_server_info, UploadAndDownloadFile
 
 
 logger = logging.getLogger('django')
+current_path = os.path.abspath(os.path.dirname(__file__))
+upload_file_path = os.path.join(current_path, 'uploadFile')
+if not os.path.exists(upload_file_path):
+    os.mkdir(upload_file_path)
 
 
 def index(request):
@@ -116,3 +122,66 @@ def openssh(request):
         host = request.GET.get('ip')
         logger.info(f'Open shell. ip: {host}, operator: {username}')
         return render(request,'shell/webssh.html', context={'host': host})
+
+
+def upload_file(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            form = request.FILES['file']
+            file_name = form.name
+            file_size = form.size
+            # content_type = form.content_type
+            data = form.file
+            host = request.POST.get('host')
+            remote_path = request.POST.get('remotePath').strip()
+            index = int(request.POST.get('index'))
+            total = int(request.POST.get('total'))
+            upload_time = request.POST.get('uploadTime')
+            temp_path = os.path.join(upload_file_path, upload_time)
+            if not os.path.exists(temp_path):
+                os.mkdir(temp_path)
+            if index == total:
+                with open(os.path.join(temp_path, file_name), 'wb') as f:
+                    f.write(data.read())
+
+                remote_path = remote_path if remote_path else '/home'
+                allfiles = os.listdir(temp_path)
+                server = Servers.objects.get(host=host)
+                upload_obj = UploadAndDownloadFile(server)
+                for fp in allfiles:
+                    _ = upload_obj.upload(os.path.join(temp_path, fp), f'{remote_path}/{file_name}')
+                    os.remove(os.path.join(temp_path, fp))
+                    logger.info(f'{fp} upload success, operator: {username}')
+                del upload_obj
+                allfiles = os.listdir(temp_path)
+                if len(allfiles) == 0:
+                    os.rmdir(temp_path)
+                    return result(code=0, msg='upload file success ~')
+                else:
+                    for fp in allfiles:
+                        os.remove(os.path.join(temp_path, fp))
+                    os.rmdir(temp_path)
+                    return result(code=1, msg='upload file failure ~', data=allfiles)
+            else:
+                with open(os.path.join(temp_path, file_name), 'wb') as f:
+                    f.write(data.read())
+                return result(code=0, msg='upload file success ~')
+        except Exception as err:
+            logger.info(err)
+            logger.info(traceback.format_exc())
+            return result(code=1, msg='upload file failure ~')
+
+def download_file(request):
+    if request.method == 'GET':
+        username = request.user.username
+        host = request.GET.get('host')
+        file_path = request.GET.get('filePath')
+        _, file_name = os.path.split(file_path)
+        server = Servers.objects.get(host=host)
+        upload_obj = UploadAndDownloadFile(server)
+        fp = upload_obj.download(file_path)
+        response = StreamingHttpResponse(fp)
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = f'attachment;filename="{file_name}"'.encode('utf-8')
+        return response

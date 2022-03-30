@@ -21,8 +21,8 @@
             <img src="{% static 'img/favicon.ico' %}">
         </div>
         <div class="float_right">
-            <a onclick="upload()">UploadFile</a>
-            <a>DownloadFile</a>
+            <a onclick="upload_file('/home')">UploadFile</a>
+            <a onclick="">DownloadFile</a>
             <a href="">Quit</a>
         </div>
     </div>
@@ -30,6 +30,25 @@
         <div style="margin-top: 30px;">
             <div id="django-webssh-terminal" >
                 <div id="terminal"></div>
+            </div>
+        </div>
+    </div>
+    <input type="file" name="filename" id="fileUpload-input" multiple style="display: none">
+    <div class="modal_cover">
+        <div class="modal_gif"></div>
+        <progress id="progressBar" value="0" max="100"></progress>
+        <span id="percentage"></span>
+    </div>
+    <div id="failure_file">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2>上传失败的文件</h2>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <a class="cancel">取消</a>
+                <a class="submit">确定</a>
             </div>
         </div>
     </div>

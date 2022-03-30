@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
+import io
 import re
 import time
 import json
@@ -258,11 +259,38 @@ def parse_pwd(current_time, password):
     return p
 
 
-def sftp_upload_file(host, port, user, pwd, current_time):
-    data = connect_ssh(host, port, user, pwd, current_time)
-    if data['code'] == 1:
-        return data
+class UploadAndDownloadFile(object):
+    def __init__(self, server_info):
+        self.t = None
+        self.sftp = None
 
-    client = data['client']
-    sftp = paramiko.SFTPClient.from_transport(client)
-    sftp.close()
+        self.connect(server_info.host, server_info.port, server_info.user, server_info.pwd, str(server_info.id))
+
+    def connect(self, host, port, user, password, current_time):
+        self.t = paramiko.Transport((host, port))
+        self.t.connect(username = user, password = parse_pwd(current_time, password))
+        self.sftp = paramiko.SFTPClient.from_transport(self.t)
+
+    def upload(self, local_path, remote_path):
+        try:
+            self.sftp.put(local_path, remote_path)
+            return {'code': 0, 'msg': 'upload file success ~'}
+        except Exception as err:
+            logger.error(err)
+            logger.error(traceback.format_exc())
+            return {'code': 1, 'msg': 'upload file failure ~', 'data': local_path}
+
+
+    def download(self, file_path):
+        try:
+            fp = io.BytesIO()
+            self.sftp.getfo(file_path, fp)
+            return fp
+        except Exception as err:
+            logger.error(err)
+            logger.error(traceback.format_exc())
+            return {'code': 1, 'msg': 'download file failure ~'}
+
+    def __del__(self):
+        self.sftp.close()
+        self.t.close()
