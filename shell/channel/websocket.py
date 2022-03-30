@@ -89,12 +89,10 @@ class WebSSH(WebsocketConsumer):
                 logger.error(err)
                 logger.error(traceback.format_exc())
         else:
-            logger.info(f'input linux command is: {data}')
+            logger.debug(f'input linux command is: {data}')
             if data['code'] == 0:  # send data
                 Thread(target=self.ssh.django_to_ssh, args=(data['data'],)).start()
             elif data['code'] == 2: # close session
                 self.ssh.close()
             elif data['code'] == 1: # setting terminal size
                 self.ssh.resize_pty(cols=data['cols'], rows=data['rows'])
-            elif data['code'] == 3:
-                self.ssh.upload_file_by_byte(data['data'])

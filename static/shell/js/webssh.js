@@ -108,12 +108,6 @@ function get_term_size() {
     }
 }
 
-function upload(){
-    let file_info = {'code': 3, 'data': 'manage.py'};
-    sock.send(JSON.stringify(file_info));
-
-}
-
 function upload_file(path) {
     let fileUpload_input = document.getElementById("fileUpload-input");
     let host = document.title;
@@ -246,4 +240,45 @@ function show_message(file_list) {
 function download_file(filePath) {
     let host = document.title;
     window.open('file/download?host=' + host + '&filePath=' + filePath);
+}
+
+function float_path(folder) {
+    let modal = document.getElementById('modal_input');
+    let close_a = document.getElementsByClassName("modal-header")[1];
+    let cancel_a = document.getElementsByClassName("cancel")[1];
+    let submit_a = document.getElementsByClassName("submit")[1];
+    let display_text = document.getElementsByClassName('input-body')[0];
+
+    if(folder === 0) {
+        document.getElementById('title-name').innerText = 'The Folder you want to Upload to ';
+        display_text.innerHTML = '<div><label>Folder Path：</label><input id="folder_path" type="text" placeholder="Please input Absolute Path of the Folder ..."></div>';
+    } else {
+        document.getElementById('title-name').innerText = 'The File you want to Download ';
+        display_text.innerHTML = '<div><label>File Path：</label><input id="folder_path" type="text" placeholder="Please input Absolute Path of the File ..."></div>';
+    }
+
+    modal.style.display = "block";
+
+    close_a.onclick = function() {
+        modal.style.display = "none";
+    }
+    cancel_a.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    submit_a.onclick = function() {
+        modal.style.display = "none";
+        let folder_path = document.getElementById('folder_path').value;
+        if (folder === 0) {
+            upload_file(folder_path);
+        } else {
+            download_file(folder_path);
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
 }

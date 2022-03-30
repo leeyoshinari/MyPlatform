@@ -93,7 +93,7 @@ class SSH:
                 self.message['code'] = 0
                 self.message['msg'] = data
                 self.websocket.send(json.dumps(self.message, ensure_ascii=False))
-                logger.info(f'back to front data: {self.message}')
+                logger.debug(f'back to front data: {self.message}')
             self.websocket.close()
             logger.info('exit ssh and socket success ~ ')
         except Exception as err:
@@ -127,16 +127,6 @@ class SSH:
             logger.error(traceback.format_exc())
             self.ssh_client.close()
             logger.info('close ssh success ~ ')
-
-    def upload_file_by_byte(self, local_path):
-        try:
-            sftp = self.transport.open_sftp_client()
-            sftp.put(local_path, './routing.py')
-            sftp.close()
-        except Exception as err:
-            logger.error(err)
-            logger.error(traceback.format_exc())
-        logger.info('upload file success ~')
 
 
 def get_key_obj(pkeyobj, pkey_file=None, pkey_obj=None, password=None):
@@ -285,11 +275,10 @@ class UploadAndDownloadFile(object):
         try:
             fp = io.BytesIO()
             self.sftp.getfo(file_path, fp)
+            fp.seek(0)
             return fp
-        except Exception as err:
-            logger.error(err)
-            logger.error(traceback.format_exc())
-            return {'code': 1, 'msg': 'download file failure ~'}
+        except:
+            raise
 
     def __del__(self):
         self.sftp.close()

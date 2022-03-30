@@ -21,8 +21,8 @@
             <img src="{% static 'img/favicon.ico' %}">
         </div>
         <div class="float_right">
-            <a onclick="upload_file('/home')">UploadFile</a>
-            <a onclick="">DownloadFile</a>
+            <a onclick="float_path(0)">UploadFile</a>
+            <a onclick="float_path(1)">DownloadFile</a>
             <a href="">Quit</a>
         </div>
     </div>
@@ -49,6 +49,19 @@
             <div class="modal-footer">
                 <a class="cancel">取消</a>
                 <a class="submit">确定</a>
+            </div>
+        </div>
+    </div>
+    <div id="modal_input">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2 id="title-name">The Folder you want to upload to </h2>
+            </div>
+            <div class="input-body"></div>
+            <div class="modal-footer">
+                <a class="cancel">Cancel</a>
+                <a class="submit">Submit</a>
             </div>
         </div>
     </div>

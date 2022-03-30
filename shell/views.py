@@ -130,7 +130,7 @@ def upload_file(request):
             username = request.user.username
             form = request.FILES['file']
             file_name = form.name
-            file_size = form.size
+            # file_size = form.size
             # content_type = form.content_type
             data = form.file
             host = request.POST.get('host')
@@ -150,7 +150,7 @@ def upload_file(request):
                 server = Servers.objects.get(host=host)
                 upload_obj = UploadAndDownloadFile(server)
                 for fp in allfiles:
-                    _ = upload_obj.upload(os.path.join(temp_path, fp), f'{remote_path}/{file_name}')
+                    _ = upload_obj.upload(os.path.join(temp_path, fp), f'{remote_path}/{fp}')
                     os.remove(os.path.join(temp_path, fp))
                     logger.info(f'{fp} upload success, operator: {username}')
                 del upload_obj
@@ -174,14 +174,24 @@ def upload_file(request):
 
 def download_file(request):
     if request.method == 'GET':
-        username = request.user.username
-        host = request.GET.get('host')
-        file_path = request.GET.get('filePath')
-        _, file_name = os.path.split(file_path)
-        server = Servers.objects.get(host=host)
-        upload_obj = UploadAndDownloadFile(server)
-        fp = upload_obj.download(file_path)
-        response = StreamingHttpResponse(fp)
-        response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = f'attachment;filename="{file_name}"'.encode('utf-8')
-        return response
+        try:
+            username = request.user.username
+            host = request.GET.get('host')
+            file_path = request.GET.get('filePath')
+            _, file_name = os.path.split(file_path)
+            if not file_name:
+                logger.error('file path is error ~ ')
+                return render(request, '404.html')
+            server = Servers.objects.get(host=host)
+            upload_obj = UploadAndDownloadFile(server)
+            fp = upload_obj.download(file_path)
+            response = StreamingHttpResponse(fp)
+            response['Content-Type'] = 'application/octet-stream'
+            response['Content-Disposition'] = f'attachment;filename="{file_name}"'.encode('utf-8')
+            del fp, upload_obj
+            return response
+        except Exception as err:
+            del upload_obj
+            logger.error(err)
+            logger.error(traceback.format_exc())
+            return render(request, '404.html')
