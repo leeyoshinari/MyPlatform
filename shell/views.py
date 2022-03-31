@@ -3,7 +3,6 @@
 # Author: leeyoshinari
 
 import os
-import io
 import json
 import logging
 import traceback
@@ -27,12 +26,13 @@ if not os.path.exists(upload_file_path):
 def index(request):
     if request.method == 'GET':
         try:
+            user_id = request.user.id
             username = request.user.username
-            servers = Servers.objects.all().order_by('-id')
-            groups = Group.objects.all().order_by('-id')
+            user = User.objects.get(id=user_id)
+            groups = user.groups.all()
+            servers = Servers.objects.filter(group__in=groups).order_by('-id')
             logger.info(f'access shell index.html. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': json.loads(serializers.serialize('json', servers)),
-                                                                'groups': json.loads(serializers.serialize('json', groups))})
+            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups})
         except Exception as err:
             logger.error(err)
             logger.error(traceback.format_exc())
@@ -43,7 +43,6 @@ def add_server(request):
     if request.method == 'POST':
         try:
             group_id = request.POST.get('GroupName')
-            group_name = Group.objects.get(id=group_id)
             server_name = request.POST.get('ServerName')
             server_ip = request.POST.get('ServerIP')
             try:
@@ -59,6 +58,7 @@ def add_server(request):
             username = request.user.username
             system = ''
             cpu = 0
+            arch = ''
             mem = 0
             disk = 0
 
@@ -69,12 +69,13 @@ def add_server(request):
                     cpu = datas['cpu']
                     mem = datas['mem']
                     disk = datas['disk']
+                    arch = datas['arch']
                 else:
                     return result(code=1, msg=datas['msg'])
 
-            server = Servers.objects.create(id = current_time, group_name = group_name, group_id = group_id, name=server_name,
+            server = Servers.objects.create(id = current_time, group_id = group_id, name=server_name,
                                    host=server_ip, port = int(port), user = sshname, pwd = password, system = system,
-                                   cpu = cpu, mem = mem, disk = disk, is_monitor=0)
+                                   cpu = cpu, arch=arch, mem = mem, disk = disk, is_monitor=0)
             logger.info(f'Add server success. ip: {server.host}, operator: {username}, time: {server.id}')
             return result(code=0, msg='Add server success ~ ')
         except Exception as err:

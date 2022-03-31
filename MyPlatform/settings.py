@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'user',
     'channels',
     'shell'
 ]
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'MyPlatform.mymiddleware.AccessAuthMiddleWare'
 ]
 
 ROOT_URLCONF = 'MyPlatform.urls'
@@ -125,6 +127,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EXCLUDE_URL = 'login'
 
 BASE_LOG_DIR = os.path.join(BASE_DIR, "logs")
 if not os.path.exists(BASE_LOG_DIR):

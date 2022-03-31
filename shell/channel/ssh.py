@@ -220,9 +220,14 @@ def get_server_info(host, port, user, pwd, current_time):
         results = execute_cmd(client, 'cat /proc/cpuinfo| grep "processor"| wc -l')
         cpu_cores = int(results.strip())
         logger.info(f'The number of cores all CPU is {cpu_cores}')
+
+        results = execute_cmd(client, 'uname -m')
+        cpu_arch = results.strip()
+        logger.info(f'The system architecture is {cpu_arch}')
         client.close()
 
-        return {'code': 0, 'cpu': cpu_cores, 'mem': round(total_mem, 2), 'disk': total_disk_h, 'system': system_version}
+        return {'code': 0, 'cpu': cpu_cores, 'mem': round(total_mem, 2), 'disk': total_disk_h,
+                'arch': cpu_arch, 'system': system_version}
 
     except Exception as err:
         logger.error(err)

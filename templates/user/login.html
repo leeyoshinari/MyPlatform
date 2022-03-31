@@ -1,0 +1,36 @@
+{% extends 'template.html' %}
+{% load static %}
+
+{% block addcss %}
+    <link rel="stylesheet" type="text/css" href="{% static 'user/css/login.css' %}">
+{% endblock %}
+
+{% block addbody %}
+<div class="wrap" id="wrap">
+	<div class="logGet">
+        <div class="lgT">
+            <p class="p2">Personal Disk</p>
+        </div>
+        <div class="logD logDtip">
+            <p class="p1">登 录</p>
+        </div>
+        <div class="lgD">
+            <img src="{% static 'img/login_user.png' %}" width="20" height="20" alt=""/>
+            <input type="text" placeholder="输入用户名" id="username">
+        </div>
+        <div class="lgD">
+            <img src="{% static 'img/login_lock.png' %}" width="20" height="20" alt=""/>
+            <input type="password" placeholder="输入用户密码" id="password">
+        </div>
+        <div class="logC">
+            <a id="login_b" target="_self"><button>登 录</button></a>
+        </div>
+        <div class="logT">
+            <a onclick="window.alert('恭喜你忘记了密码 (^_^)');">忘记密码</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block backjs %}
+    <script src="{% static 'user/js/login.js' %}"></script>
+{% endblock %}

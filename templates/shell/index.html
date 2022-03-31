@@ -35,23 +35,23 @@
         <tbody id="tbody">
             {% for host in servers %}
                 <tr>
-                    <td>{{ host.fields.group_name }}</td>
-                    <td>{{ host.fields.name }}</td>
-                    <td style="text-align: center;">{{ host.fields.host }}</td>
-                    <td style="text-align: center;">{{ host.fields.user }}</td>
-                    <td>{{ host.fields.system }}</td>
-                    <td style="text-align: center;">{{ host.fields.cpu }}</td>
-                    <td style="text-align: center;">{{ host.fields.mem }}G</td>
-                    <td style="text-align: center;">{{ host.fields.disk }}</td>
+                    <td>{{ host.group.name }}</td>
+                    <td>{{ host.name }}</td>
+                    <td style="text-align: center;">{{ host.host }}</td>
+                    <td style="text-align: center;">{{ host.user }}</td>
+                    <td>{{ host.system }}</td>
+                    <td style="text-align: center;">{{ host.cpu }}</td>
+                    <td style="text-align: center;">{{ host.mem }}G</td>
+                    <td style="text-align: center;">{{ host.disk }}</td>
                     <td>
-                        <a target="_blank" href="{% url 'shell:open_shell' %}?ip={{ host.fields.host }}">打开shell</a>
-                        {% if host.fields.is_monitor == 0 %}
+                        <a target="_blank" href="{% url 'shell:open_shell' %}?ip={{ host.host }}">打开shell</a>
+                        {% if host.is_monitor == 0 %}
                             <a onclick="">部署监控</a>
                         {% else %}
                             <a onclick="">查看监控</a>
                             <a onclick="">停止监控</a>
                         {% endif %}
-                        <a href="" onclick="delete_server('{{ host.pk }}')">删除</a>
+                        <a href="" onclick="delete_server('{{ host.id }}')">删除</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -70,11 +70,10 @@
                         <label>GroupName: </label>
                      </div>
                     <div class="input">
-{#                        <input id="GroupName" type="text" placeholder="Please input server's group name">#}
                         <select id="GroupName">
                             <option value="" selected></option>
                             {% for group in groups %}
-                                <option value="{{ group.pk }}">{{ group.fields.name }}</option>
+                                <option value="{{ group.id }}">{{ group.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
