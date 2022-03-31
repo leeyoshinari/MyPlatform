@@ -58,11 +58,12 @@ function delete_server(server) {
 }
 
 function search_server() {
+    let groupName = document.getElementById('groupName').value;
     let serverName = document.getElementById('serverName').value;
-    if (!serverName) {
+    if (!serverName && !groupName) {
         window.location.href = '/shell';
     } else {
-        window.location.href = '/shell/search/server?keyword=' + serverName;
+        window.location.href = '/shell/search/server?group=' + groupName + '&server=' + serverName;
     }
 }
 

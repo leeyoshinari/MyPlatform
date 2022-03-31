@@ -31,6 +31,7 @@ def login(request):
             session = auth.authenticate(username=username, password=p)
             if session:
                 auth.login(request, session)
+                request.session.set_expiry(0)
                 logger.info(f'{username} login success ~ , ip: {ip}')
                 return result(msg='login success ~')
             else:

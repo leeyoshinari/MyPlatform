@@ -3,13 +3,10 @@
 # Author: leeyoshinari
 
 import os
-import json
 import logging
 import traceback
-from django.shortcuts import render
-from django.contrib.auth.models import User, Group
+from django.shortcuts import render, redirect
 from django.http import StreamingHttpResponse
-from django.core import serializers
 from django.db.models import Q
 from common.Result import result
 from .models import Servers
@@ -26,13 +23,17 @@ if not os.path.exists(upload_file_path):
 def index(request):
     if request.method == 'GET':
         try:
-            user_id = request.user.id
             username = request.user.username
-            user = User.objects.get(id=user_id)
-            groups = user.groups.all()
-            servers = Servers.objects.filter(group__in=groups).order_by('-id')
+            page = request.GET.get('page')
+            page_size = request.GET.get('pageSize')
+            page = int(page) if page else 1
+            page_size = int(page_size) if page_size else 4
+            groups = request.user.groups.all()
+            total_num = Servers.objects.filter(group__in=groups).count()
+            servers = Servers.objects.filter(group__in=groups).order_by('-id')[(page - 1) * page_size: page * page_size]
             logger.info(f'access shell index.html. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups})
+            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page,
+                                                                'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1})
         except Exception as err:
             logger.error(err)
             logger.error(traceback.format_exc())
@@ -89,7 +90,8 @@ def delete_server(request):
         try:
             server_id = request.GET.get('id')
             username = request.user.username
-            Servers.objects.get(id=server_id).delete()
+            groups = request.user.groups.all()
+            Servers.objects.filter(Q(id=server_id), Q(group__in=groups)).delete()
             logger.info(f'Delete server success. operator: {username}, server id: {server_id}')
             return result(code=0, msg='Delete server success ~')
         except Exception as err:
@@ -101,28 +103,43 @@ def delete_server(request):
 def search_server(request):
     if request.method == 'GET':
         try:
-            keyword = request.GET.get('keyword')
-            keyword = keyword.replace('%', '').replace('+', '').strip()
-            if not keyword:
-                return result(code=1, msg='Please input KeyWord ~')
+            group_name = request.GET.get('group')
+            server_name = request.GET.get('server')
+            group_name = group_name.replace('%', '').replace('+', '').strip()
+            server_name = server_name.replace('%', '').replace('+', '').strip()
+            if not group_name and not server_name:
+                return redirect('shell:index')
+
+            if group_name:
+                groups = request.user.groups.filter(name__contains=group_name)
+            else:
+                groups = request.user.groups.all()
+
+            if server_name:
+                servers = Servers.objects.filter(group__in=groups).filter(Q(name__contains=server_name) | Q(host__contains=server_name)).order_by('-id')
+            else:
+                servers = Servers.objects.filter(group__in=groups).order_by('-id')
             username = request.user.username
-            servers = Servers.objects.filter(Q(name__contains=keyword) | Q(host__contains=keyword)).order_by('-id')
-            groups = Group.objects.all().order_by('-id')
             logger.info(f'search server success. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': json.loads(serializers.serialize('json', servers)),
-                                   'groups': json.loads(serializers.serialize('json', groups))})
+            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups})
         except Exception as err:
             logger.error(err)
             logger.error(traceback.format_exc())
-            return result(code=1, msg='search server failure ~')
+            return render(request, '404.html')
 
 
 def openssh(request):
     if request.method == 'GET':
         username = request.user.username
+        groups = request.user.groups.all()
         host = request.GET.get('ip')
-        logger.info(f'Open shell. ip: {host}, operator: {username}')
-        return render(request,'shell/webssh.html', context={'host': host})
+        if Servers.objects.filter(Q(host=host), Q(group__in=groups)).exists():
+            logger.info(f'Open shell. ip: {host}, operator: {username}')
+            return render(request,'shell/webssh.html', context={'host': host})
+        else:
+            return render(request, '404.html')
+    else:
+        return render(request, '404.html')
 
 
 def upload_file(request):

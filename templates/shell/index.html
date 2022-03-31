@@ -11,10 +11,10 @@
             <button onclick="add_server()">Add Server</button>
         </div>
         <div style="width: 60%;">
-            <label>KeyWord: </label>
-            <input id="serverName" type="text" placeholder="Input Server Name or IP ~">
-{#            <label>Server IP: </label>#}
-{#            <input id="serverIP" type="text" placeholder="Input Server IP">#}
+            <label>Group: </label>
+            <input id="groupName" type="text" placeholder="Please Input Group Name ~">
+            <label>Server: </label>
+            <input id="serverName" type="text" placeholder="Please Input Server Name or Server IP ~">
             <button onclick="search_server()">Search</button>
         </div>
     </div>
@@ -126,7 +126,10 @@
         </div>
     </div>
 </div>
-
-
-
+    <script type="text/javascript">
+    $(function () {
+        PagingManage($("#paging"), {{ total_page }}, {{ page }}, '{% url 'shell:index' %}?pageSize=' + {{ page_size }} + '&page=')
+    });
+    </script>
 {% endblock %}
+

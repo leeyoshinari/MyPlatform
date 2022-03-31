@@ -63,7 +63,7 @@ body{
 
 #filter div input {
     height: 20px;
-    width: 20%;
+    width: 23%;
 }
 
 .vertical-bar {
@@ -279,30 +279,6 @@ tr:hover td {
     from {top:-300px; opacity:0}
     to {top:0; opacity:1}
 }
-.domtree {
-	margin-left: 10%;
-	overflow-y: scroll;
-	white-space: nowrap;
-	max-height: 520px;
-}
-.domtree ul {
-	position: relative;
-	list-style: none;
-    margin: 0;
-    padding: 0 0 0 2em;
-}
-.domtree li {
-	position: relative;
-	cursor: pointer;
-	color: #0088ff;
-	list-style: none;
-    margin: 0;
-    padding: 0 0 0 8px;
-}
-.domtree li:hover,
-.domtree li:focus {
-	color: #d9534f;
-}
 
 .modal_cover {
     display: none;
@@ -344,34 +320,5 @@ tr:hover td {
 	font-weight: bolder;
 	font-size: large;
 	color: #d9534f;
-}
-.iframe_div {
-	display: none;
-	border:2px solid #000;
-	margin-top: 3%;
-	margin-left: 5%;
-	width: 90%;
-	max-height: 88%;
-	background-color: white;
-	position: relative;
-	z-index: 999;
-}
-#iframe_id {
-	border: none;
-	height: 830px;
-	width: 100%;
-}
-.iframe_div #close_iframe {
-	margin-right: 1%;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.iframe_div #close_iframe:hover,
-.iframe_div #close_iframe:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
 }
 
