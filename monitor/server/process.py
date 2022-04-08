@@ -69,7 +69,7 @@ class Process(object):
         while True:
             time.sleep(5)
             for i in range(len(self._agents['ip'])):
-                if time.time() - self._agents['time'][i] < 12:
+                if time.time() - self._agents['time'][i] > 12:
                     ip = self._agents['ip'].pop(i)
                     self._agents['port'].pop(i)
                     self._agents['system'].pop(i)
