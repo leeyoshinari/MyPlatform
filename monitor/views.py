@@ -31,7 +31,7 @@ def home(request):
             servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
             datas = []
             for i in range(len(servers)):
-                ind = monitor_server.agents['ip'].index(servers[i]['host'])
+                ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
                 if ind == -1:
                     continue
                 else:
@@ -63,13 +63,12 @@ def start_monitor(request):
             servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
             datas = []
             for i in range(len(servers)):
-                ind = monitor_server.agents['ip'].index(servers[i]['host'])
+                ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
                 if ind == -1:
                     continue
                 else:
                     datas.append(monitor_server.agents['ip'][ind])
             monitor_list = monitor_server.get_monitor(hosts=datas)
-            # monitor_list = [{'host': '101', 'port': 66, 'pid': 456, 'isRun': 1, 'startTime': '123'},{'host': '101', 'port': 66, 'pid': 456, 'isRun': 1, 'startTime': '123'}]
             return render(request, 'monitor/runMonitor.html', context={'ip': datas, 'foos': monitor_list})
         except:
             logger.error(traceback.format_exc())
@@ -167,9 +166,10 @@ def run_monitor(request):
     """
     if request.method == 'POST':
         try:
-            host = request.POST.get('host')
-            port = request.POST.get('port')
-            is_run = request.POST.get('isRun')  # Whether to start monitoring，0-stop monitoring, 1-start monitoring
+            data = json.loads(request.body)
+            host = data.get('host')
+            port = data.get('port')
+            is_run = data.get('isRun')  # Whether to start monitoring，0-stop monitoring, 1-start monitoring
             post_data = {
                 'host': host,
                 'port': port,
@@ -193,12 +193,13 @@ def plot_monitor(request):
     Visualize
     """
     if request.method == 'POST':
-        host = request.POST.get('host')
-        start_time = request.POST.get('startTime')
-        end_time = request.POST.get('endTime')
-        type_ = request.POST.get('type')
-        port_pid = request.POST.get('port')
-        disk = request.POST.get('disk')
+        data = json.loads(request.body)
+        host = data.get('host')
+        start_time = data.get('startTime')
+        end_time = data.get('endTime')
+        type_ = data.get('type')
+        port_pid = data.get('port')
+        disk = data.get('disk')
         if host in monitor_server.agents['ip']:
             try:
                 if type_ == 'port':
@@ -247,12 +248,12 @@ def get_port_disk(request):
 def notice(request):
     if request.method == 'POST':
         try:
-            msg = request.POST.get('msg')
+            data = json.loads(request.body)
             emailObj = {
                 'smtp': settings.EMAIL_SMTP, 'senderName': settings.EMAIL_SENDER_NAME,
                 'senderEmail': settings.EMAIL_SENDER_EMAIL, 'password': settings.EMAIL_PASSWORD,
                 'receiverName': settings.EMAIL_RECEIVER_NAME, 'receiverEmail': settings.EMAIL_RECEIVER_EMAIL,
-                'msg': msg, 'subject': 'Server Monitoring'
+                'msg': data.get('msg'), 'subject': 'Server Monitoring'
             }
             sendEmail(emailObj)
             return result(msg='Send Email Successful!')
