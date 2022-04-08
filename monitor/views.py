@@ -155,7 +155,7 @@ def registers(request):
     register
     """
     if request.method == 'POST':
-        data = request.POST
+        data = json.loads(request.body)
         logger.debug(f'The request parameters are {data}')
         monitor_server.agents = data
         return result(msg='registered successfully!')
