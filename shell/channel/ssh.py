@@ -98,6 +98,7 @@ class SSH:
             logger.info('exit ssh and socket success ~ ')
         except Exception as err:
             logger.error(err)
+            logger.info(self.channel.recv(1024))
             logger.error(traceback.format_exc())
             self.close()
 
