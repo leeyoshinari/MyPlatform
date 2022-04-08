@@ -10,12 +10,18 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
+import configparser
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+cfg = configparser.ConfigParser()
+cfg.read(os.path.join(BASE_DIR, 'config.conf'), encoding='utf-8')
+
+def get_config(key):
+    return cfg.get('default', key, fallback=None)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -40,7 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user',
     'channels',
-    'shell'
+    'shell',
+    'monitor'
 ]
 
 MIDDLEWARE = [
@@ -78,12 +85,24 @@ ASGI_APPLICATION = 'MyPlatform.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if get_config('dbType') == 'mysql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': get_config('MysqlDatabase'),
+            'USER': get_config('MysqlUserName'),
+            'PASSWORD': get_config('MysqlPassword'),
+            'HOST': get_config('MysqlHost'),
+            'PORT': get_config('MysqlPort'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -119,8 +138,8 @@ USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
-
-STATIC_URL = 'static/'
+CONTEXT = get_config("context")
+STATIC_URL = f'{CONTEXT}/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Default primary key field type
@@ -129,7 +148,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-EXCLUDE_URL = 'login'
+EXCLUDE_URL = 'login|monitor'
 
 BASE_LOG_DIR = os.path.join(BASE_DIR, "logs")
 if not os.path.exists(BASE_LOG_DIR):
@@ -162,9 +181,9 @@ LOGGING = {
         # 默认的
         'default': {
             'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
-            'filename': os.path.join(BASE_LOG_DIR, "mycloud.log"),  # 日志文件
+            'filename': os.path.join(BASE_LOG_DIR, "run.log"),  # 日志文件
             'maxBytes': 1024 * 1024 * 5,  # 日志大小 10M
-            'backupCount': 2,  # 最多备份几个
+            'backupCount': int(get_config('backupCount')),  # 最多备份几个
             'formatter': 'standard',
             'encoding': 'utf-8',
         },
@@ -173,8 +192,25 @@ LOGGING = {
        # 默认的logger应用如下配置
         'django': {
             'handlers': ['console'],  # 上线之后可以把'console'移除
-            'level': 'INFO',
+            'level': get_config('level'),
             'propagate': True,  # 向不向更高级别的logger传递
         }
     },
 }
+
+# influxDB
+INFLUX_HOST = get_config('InfluxHost')
+INFLUX_PORT = get_config('InfluxPort')
+INFLUX_USER_NAME = get_config('InfluxUserName')
+INFLUX_PASSWORD = get_config('InfluxPassword')
+INFLUX_DATABASE = get_config('InfluxDatabase')
+INFLUX_EXPIRY_TIME = int(get_config('expiryTime'))
+INFLUX_SHARD_DURATION = get_config('shardDuration')
+
+# Email
+EMAIL_SMTP = get_config('SMTP')
+EMAIL_SENDER_NAME = get_config('EmailSenderName')
+EMAIL_SENDER_EMAIL = get_config('EmailSenderEmail')
+EMAIL_PASSWORD = get_config('EmailPassword')
+EMAIL_RECEIVER_NAME = get_config('EmailReceiverName')
+EMAIL_RECEIVER_EMAIL = get_config('EmailReceiverEmail')

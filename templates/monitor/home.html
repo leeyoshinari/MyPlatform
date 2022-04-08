@@ -1,0 +1,43 @@
+{% extends "monitor/template.html" %}
+
+{% block page_content %}
+<div class="page-header">
+    <h3 align="center" style="margin-top: 66px">Server List&ensp;&ensp;(total {{ datas|length }} servers)</h3>
+    <table width="99%" border="1" cellspacing="0" cellpadding="6" align="center" id="monitor">
+        <tr style="align: center; margin: auto; background-color: #99CCFF">
+            <th width=13% style="text-align: center;">Server</th>
+            <th width=35% style="text-align: center;">System Version</th>
+            <th width=13% style="text-align: center;">CPU/Usage</th>
+            <th width=14% style="text-align: center;">Memory/Usage</th>
+            <th width=13% style="text-align: center;">Disk/Usage</th>
+            <th width=12% style="text-align: center;">Bandwidth</th>
+        </tr>
+        {% for data in datas %}
+            <tr align="center">
+                <td><a href="http://{{ data.ip }}:{{ data.port }}">{{ data.ip }}</a></td>
+                <td>{{ data.system }}</td>
+                {% if data.cpu_usage < 80 %}
+                    <td>{{ data.cpu }} cores/{{ data.cpu_usage|floatformat:2 }}%</td>
+                {% else %}
+                    <td><strong style="font-weight: bold; color: #ff3333">{{ data.cpu }} cores/{{ data.cpu_usage|floatformat:2 }}%</strong></td>
+                {% endif %}
+                {% if data.mem_usage < 80 %}
+                    <td>{{ data.mem }}G/{{ data.mem_usage|floatformat:2 }}%</td>
+                {% else %}
+                    <td><strong style="font-weight: bold; color: #ff3333">{{ data.mem }}G/{{ data.mem_usage|floatformat:2 }}%</strong></td>
+                {% endif %}
+                {% if data.disk_usage < 70 %}
+                    <td>{{ data.disk }}/{{ data.disk_usage|floatformat:2 }}%</td>
+                {% else %}
+                    <td><strong style="font-weight: bold; color: #ff3333">{{ data.disk }}/{{ data.disk_usage|floatformat:2 }}%</strong></td>
+                {% endif %}
+                {% if data.net == 1 %}
+                    <td>None</td>
+                {% else %}
+                    <td>{{ data.net }}Mb/s</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

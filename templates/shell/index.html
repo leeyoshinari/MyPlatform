@@ -48,7 +48,7 @@
                         {% if host.is_monitor == 0 %}
                             <a onclick="">部署监控</a>
                         {% else %}
-                            <a onclick="">查看监控</a>
+                            <a target="_blank" href="{% url 'monitor:home' %}">查看监控</a>
                             <a onclick="">停止监控</a>
                         {% endif %}
                         <a href="" onclick="delete_server('{{ host.id }}')">删除</a>

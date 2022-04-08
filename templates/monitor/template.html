@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Server Monitoring</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="{% static 'monitor/favicon.ico' %}" rel="shortcut icon" type="image/x-icon">
+
+        <link href="{% static 'monitor/css/bootstrap.css' %}" rel="stylesheet">
+        <link href="{% static 'monitor/css/toast.style.css' %}" rel="stylesheet">
+
+        {% block scripts %}
+        <script src="{% static 'monitor/js/echarts.common.js' %}"></script>
+        <script src="{% static 'monitor/js/jquery.js' %}"></script>
+        <script src="{% static 'monitor/js/bootstrap.js' %}"></script>
+        <script src="{% static 'monitor/js/toast.script.js' %}"></script>
+        <script src="{% static 'monitor/js/plot_port.js' %}"></script>
+        <script src="{% static 'monitor/js/plot_system.js' %}"></script>
+        {% endblock %}
+    </head>
+
+    <body>
+        {% block body %}
+            {% block navbar %}
+                <div class="navbar navbar-inverse" role="navigation">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <a class="navbar-brand" href="{% url 'monitor:home' %}">
+                                Home
+                            </a>
+                        </div>
+                        <div class="navbar-left">
+                            <a class="navbar-brand" href="{% url 'monitor:start_monitor' %}">
+                                MonitorList
+                            </a>
+                        </div>
+                        <div class="navbar-left">
+                            <a class="navbar-brand" href="{% url 'monitor:visualize' %}">
+                                Visualize
+                            </a>
+                        </div>
+                        <div class="navbar-left">
+                            <a class="navbar-brand" href="{% url 'monitor:course_en' %}">
+                                Course
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+            {% block content %}
+                <div class="container">
+                    {% block page_content %}
+                    {% endblock %}
+                </div>
+            {% endblock %}
+
+            {% block myjs %}
+            {% endblock %}
+        {% endblock %}
+    </body>
+</html>

@@ -1,0 +1,227 @@
+{% extends "monitor/template.html" %}
+
+{% block content %}
+<div align="center" style="width: 100%; height: 27px;">
+    Server: <select id="host" style="width: 8%; height: 26px; margin-right: 20px;" onchange="show_port_disk()">
+            {% for foo in ip %}
+                <option value="{{ foo }}">{{ foo }}</option>
+            {% endfor %}
+    </select>
+    Type: <select id="type" style="width: 6%; height: 26px; margin-right: 20px;" onchange="clear_port()">
+        <option value="system" selected="selected">System</option>
+        <option value="port">Port</option>
+    </select>
+    Port: <select id="port" style="width: 6%; height: 26px; margin-right: 20px;"></select>
+    Disk: <select id="disk" style="width: 6%; height: 26px; margin-right: 20px;">
+            {% for disk in disks %}
+                <option value="{{ disk }}">{{ disk }}</option>
+            {% endfor %}
+    </select>
+    StartTime: <input type="text" name="starttime" id="starttime" style="margin-right: 20px; width: 10%;" value="{{ starttime }}">
+    EndTime: <input type="text" name="endtime" id="endtime" style="margin-right: 20px; width: 10%;" value="{{ endtime }}">
+    <button type="button" id="MonitorList" style="width: 6%;">&nbsp;Visualize&nbsp;</button>
+</div>
+<div id="figure" style="width: 95%;height:1100px;margin: 0 auto;"></div>
+<div id="container" style="width: 89.911%; margin:0 auto">
+    <div id="container1" style="display: none;">
+        <h4 align="center">Percentiles</h4>
+        <table width="100%" cellspacing="0" border="1" cellpadding="6" align="center" id="percentile">
+            <tr style="align: center; margin: auto; background-color: #99CCFF">
+                <td width="10%" style="text-align: center;">Percentile</td>
+                <td width="10%" style="text-align: center;">CPU(%)</td>
+                <td width="10%" style="text-align: center;">Read(MB/s)</td>
+                <td width="10%" style="text-align: center;">Write(MB/s)</td>
+                <td width="10%" style="text-align: center;">IO(%)</td>
+                <td width="10%" style="text-align: center;">Recv(MB/s)</td>
+                <td width="10%" style="text-align: center;">Tran(MB/s)</td>
+                <td width="10%" style="text-align: center;">Net(%)</td>
+            </tr>
+            {% for row in row_name %}
+                <tr align="center">
+                    <td>{{ row }}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div id="container2" style="float: left; width: 36%; margin-left: 3%; margin-top: 15px; margin-bottom: 66px; display: none;">
+        <h4 align="center">Garbage Collection</h4>
+        <table width="90%" cellpadding="6" cellspacing="0" border="1" align="center" id="gc">
+            <tr style="align: center; margin: auto; background-color: #99CCFF">
+                <td width="10%" style="text-align: center;">GC</td>
+                <td width="10%" style="text-align: center;">Times</td>
+                <td width="10%" style="text-align: center;">time(s)</td>
+                <td width="10%" style="text-align: center;">Frequency(s/times)</td>
+            </tr>
+            <tr align="center">
+                <td>YGC</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr align="center">
+                <td>FGC</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+        </table>
+    </div>
+</div>
+<br><br>
+
+{% endblock %}
+
+{% block myjs %}
+<script type="text/javascript">
+    let global_port = [];
+    $("#MonitorList").click(function () {
+        plot();
+    });
+
+    function plot() {
+        let port = 0;
+        let host = document.getElementById('host').value;
+        let type = document.getElementById('type').value;
+        let num = document.getElementById('port').value;
+        let disk = document.getElementById('disk').value;
+        let starttime = document.getElementById('starttime').value;
+        let endtime = document.getElementById('endtime').value;
+        try{
+                port = parseInt(num, 10);
+                if (type === 'port' || type === 'pid') {
+                    if (isNaN(port) || port < 1) {
+                        $.Toast('Please select a port!', 'error');
+                        return;
+                    }
+                }
+        }
+        catch (err) {
+            $.Toast(err, 'error');
+            return;
+        }
+
+        let post_data = {
+            host: host,
+            type: type,
+            port: port,
+            disk: disk,
+            startTime: starttime,
+            endTime: endtime,
+        };
+        $(function visualize() {
+            $.ajax({
+                type: 'post',
+                url: 'plotMonitor',
+                data: JSON.stringify(post_data),
+                dataType: "json",
+                contentType: 'application/json; charset=utf-8',
+                success: function (data) {
+                    if (data['code'] === 1) {
+                        $.Toast(data['message'], 'success');
+                    } else {
+                        $.Toast(data['message'], 'error');
+                        return;
+                    }
+
+                    $('#figure').removeAttr("_echarts_instance_").empty();
+                    let figure = document.getElementById('figure');
+                    let percentile = document.getElementById('container1');
+                    let table1 = document.getElementById('percentile');
+                    let gc = document.getElementById('container2');
+                    let table2 = document.getElementById('gc');
+
+                    if (data['flag'] === 1) {
+                        percentile.style['float'] = 'left';
+                        percentile.style['margin-left'] = '6%';
+                        percentile.style['display'] = '';
+                        percentile.style['width'] = '50%';
+                        table1.style['width'] = '100%';
+                        gc.style['display'] = '';
+
+                        table2.rows[1].cells[1].innerHTML = data['gc'][0];
+                        table2.rows[1].cells[2].innerHTML = data['gc'][1];
+                        table2.rows[1].cells[3].innerHTML = data['gc'][4];
+                        table2.rows[2].cells[1].innerHTML = data['gc'][2];
+                        table2.rows[2].cells[2].innerHTML = data['gc'][3];
+                        table2.rows[2].cells[3].innerHTML = data['gc'][5];
+                    }
+                    else {
+                        percentile.style['float'] = '';
+                        percentile.style['margin-left'] = '';
+                        percentile.style['width'] = '';
+                        percentile.style['display'] = '';
+                        table1.style['width'] = '50%';
+                        gc.style['display'] = 'none';
+                    }
+
+                    if (data['post_data']['types'] === 'port') {
+                        figure.style["height"] = '1450px';
+                        let myChart = echarts.init(figure);
+                        plot_port(myChart, table1, table2, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['mem'],
+                        data['post_data']['jvm'], data['post_data']['tcp'], data['post_data']['time_wait'], data['post_data']['close_wait'],
+                        data['flag'], data['post_data']['io'], data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['nic']);
+                    } else {
+                        figure.style["height"] = '1800px';
+                        let myChart = echarts.init(figure);
+                        plot_system(myChart, table1, table2, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
+                            data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['io'],
+                            data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['disk_d'], data['post_data']['nic'],
+                            data['post_data']['rec'], data['post_data']['trans'], data['post_data']['tcp'], data['post_data']['retrans'],
+                            data['post_data']['time_wait']);
+                    }
+
+                }
+            });
+        })
+    }
+
+    function show_port_disk() {
+        let host = document.getElementById('host').value;
+        let types = document.getElementById('type');
+        let portObj = document.getElementById('port');
+        let diskObj = document.getElementById('disk');
+        types.options[0].selected = true;
+        types.options[1].selected = false;
+        portObj.options.length = 0;
+        diskObj.options.length = 0;
+        $.ajax({
+            type: 'get',
+            url: 'getPortAndDisk/'+host,
+            dataType: "json",
+            success: function (data) {
+                if (data['code'] === 0){
+                    global_port = data['data']['port'];
+                    for (let i=0; i<data['data']['disk'].length; i++){
+                        diskObj.options.add(new Option(data['data']['disk'][i], data['data']['disk'][i]));
+                    }
+                }
+                else{
+                    $.Toast(data['msg'], 'error');
+                    return;
+                }
+            }
+        });
+    }
+
+    function clear_port() {
+        let types = document.getElementById('type');
+        let portObj = document.getElementById('port');
+        portObj.options.length = 0;
+        if (types.value === 'port') {
+            for (let i=0; i<global_port.length; i++){
+                portObj.options.add(new Option(global_port[i], global_port[i]));
+            }
+        }
+    }
+
+    window.onload = function () {plot(); show_port_disk();}
+</script>
+{% endblock %}
