@@ -5,7 +5,6 @@
 import io
 import re
 import time
-import json
 import socket
 import logging
 import traceback
@@ -16,9 +15,8 @@ logger = logging.getLogger('django')
 
 
 class SSH:
-    def __init__(self, websocket, message):
+    def __init__(self, websocket):
         self.websocket = websocket
-        self.message = message
         self.ssh_client = paramiko.SSHClient()
         self.keepalive_last_time = time.time()
         self.transport = None
@@ -90,22 +88,17 @@ class SSH:
                 self.keepalive_last_time = time.time()
                 if not len(data):
                     break
-                self.message['code'] = 0
-                self.message['msg'] = data
-                self.websocket.send(json.dumps(self.message, ensure_ascii=False))
-                logger.debug(f'back to front data: {self.message}')
+                self.websocket.send(data)
+                logger.debug(f'back to front data: {data}')
             self.websocket.close()
             logger.info('exit ssh and socket success ~ ')
-        except Exception as err:
-            logger.error(err)
+        except:
             logger.info(self.channel.recv(1024))
             logger.error(traceback.format_exc())
             self.close()
 
     def close(self, msg = 'Session is already in CLOSED state ~'):
-        self.message['code'] = 1
-        self.message['msg'] = msg
-        self.websocket.send(json.dumps(self.message, ensure_ascii=False))
+        self.websocket.send(msg)
         self.ssh_client.close()
         self.websocket.close()
 
@@ -119,12 +112,9 @@ class SSH:
                 else:
                     self.ssh_client.close()
                     break
-            self.message['code'] = 1
-            self.message['msg'] = 'Session is already in CLOSED state ~'
-            self.websocket.send(json.dumps(self.message, ensure_ascii=False))
+            self.websocket.send('Session is already in CLOSED state ~')
             logger.info('close ssh success ~ ')
-        except Exception as err:
-            logger.error(err)
+        except:
             logger.error(traceback.format_exc())
             self.ssh_client.close()
             logger.info('close ssh success ~ ')

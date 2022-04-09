@@ -3,7 +3,6 @@
 # Author: leeyoshinari
 
 import os
-import time
 import json
 import logging
 import traceback
@@ -16,20 +15,9 @@ logger = logging.getLogger('django')
 
 
 class WebSSH(WebsocketConsumer):
-    message = {'code': 0, 'msg': None}
-    """
-    code:
-        0: ssh 连接正常, websocket 正常
-        1: 发生未知错误, 关闭 ssh 和 websocket 连接
-
-    msg:
-        code 为 0 时, msg 为 ssh 返回的数据, 前端页面将获取 ssh 返回的数据并写入终端页面
-        code 为 1 时, msg 为具体的错误信息
-    """
-
     def connect(self):
         """
-        打开 websocket 连接, 通过前端传入的参数尝试连接 ssh 主机
+        open websocket
          :return:
         """
         self.accept()
@@ -40,7 +28,7 @@ class WebSSH(WebsocketConsumer):
         # ssh_key_name = ssh_args.get('ssh_key')
         ssh_key_name=""
 
-        self.ssh = SSH(websocket=self, message=self.message)
+        self.ssh = SSH(websocket=self)
 
         ssh_connect_dict = {
             'host': ssh_args.get('host'),
@@ -53,7 +41,6 @@ class WebSSH(WebsocketConsumer):
             'current_time': str(ssh_args.get('time'))
         }
 
-        # 不需要
         if auth == 'key':
             ssh_key_file = os.path.join('tmp', ssh_key_name)
             with open(ssh_key_file, 'r') as f:

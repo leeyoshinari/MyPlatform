@@ -44,16 +44,16 @@
                     <td style="text-align: center;">{{ host.mem }}G</td>
                     <td style="text-align: center;">{{ host.disk }}</td>
                     <td>
-                        <a target="_blank" href="{% url 'shell:open_shell' %}?ip={{ host.host }}">打开shell</a>
+                        <a target="_blank" href="{% url 'shell:open_shell' %}?ip={{ host.host }}">OpenShell</a>
                         {% if isMonitor == 1 %}
                             {% if host.is_monitor == 0 %}
-                                <a onclick="">部署监控</a>
+                                <a onclick="">DeployMonitor</a>
                             {% else %}
-                                <a target="_blank" href="{% url 'monitor:home' %}">查看监控</a>
-                                <a onclick="">停止监控</a>
+                                <a target="_blank" href="{% url 'monitor:home' %}?host={{ host.host }}">ViewMonitor</a>
+                                <a onclick="">StopMonitor</a>
                             {% endif %}
                         {% endif %}
-                        <a href="" onclick="delete_server('{{ host.id }}')">删除</a>
+                        <a href="" onclick="delete_server('{{ host.id }}')">Delete</a>
                     </td>
                 </tr>
             {% endfor %}

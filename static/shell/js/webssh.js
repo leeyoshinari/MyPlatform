@@ -38,13 +38,7 @@ sock.addEventListener('open', function () {
 
 // 读取服务器端发送的数据并写入 web 终端
 sock.addEventListener('message', function (recv) {
-    let data = JSON.parse(recv.data);
-    if (data.code === 0) {
-        term.write(data.msg);
-    } else {
-        $.Toast(data.msg, 'error');
-        sock.close();
-    }
+    term.write(recv.data);
 });
 
 sock.onclose = function (e) {
