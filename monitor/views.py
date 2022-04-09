@@ -9,7 +9,7 @@ import traceback
 from django.shortcuts import render
 from django.db.models import Q
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from shell.models import Servers
 from common.Email import sendEmail
 from common.Result import result
@@ -173,13 +173,13 @@ def run_monitor(request):
             post_data = {
                 'host': host,
                 'port': port,
-                'isRun': is_run
+                'isRun': str(is_run)
             }
             ind = monitor_server.agents['ip'].index(host)
             res = http.request('post', host, monitor_server.agents['port'][ind], 'runMonitor', json=post_data)
 
             if res.status_code == 200:
-                return res
+                return HttpResponse(content=res.content.decode())
             else:
                 return result(code=1, msg=f"System exception, the message comes from {host}")
 
