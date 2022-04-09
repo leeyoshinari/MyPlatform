@@ -1,4 +1,5 @@
 {% extends "monitor/template.html" %}
+{% load static %}
 
 {% block page_content %}
 <div class="page-header">
@@ -79,19 +80,19 @@
             <p>Visit pages<br><br>
                 (1) After Agent is started, visit <code>http://ip:port</code>
                 , you can see the server's data(CPU, Meeory, Disk, Network, etc.).<br>
-                <img width="100%" src="{{ server_context }}/static/agent.jpg" alt="">
+                <img width="100%" src="{% static 'monitor/agent.jpg' %}" alt="">
             </p><br>
             <p>(2) After server is started, visit <code>http://ip:port/<strong>context</strong></code>
                 , you can see some informations about Agents.<br>
-                <img width="100%" src="{{ server_context }}/static/home.jpg" alt=""><br>
+                <img width="100%" src="{% static 'monitor/home.jpg' %}" alt=""><br>
                 &ensp;&ensp;&ensp;&ensp;Click the IP in the list, some information of the Agent will be shown.
             </p><br>
             <p>(3) Click MonitorList tab to see the monitoring page. <br>
                 &ensp;&ensp;&ensp;&ensp;Select server and enter the port, then click the startMonitor button to start monitoring the port on the selected server; click the stopMonitor button to stop monitoring the port on the selected server.<br>
-                <img width="100%" src="{{ server_context }}/static/monitor.jpg" alt="">
+                <img width="100%" src="{% static 'monitor/monitor.jpg' %}" alt="">
             </p><br>
             <p>(4) Click Visualize tab to see the visualization page. Select server, type, disk, startTime and endTime, then click the Visualize button to visualize the monitoring data.<br>
-                <img width="100%" src="{{ server_context }}/static/visual.jpg" alt=""><br>
+                <img width="100%" src="{% static 'monitor/visual.jpg' %}" alt=""><br>
             </p>
         </li>
     </ol>
