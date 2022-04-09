@@ -194,7 +194,7 @@
         diskObj.options.length = 0;
         $.ajax({
             type: 'get',
-            url: 'getPortAndDisk/'+host,
+            url: 'getPortAndDisk?host=' + host,
             dataType: "json",
             success: function (data) {
                 if (data['code'] === 0){

@@ -126,12 +126,12 @@ def visualize(request):
     hosts = []
     disks = []
     for i in range(len(servers)):
-        ind = monitor_server.agents['ip'].index(servers[i]['host'])
+        ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
         if ind == -1:
             continue
         else:
             hosts.append(monitor_server.agents['ip'][ind])
-            disks.append(monitor_server.agents['disk'][ind])
+            disks = monitor_server.agents['disk'][ind]
 
     if hosts:
         monitor_list = monitor_server.get_monitor(hosts=hosts[0])
@@ -237,7 +237,7 @@ def get_port_disk(request):
             try:
                 disks = monitor_server.agents['disk'][monitor_server.agents['ip'].index(host)]
                 monitor_list = monitor_server.get_monitor(hosts=[host])
-                return result(msg='Successful!', data={'disk': disks, 'port': monitor_list['port']})
+                return result(msg='Successful!', data={'disk': disks, 'port': monitor_list})
             except:
                 logger.error(traceback.format_exc())
                 return result(code=1, msg="System Exception")
