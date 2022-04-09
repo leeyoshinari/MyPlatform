@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
+from django.conf import settings
 from . import views
 
 app_name = 'monitor'
@@ -28,4 +29,4 @@ urlpatterns = [
     path('getPortAndDisk', views.get_port_disk, name='get_port_disk'),
     path('runMonitor', views.run_monitor, name='run_monitor'),
     path('plotMonitor', views.plot_monitor, name='plot_monitor'),
-]
+] if settings.IS_MONITOR == 1 else []

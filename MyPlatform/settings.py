@@ -198,6 +198,7 @@ LOGGING = {
     },
 }
 
+IS_MONITOR = int(get_config('isMonitor'))
 # influxDB
 INFLUX_HOST = get_config('InfluxHost')
 INFLUX_PORT = get_config('InfluxPort')

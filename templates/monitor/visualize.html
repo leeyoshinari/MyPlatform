@@ -4,7 +4,11 @@
 <div align="center" style="width: 100%; height: 27px;">
     Server: <select id="host" style="width: 8%; height: 26px; margin-right: 20px;" onchange="show_port_disk()">
             {% for foo in ip %}
-                <option value="{{ foo }}">{{ foo }}</option>
+                {% if foo == spec %}
+                    <option value="{{ foo }}" selected>{{ foo }}</option>
+                {% else %}
+                    <option value="{{ foo }}">{{ foo }}</option>
+                {% endif %}
             {% endfor %}
     </select>
     Type: <select id="type" style="width: 6%; height: 26px; margin-right: 20px;" onchange="clear_port()">

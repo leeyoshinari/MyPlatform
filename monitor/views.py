@@ -15,13 +15,15 @@ from common.Email import sendEmail
 from common.Result import result
 from .server.request import Request
 from .server.process import Process
-from .server.draw_performance import draw_data_from_db
-# from .server.draw_performance1 import draw_data_from_db
 
 
 logger = logging.getLogger('django')
-monitor_server = Process()
-http = Request()
+
+if settings.IS_MONITOR == 1:
+    from .server.draw_performance import draw_data_from_db
+    # from .server.draw_performance1 import draw_data_from_db
+    monitor_server = Process()
+    http = Request()
 
 
 def home(request):
@@ -119,27 +121,35 @@ def visualize(request):
     """
     Visualization
     """
-    starttime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-600))
-    endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    groups = request.user.groups.all()
-    servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
-    hosts = []
-    disks = []
-    for i in range(len(servers)):
-        ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
-        if ind == -1:
-            continue
-        else:
-            hosts.append(monitor_server.agents['ip'][ind])
-            disks = monitor_server.agents['disk'][ind]
+    if request.method == 'GET':
+        try:
+            spec_host = request.GET.get('host')
+            starttime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-600))
+            endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            groups = request.user.groups.all()
+            servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
+            hosts = []
+            disks = []
+            for i in range(len(servers)):
+                ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
+                if ind == -1:
+                    continue
+                else:
+                    hosts.append(monitor_server.agents['ip'][ind])
+                    disks = monitor_server.agents['disk'][ind]
 
-    if hosts:
-        monitor_list = monitor_server.get_monitor(hosts=hosts[0])
-        ports = [mon['port'] for mon in monitor_list]
+            if hosts:
+                monitor_list = monitor_server.get_monitor(hosts=hosts[0])
+                ports = [mon['port'] for mon in monitor_list]
+            else:
+                ports = []
+            return render(request, 'monitor/visualize.html', context={'disks': disks, 'ip': hosts, 'port': ports, 'starttime': starttime,
+                'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec': spec_host})
+        except:
+            logger.error(traceback.format_exc())
+            return render(request, '404.html')
     else:
-        ports = []
-    return render(request, 'monitor/visualize.html', context={'disks': disks, 'ip': hosts, 'port': ports, 'starttime': starttime,
-        'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%']})
+        return render(request, '404.html')
 
 
 def course_zh_CN(request):
@@ -236,7 +246,7 @@ def get_port_disk(request):
         if host in monitor_server.agents['ip']:
             try:
                 disks = monitor_server.agents['disk'][monitor_server.agents['ip'].index(host)]
-                monitor_list = monitor_server.get_monitor(hosts=[host])
+                monitor_list = [p['port'] for p in monitor_server.get_monitor(hosts=[host])]
                 return result(msg='Successful!', data={'disk': disks, 'port': monitor_list})
             except:
                 logger.error(traceback.format_exc())

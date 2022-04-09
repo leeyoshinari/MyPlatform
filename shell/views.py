@@ -7,6 +7,7 @@ import logging
 import traceback
 from django.shortcuts import render, redirect
 from django.http import StreamingHttpResponse
+from django.conf import settings
 from django.db.models import Q
 from common.Result import result
 from .models import Servers
@@ -32,7 +33,7 @@ def index(request):
             total_num = Servers.objects.filter(group__in=groups).count()
             servers = Servers.objects.filter(group__in=groups).order_by('-id')[(page - 1) * page_size: page * page_size]
             logger.info(f'access shell index.html. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page,
+            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page, 'isMonitor': settings.IS_MONITOR,
                                                                 'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1})
         except Exception as err:
             logger.error(err)
