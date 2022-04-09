@@ -306,19 +306,3 @@ tr:hover td {
     background-size: 80px 80px;
 }
 
-#progressBar {
-	position: absolute;
-	top: 50%;
-	left: 34%;
-	width: 20%;
-	height: 3%;
-}
-#percentage {
-	position: absolute;
-	top: 50%;
-	left: 43%;
-	font-weight: bolder;
-	font-size: large;
-	color: #d9534f;
-}
-

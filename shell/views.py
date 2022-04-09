@@ -11,7 +11,7 @@ from django.conf import settings
 from django.db.models import Q
 from common.Result import result
 from .models import Servers
-from .channel.ssh import get_server_info, UploadAndDownloadFile
+from .channel.ssh import get_server_info, UploadAndDownloadFile, deploy_mon, stop_mon
 
 
 logger = logging.getLogger('django')
@@ -35,8 +35,7 @@ def index(request):
             logger.info(f'access shell index.html. operator: {username}')
             return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page, 'isMonitor': settings.IS_MONITOR,
                                                                 'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1})
-        except Exception as err:
-            logger.error(err)
+        except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='access shell index.html failure ~')
 
@@ -81,7 +80,6 @@ def add_server(request):
             logger.info(f'Add server success. ip: {server.host}, operator: {username}, time: {server.id}')
             return result(code=0, msg='Add server success ~ ')
         except Exception as err:
-            logger.error(f'Add server error. {err}')
             logger.error(traceback.format_exc())
             return result(code=1, msg=err)
 
@@ -95,8 +93,7 @@ def delete_server(request):
             Servers.objects.filter(Q(id=server_id), Q(group__in=groups)).delete()
             logger.info(f'Delete server success. operator: {username}, server id: {server_id}')
             return result(code=0, msg='Delete server success ~')
-        except Exception as err:
-            logger.error(err)
+        except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Delete server failure ~')
 
@@ -123,8 +120,7 @@ def search_server(request):
             username = request.user.username
             logger.info(f'search server success. operator: {username}')
             return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups})
-        except Exception as err:
-            logger.error(err)
+        except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
 
@@ -186,8 +182,7 @@ def upload_file(request):
                 with open(os.path.join(temp_path, file_name), 'wb') as f:
                     f.write(data.read())
                 return result(code=0, msg='upload file success ~')
-        except Exception as err:
-            logger.info(err)
+        except:
             logger.info(traceback.format_exc())
             return result(code=1, msg='upload file failure ~')
 
@@ -208,9 +203,52 @@ def download_file(request):
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = f'attachment;filename="{file_name}"'.encode('utf-8')
             del fp, upload_obj
+            logger.info(f'{file_path} download success, operator: {username}')
             return response
-        except Exception as err:
+        except:
             del upload_obj
-            logger.error(err)
             logger.error(traceback.format_exc())
             return render(request, '404.html')
+
+def deploy_monitor(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            host = request.GET.get('host')
+            servers = Servers.objects.get(Q(host=host), Q(is_monitor=0))
+            local_file = f"{servers.system.split(' ')[0].strip().lower()}_{servers.arch.strip().lower()}_agent.zip"
+            local_file_path = os.path.join('monitor','agent', local_file)
+            if not os.path.exists(local_file_path):
+                return result(code=1, msg=f'{local_file} is not exist ~')
+            res = deploy_mon(host = servers.host, port = servers.port, user = servers.user, pwd = servers.pwd,
+                             current_time = servers.id, local_path=local_file_path, file_name=local_file)
+            if res['code'] > 0:
+                return result(code=1, msg=res['msg'])
+            else:
+                servers.is_monitor = 1
+                servers.save()
+                logger.info(f'deploy monitor success, file: {local_file_path}, operator: {username}')
+                return result(msg='deploy monitor success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='deploy monitor failure ~ ')
+
+
+def stop_monitor(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            host = request.GET.get('host')
+            servers = Servers.objects.get(Q(host=host), Q(is_monitor=1))
+            res = stop_mon(host=servers.host, port=servers.port, user=servers.user, pwd=servers.pwd,
+                             current_time=servers.id)
+            if res['code'] > 0:
+                return result(code=1, msg=res['msg'])
+            else:
+                servers.is_monitor = 0
+                servers.save()
+                logger.info(f'stop monitor success, operator: {username}')
+                return result(msg='stop monitor success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='stop monitor failure, please try again ~ ')

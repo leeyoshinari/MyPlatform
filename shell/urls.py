@@ -24,5 +24,7 @@ urlpatterns = [
     path('delete/server', views.delete_server, name='delete_server'),
     path('search/server', views.search_server, name='search_server'),
     path('file/upload', views.upload_file, name='upload_file'),
-    path('file/download', views.download_file, name='download_file')
+    path('file/download', views.download_file, name='download_file'),
+    path('monitor/deploy', views.deploy_monitor, name='deploy_monitor'),
+    path('monitor/stop', views.stop_monitor, name='stop_monitor')
 ]

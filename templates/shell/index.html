@@ -7,7 +7,9 @@
 
 {% block container2 %}
     <div id="filter">
-        <div>
+        <div style="width: 30%">
+            <button onclick="add_server()">Create Group</button>
+            <button onclick="add_server()">Add User</button>
             <button onclick="add_server()">Add Server</button>
         </div>
         <div style="width: 60%;">
@@ -21,15 +23,15 @@
     <table id="layout-table" border="1" cellspacing="0" cellpadding="6">
         <thead>
             <tr class="table_style">
-                <th width=10%>组名</th>
-                <th width=12%>服务器名</th>
-                <th width=10%>服务器</th>
-                <th width=5%>用户</th>
-                <th width=10%>系统</th>
-                <th width=4%>CPU(核)</th>
-                <th width=5%>内存</th>
-                <th width=5%>磁盘</th>
-                <th width=20%>操作</th>
+                <th width=10%>GroupName</th>
+                <th width=12%>ServerName</th>
+                <th width=10%>IP</th>
+                <th width=5%>User</th>
+                <th width=10%>System</th>
+                <th width=4%>CPU(core)</th>
+                <th width=5%>Memory</th>
+                <th width=5%>Disk</th>
+                <th width=20%>Action</th>
             </tr>
         </thead>
         <tbody id="tbody">
@@ -47,10 +49,10 @@
                         <a target="_blank" href="{% url 'shell:open_shell' %}?ip={{ host.host }}">OpenShell</a>
                         {% if isMonitor == 1 %}
                             {% if host.is_monitor == 0 %}
-                                <a onclick="">DeployMonitor</a>
+                                <a onclick="deploy('{{ host.host }}')">DeployMonitor</a>
                             {% else %}
-                                <a target="_blank" href="{% url 'monitor:home' %}?host={{ host.host }}">ViewMonitor</a>
-                                <a onclick="">StopMonitor</a>
+                                <a target="_blank" href="{% url 'monitor:visualize' %}?host={{ host.host }}">ViewMonitor</a>
+                                <a onclick="stop_mon('{{ host.host }}')">StopMonitor</a>
                             {% endif %}
                         {% endif %}
                         <a href="" onclick="delete_server('{{ host.id }}')">Delete</a>
@@ -117,7 +119,7 @@
                         <label>Password：</label>
                     </div>
                     <div class="input">
-                        <input id="Password" type="text" placeholder="Please input server password">
+                        <input id="Password" type="password" placeholder="Please input server password">
                     </div>
                 </div>
             </div>
@@ -127,7 +129,9 @@
             </div>
         </div>
     </div>
-</div>
+    <div class="modal_cover">
+        <div class="modal_gif"></div>
+    </div>
     <script type="text/javascript">
     $(function () {
         PagingManage($("#paging"), {{ total_page }}, {{ page }}, '{% url 'shell:index' %}?pageSize=' + {{ page_size }} + '&page=')

@@ -160,3 +160,42 @@ function clear_input() {
     document.getElementById('Password').value = '';
 }
 
+
+function deploy(host) {
+    $('.modal_cover').css("display", "block");
+    $('.modal_gif').css("display", "block");
+    $.ajax({
+        type: 'GET',
+        url: 'monitor/deploy?host='+host,
+        success: function (data) {
+            if (data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+                window.location.reload();
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+            $('.modal_cover').css("display", "none");
+            $('.modal_gif').css("display", "none");
+        }
+    })
+}
+
+function stop_mon(host) {
+    $('.modal_cover').css("display", "block");
+    $('.modal_gif').css("display", "block");
+    $.ajax({
+        type: 'GET',
+        url: 'monitor/stop?host='+host,
+        success: function (data) {
+            if (data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+                window.location.reload();
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+            $('.modal_cover').css("display", "none");
+            $('.modal_gif').css("display", "none");
+        }
+    })
+
+}

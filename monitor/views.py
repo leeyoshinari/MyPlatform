@@ -30,7 +30,7 @@ def home(request):
     if request.method == 'GET':
         try:
             groups = request.user.groups.all()
-            servers = Servers.objects.values('host').filter(Q(is_monitor=0), Q(group__in=groups)).order_by('-id')
+            servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
             datas = []
             for i in range(len(servers)):
                 ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
@@ -62,7 +62,7 @@ def start_monitor(request):
     if request.method == 'GET':
         try:
             groups = request.user.groups.all()
-            servers = Servers.objects.values('host').filter(Q(is_monitor=0), Q(group__in=groups)).order_by('-id')
+            servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
             datas = []
             for i in range(len(servers)):
                 ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
