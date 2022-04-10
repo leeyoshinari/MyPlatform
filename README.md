@@ -4,7 +4,7 @@
 - 服务器基本信息统一查看<br>
 - 通过浏览器打开服务器shell<br>
 - 文件上传到服务器，或从服务器下载文件<br>
-- 集成服务器资源监控服务<br>
+- 集成服务器资源监控服务，详见 [performance_monitor](https://github.com/leeyoshinari/performance_monitor) <br>
 - 支持权限控制<br>
 
 ## 技术选型
@@ -63,8 +63,8 @@ sh startup.sh
 ```
 
 8、访问页面，url是 `http://ip:port/上下文`
-![]()
-
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/static/img/home.jpg)
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/static/img/shell.jpg)
 9、访问权限控制页面，url是 `http://ip:port/上下文/admin`
 
 ## 使用
@@ -85,6 +85,11 @@ sh startup.sh
 8、部署服务器监控，点击`DeployMonitor`，部署成功后，可点击`ViewMonitor`查看监控，也可点击`StopMonitor`停止监控；
 
 9、点击`Delete`，即可从用户组中删除服务器信息；
+
+## 注意
+1、少部分特殊字符出现解码报错，会导致 ssh 连接中断，重新连接即可；
+
+2、如只需要监控服务器，可按照这个项目部署 https://github.com/leeyoshinari/performance_monitor.git
 
 ## Requirements
 - Django>=4.0.1
