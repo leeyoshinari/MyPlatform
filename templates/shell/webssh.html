@@ -20,10 +20,11 @@
         <div class="float_left">
             <img src="{% static 'img/favicon.ico' %}">
         </div>
+        <h4>服务器IP: {{ host }}</h4>
         <div class="float_right">
             <a onclick="float_path(0)">UploadFile</a>
             <a onclick="float_path(1)">DownloadFile</a>
-            <a href="">Quit</a>
+            <a href="{% url 'user:logout' %}">Logout</a>
         </div>
     </div>
     <div class="container2">

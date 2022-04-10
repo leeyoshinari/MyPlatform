@@ -8,6 +8,7 @@ import traceback
 from django.shortcuts import render, redirect
 from django.http import StreamingHttpResponse
 from django.conf import settings
+from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from common.Result import result
 from .models import Servers
@@ -28,7 +29,7 @@ def index(request):
             page = request.GET.get('page')
             page_size = request.GET.get('pageSize')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 4
+            page_size = int(page_size) if page_size else 20
             groups = request.user.groups.all()
             total_num = Servers.objects.filter(group__in=groups).count()
             servers = Servers.objects.filter(group__in=groups).order_by('-id')[(page - 1) * page_size: page * page_size]
@@ -84,6 +85,47 @@ def add_server(request):
             return result(code=1, msg=err)
 
 
+def add_user(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            user_name = request.POST.get('UserName')
+            group_name = request.POST.get('GroupName')
+            operator = request.POST.get('Operator')
+            groups = request.user.groups.get(id=group_name)
+            users = User.objects.get(username=user_name)
+            if operator == 'add':
+                users.groups.add(groups.id)
+                logger.info(f'add {user_name} to {groups.name} group success, operator: {username}')
+                return result(msg='Add User success ~')
+            else:
+                users.groups.remove(groups.id)
+                logger.info(f'Remove {user_name} from {groups.name} group success, operator: {username}')
+                return result(msg='Remove User success ~')
+        except User.DoesNotExist:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='User is not exist ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='System error ~')
+
+
+def create_group(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            group_name = request.POST.get('GroupName')
+            group = Group.objects.create(name=group_name)
+            users = User.objects.filter(is_staff=1)
+            for user in users:
+                user.groups.add(group.id)
+            logger.info(f'create group {group_name} success, operator: {username}')
+            return result(msg='Create group success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='System error ~')
+
+
 def delete_server(request):
     if request.method == 'GET':
         try:
@@ -119,7 +161,8 @@ def search_server(request):
                 servers = Servers.objects.filter(group__in=groups).order_by('-id')
             username = request.user.username
             logger.info(f'search server success. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups})
+            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': 0, 'isMonitor': settings.IS_MONITOR,
+                                                                'page_size': 200, 'total_page': 0})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')

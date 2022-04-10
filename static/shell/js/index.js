@@ -60,15 +60,16 @@ function delete_server(server) {
 function search_server() {
     let groupName = document.getElementById('groupName').value;
     let serverName = document.getElementById('serverName').value;
+    let to_url = document.getElementById('location').value;
     if (!serverName && !groupName) {
-        window.location.href = '/shell';
+        window.location.href = to_url;
     } else {
-        window.location.href = '/shell/search/server?group=' + groupName + '&server=' + serverName;
+        window.location.href = to_url + 'search/server?group=' + groupName + '&server=' + serverName;
     }
 }
 
 function add_server() {
-    let modal = document.getElementById('myModal');
+    let modal = document.getElementsByClassName('myModal')[0];
     let close_a = document.getElementsByClassName("close")[0];
     let cancel_a = document.getElementsByClassName("cancel")[0];
     let submit_a = document.getElementsByClassName("submit")[0];
@@ -197,5 +198,115 @@ function stop_mon(host) {
             $('.modal_gif').css("display", "none");
         }
     })
+}
 
+function add_user() {
+    let modal = document.getElementsByClassName('myModal')[1];
+    let close_a = document.getElementsByClassName("close")[1];
+    let cancel_a = document.getElementsByClassName("cancel")[1];
+    let submit_a = document.getElementsByClassName("submit")[1];
+
+    modal.style.display = "block";
+
+    close_a.onclick = function() {
+        modal.style.display = "none";
+    }
+    cancel_a.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    submit_a.onclick = function() {
+        let GroupName = document.getElementById("group_name_1").value;
+        let UserName = document.getElementById('user_name_1').value;
+        let Operate = document.getElementById('operator').value;
+
+        if (!GroupName) {
+            $.Toast('Please select group name ~ ', 'error');
+            return;
+        }
+        if (!UserName) {
+            $.Toast('Please input user name ~ ', 'error');
+            return;
+        }
+
+        let post_data = {
+            GroupName: GroupName,
+            UserName: UserName,
+            Operator: Operate,
+        }
+        $.ajax({
+            type: 'POST',
+            async: false,
+            url: 'add/user',
+            data: post_data,
+            dataType: 'json',
+            success: function (data) {
+                if (data['code'] !== 0) {
+                    $.Toast(data['msg'], 'error');
+                    return;
+                } else {
+                    $.Toast(data['msg'], 'success');
+                    modal.style.display = "none";
+                }
+            }
+        })
+    }
+
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+
+function create_group() {
+    let modal = document.getElementsByClassName('myModal')[2];
+    let close_a = document.getElementsByClassName("close")[2];
+    let cancel_a = document.getElementsByClassName("cancel")[2];
+    let submit_a = document.getElementsByClassName("submit")[2];
+
+    modal.style.display = "block";
+
+    close_a.onclick = function() {
+        modal.style.display = "none";
+    }
+    cancel_a.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    submit_a.onclick = function() {
+        let GroupName = document.getElementById("group_name_2").value;
+
+        if (!GroupName) {
+            $.Toast('Please select group name ~ ', 'error');
+            return;
+        }
+
+        let post_data = {
+            GroupName: GroupName,
+        }
+        $.ajax({
+            type: 'POST',
+            async: false,
+            url: 'create/group',
+            data: post_data,
+            dataType: 'json',
+            success: function (data) {
+                if (data['code'] !== 0) {
+                    $.Toast(data['msg'], 'error');
+                    return;
+                } else {
+                    $.Toast(data['msg'], 'success');
+                    modal.style.display = "none";
+                    location.reload();
+                }
+            }
+        })
+    }
+
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
 }

@@ -280,8 +280,10 @@ def deploy_mon(host, port, user, pwd, current_time, local_path, file_name):
         res = execute_cmd(client, "cat /home/monitor_server/config.ini |grep port |head -3 |grep =")
         agent_port = res.split('=')[-1].strip()
         # port is listened
-        time.sleep(2)
-        res = execute_cmd(client, "netstat -nlp|grep " + agent_port + " |grep LISTEN")
+        for i in range(3):
+            time.sleep(1)
+            res = execute_cmd(client, "netstat -nlp|grep " + agent_port + " |grep LISTEN")
+            if res: break
         if not res:
             _ = execute_cmd(client, 'rm -rf /home/monitor_server')  # clear folder
             client.close()

@@ -11,7 +11,8 @@
     {% csrf_token %}
     <div class="container1">
         <img src="{% static 'img/favicon.ico' %}">
-        <a href="">Logout</a>
+        <a href="{% url 'user:logout' %}">Logout</a>
+        <a href="../admin">Admin</a>
     </div>
     <div class="container2">
         <div class="detail">

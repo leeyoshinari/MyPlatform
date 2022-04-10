@@ -48,7 +48,7 @@ def draw_data_from_db(host, port=None, pid=None, startTime=None, endTime=None, s
     res = {'code': 1, 'flag': 1, 'message': 'Successful!'}
 
     connection = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
-                                         settings.INFLUX_PASSWORD, settings.INFLUX_PASSWORD)
+                                         settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
 
     try:
         if startTime and endTime:     # If there is a start time and an end time

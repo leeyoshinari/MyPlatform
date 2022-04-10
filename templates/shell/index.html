@@ -8,8 +8,8 @@
 {% block container2 %}
     <div id="filter">
         <div style="width: 30%">
-            <button onclick="add_server()">Create Group</button>
-            <button onclick="add_server()">Add User</button>
+            <button onclick="create_group()">Create Group</button>
+            <button onclick="add_user()">Add User</button>
             <button onclick="add_server()">Add Server</button>
         </div>
         <div style="width: 60%;">
@@ -62,7 +62,7 @@
         </tbody>
     </table>
 
-    <div id="myModal">
+    <div class="myModal">
         <div class="modal-content">
             <div class="modal-header">
                 <span class="close">&times;</span>
@@ -129,9 +129,78 @@
             </div>
         </div>
     </div>
+    <div class="myModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2 id="title-name">Add User</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-col">
+                    <div class="label">
+                        <label>Operate: </label>
+                     </div>
+                    <div class="input">
+                        <select id="operator">
+                            <option value="add">Add User to Group</option>
+                            <option value="delete">Remove User from Group</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-col">
+                    <div class="label">
+                        <label>GroupName: </label>
+                     </div>
+                    <div class="input">
+                        <select id="group_name_1">
+                            <option value="" selected></option>
+                            {% for group in groups %}
+                                <option value="{{ group.id }}">{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-col">
+                    <div class="label">
+                        <label>UserName：</label>
+                    </div>
+                    <div class="input">
+                        <input id="user_name_1" type="text" placeholder="Please input username ~">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="cancel">取消</a>
+                <a class="submit">确定</a>
+            </div>
+        </div>
+    </div>
+    <div class="myModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2 id="title-name">Create Group</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-col">
+                    <div class="label">
+                        <label>GroupName：</label>
+                    </div>
+                    <div class="input">
+                        <input id="group_name_2" type="text" placeholder="Please input group name ~">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="cancel">取消</a>
+                <a class="submit">确定</a>
+            </div>
+        </div>
+    </div>
     <div class="modal_cover">
         <div class="modal_gif"></div>
     </div>
+    <input type="text" id="location" value="{% url 'shell:index' %}" style="display: none;">
     <script type="text/javascript">
     $(function () {
         PagingManage($("#paging"), {{ total_page }}, {{ page }}, '{% url 'shell:index' %}?pageSize=' + {{ page_size }} + '&page=')

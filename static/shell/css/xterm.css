@@ -18,7 +18,7 @@ body{
 
 .float_right {
 	float: right;
-	width: 320px;
+	width: 333px;
 	text-align: right;
 	margin-top: 6px;
 }
@@ -34,6 +34,12 @@ body{
 	float: left;
 	margin-left: 1%;
 	height: 20px;
+}
+
+.container1 h4 {
+    float: left;
+    margin-top: 4px;
+    margin-left: 2%;
 }
 
 .container2 {
