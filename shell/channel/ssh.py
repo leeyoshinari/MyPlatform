@@ -102,7 +102,7 @@ class SSH:
     def heart_beat_check(self):
         try:
             while True:
-                if time.time() - self.keepalive_last_time < 600 and self.ssh_client:
+                if time.time() - self.keepalive_last_time < 600 and self.ssh_client.get_transport():
                     time.sleep(10)
                     logger.info('heart beat check ... ... ')
                     continue
