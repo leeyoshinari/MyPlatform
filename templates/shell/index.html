@@ -9,7 +9,9 @@
     <div id="filter">
         <div style="width: 30%">
             <button onclick="create_group()">Create Group</button>
-            <button onclick="add_user()">Add User</button>
+            {% if is_staff %}
+                <button onclick="add_user()">Add User</button>
+            {% endif %}
             <button onclick="add_server()">Add Server</button>
         </div>
         <div style="width: 60%;">
