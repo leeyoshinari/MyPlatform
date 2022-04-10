@@ -30,7 +30,7 @@ def get_config(key):
 SECRET_KEY = 'django-insecure-e-f8ypr2q9w4_-v-zx19+^4(7i!lp6yu)w!wvl%+bia-u5+_lk'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -181,7 +181,7 @@ LOGGING = {
         # 默认的
         'default': {
             'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
-            'filename': os.path.join(BASE_LOG_DIR, "run.log"),  # 日志文件
+            'filename': os.path.join(BASE_LOG_DIR, "access.log"),  # 日志文件
             'maxBytes': 1024 * 1024 * 5,  # 日志大小 10M
             'backupCount': int(get_config('backupCount')),  # 最多备份几个
             'formatter': 'standard',

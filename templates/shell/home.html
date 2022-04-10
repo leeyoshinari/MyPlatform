@@ -12,7 +12,9 @@
     <div class="container1">
         <img src="{% static 'img/favicon.ico' %}">
         <a href="{% url 'user:logout' %}">Logout</a>
-        <a href="../admin">Admin</a>
+        {% if is_staff %}
+            <a href="../admin">Admin</a>
+        {% endif %}
     </div>
     <div class="container2">
         <div class="detail">
