@@ -1,4 +1,5 @@
 # MyPlatform
+这个项目可以在浏览器上打开 shell 页面，连接linux，可以输入 shell 命令，支持文件上传和下载。
 
 ## 功能
 - 服务器基本信息统一查看<br>
@@ -82,14 +83,14 @@ sh startup.sh
 
 7、上传/下载文件，需要输入文件要上传的路径和下载的文件的路径；
 
-8、部署服务器监控，点击`DeployMonitor`，部署成功后，可点击`ViewMonitor`查看监控，也可点击`StopMonitor`停止监控；
+8、部署服务器监控，点击`DeployMonitor`，部署成功后，可点击`ViewMonitor`查看监控，也可点击`StopMonitor`停止监控；部署监控的zip包需要按照 [这个项目](https://github.com/leeyoshinari/performance_monitor.git) 进行打包，然后重命名成对应的"系统_CPU架构_agent.zip"，并放在 monitor/agent 目录下；
 
 9、点击`Delete`，即可从用户组中删除服务器信息；
 
 ## 注意
 1、少部分特殊字符出现解码报错，会导致 ssh 连接中断，重新连接即可；
 
-2、如只需要监控服务器，可按照这个项目部署 https://github.com/leeyoshinari/performance_monitor.git
+2、如只需要监控服务器，可[按照这个项目部署](https://github.com/leeyoshinari/performance_monitor.git) ;
 
 ## Requirements
 - Django>=4.0.1
