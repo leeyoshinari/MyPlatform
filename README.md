@@ -8,6 +8,9 @@
 - 集成服务器资源监控服务，详见 [performance_monitor](https://github.com/leeyoshinari/performance_monitor) <br>
 - 支持权限控制<br>
 
+[可点我查看更多信息](https://mp.weixin.qq.com/s?__biz=Mzg5OTA3NDk2MQ==&mid=2247483884&idx=1&sn=6d45ded5e4ad5e4a9953adcd4010b8a1&chksm=c0599f12f72e160452e3d91e40fcaccb49d1ec262ebda9914be979c0fe6a562c84dbfaa136ef&token=1310566414&lang=zh_CN#rd)
+
+
 ## 技术选型
 - 系统框架：django<br>
 - 数据库：django支持的所有关系型数据库<br>
