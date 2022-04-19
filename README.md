@@ -90,7 +90,9 @@ sh startup.sh
 ## 注意
 1、少部分特殊字符出现解码报错，会导致 ssh 连接中断，重新连接即可；
 
-2、如只需要监控服务器，可[按照这个项目部署](https://github.com/leeyoshinari/performance_monitor.git) ;
+2、如果部署服务器监控时，出现部署失败的问题，可以尝试在服务器上手动部署，参考[这个项目的部署注意事项](https://github.com/leeyoshinari/performance_monitor.git) ；
+
+3、如只需要监控服务器，可[按照这个项目部署](https://github.com/leeyoshinari/performance_monitor.git) ；
 
 ## Requirements
 - Django>=4.0.1
