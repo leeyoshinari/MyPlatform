@@ -24,7 +24,7 @@
 **注意：`config.conf` 中的 `isMonitor` 必须为0，否则数据初始化存在小问题；数据初始化完成后可再修改为1**
 ```shell script
 python3 manage.py migrate
-python3 manage.py makemigrations shell
+python3 manage.py makemigrations
 python3 manage.py sqlmigrate shell 0001
 python3 manage.py migrate
 ```

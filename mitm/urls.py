@@ -20,4 +20,7 @@ from . import views
 app_name = 'mitm'
 urlpatterns = [
     path('', views.home, name='home'),
+    path('course', views.course, name='course'),
+    path('save', views.save, name='save'),
+    path('delete/<int:rule_id>', views.delete, name='delete'),
 ] if settings.IS_MITMPROXY == 1 else []

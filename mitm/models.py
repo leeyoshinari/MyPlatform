@@ -3,7 +3,6 @@
 # Author: leeyoshinari
 
 from django.db import models
-from django.contrib.auth.models import Group
 # Create your models here.
 
 class Mitm(models.Model):
