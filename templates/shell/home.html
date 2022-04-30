@@ -10,10 +10,14 @@
 {% block addbody %}
     {% csrf_token %}
     <div class="container1">
-        <img src="{% static 'img/favicon.ico' %}">
+        <div class="home_list">
+            <a href="{% url 'home' %}">Home</a>
+            <span>>></span>
+            <a href="{% url 'shell:index' %}">Shell</a>
+        </div>
         <a href="{% url 'user:logout' %}">Logout</a>
         {% if is_staff %}
-            <a href="../admin">Admin</a>
+            <a href="../admin">Admin Site</a>
         {% endif %}
     </div>
     <div class="container2">

@@ -7,6 +7,7 @@ import traceback
 from django.shortcuts import render, redirect
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.conf import settings
 from common.Result import result
 
 
@@ -80,3 +81,10 @@ def parse_pwd(password: str, s: str):
         else:
             p += chr(ord(password[i]) ^ int(s[i - time_len]))
     return p
+
+
+def home(request):
+    if request.method == 'GET':
+        username = request.user.username
+        return render(request, 'home.html', context={'username': username, 'is_monitor': settings.IS_MONITOR,
+                                                     'is_mitm': settings.IS_MITMPROXY})

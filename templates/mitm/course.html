@@ -1,0 +1,144 @@
+{% extends "template.html" %}
+
+{% block page_content1 %}
+<div class="page-header">
+    <h2>介绍</h2><br>
+    <!--div style="text-align: right;">语言: <a href="{{ context }}/course_zh_CN">zh-CN</a>, <a href="{{ context }}/course"> en</a></div-->
+    <h4>项目地址：<a href="https://github.com/leeyoshinari/mitm_mock" target="_blank">请点我</a>，欢迎Star，欢迎Fork。如有bug或建议，可在<a href="https://github.com/leeyoshinari/mitm_mock/issues" target="_blank">Issue</a>中提出；如果您修改了bug，欢迎Merge。</h4><br>
+    <h4>已完成如下功能<br></h4>
+    <ol>
+        <p>
+            1、自定义http协议拦截规则，支持通过域名和url路径拦截<br>
+            2、可设置任意状态码，响应值可设置成任意字符串，支持设置读取本地文件的路径<br>
+            3、支持篡改请求参数，或篡改响应值<br>
+            4、修改规则后，支持手动加载使规则即时生效<br>
+            5、使用sqlite数据库储存规则<br>
+        </p>
+    </ol><br>
+    <h4>实现</h4>
+    <ol>
+        <p>
+            1、启动两个进程，主进程用于拦截，子进程用于提供web服务<br>
+            2、拦截工具：mitmproxy<br>
+            3、web框架：aiohttp<br>
+            4、进程间通信：queue <br>
+            5、数据库：sqlite <br>
+        </p>
+    </ol><br>
+    <h2>部署</h2>
+    <ol>
+        <li>
+            <p>克隆项目</p>
+            <pre><code><span>git</span> clone https://github.com/leeyoshinari/mitm_mock.git</code></pre>
+        </li>
+        <li>
+            <p>修改配置文件 <code>config.ini</code></p>
+        </li><br>
+        <li>
+            <p>安装依赖包 <code>pip3 install -r requirements.txt</code></p>
+            <p>Mac 需要最新版的pip，如果不是最新版本的pip，请先升级pip，执行命令<code>pip3 install --upgrade pip</code></p>
+        </li><br>
+        <li>
+            <p>配置mitmproxy环境变量<br>
+                Windows 在环境变量的 path 中添加 mitmproxy 的可执行文件路径<br>
+                Linux 将 mitmproxy 的可执行文件软连接到 /usr/bin/mitmproxy<br>
+                Mac 将 mitmproxy 的可执行文件软连接到 /usr/local/bin/mitmproxy<br>
+            </p>
+        </li><br>
+        <li>
+            <p>启动<br>
+            <pre><code><span>nohup</span> python3 mitm.py <span>&amp;</span></code></pre></p>
+        </li><br>
+        <li>
+            <p>设置系统代理<br>
+                Windows 设置方法：打开 “设置——>网络和Internet——>代理——>手动设置代理” <br>
+                Linux 设置方法：<code>export http_proxy=http://127.0.0.1:12021</code><br>
+                Mac 设置方法：打开 “系统偏好设置——>网络——>高级——>代理——>网页代理(HTTP) 或 安全网页代理(HTTPS)”<br>
+            </p>
+        </li><br>
+        <li>
+            <p>访问<br>
+            访问页面 <code>http://IP:PORT/context</code>(配置文件中的context)
+            </p>
+        </li><br>
+        <li>
+            <p>取消代理设置<br>
+                Windows 取消方法：直接在“手动设置代理”的地方关闭即可<br>
+                Linux 取消方法：<code>unset http_proxy</code><br>
+                Mac 取消方法：直接在“代理”页面关闭即可<br>
+            </p>
+        </li>
+    </ol><br>
+    <h2>打包</h2>
+    <p>&ensp;&ensp;&ensp;&ensp;本地使用可不用打包，如需发布到其他电脑/服务器上运行，可使用 pyinstaller 打包成可执行文件；pyinstaller 打包命令如下</p>
+            &ensp;&ensp;&ensp;&ensp;<pre><code>pyinstaller -F mitm.py -p sqlite.py -p sqlExecuter.py -p config.py --hidden-import sqlite --hidden-import sqlExecuter --hidden-import config</code></pre>
+            <p>
+                &ensp;&ensp;&ensp;&ensp;打包完成后，在当前路径下会生成 dist 文件夹，进入<code>dist</code>即可找到可执行文件；将<code>config.ini</code>、<code>static</code>、<code>templates</code>文件和可执行文件放在同一路径下即可
+            </p><br>
+    <h2>使用</h2>
+    <ol>
+        <li>
+            <p>左侧列表展示的是所有的规则，按照更新时间排序；操作列可以启用/禁用、编辑、删除规则；</p>
+        </li>
+        <li>
+            <p>右侧编辑区可添加/修改规则；</p>
+            <ol>
+                <li>
+                    <strong>名称：</strong>拦截规则名称
+                </li>
+                <li>
+                    <strong>拦截域名：</strong>配置需要拦截的域名，如果配置，会拦截该域名下的所有 http 请求；
+                </li>
+                <li>
+                    <strong>拦截路径：</strong>配置需要拦截的 url 路径，如果配置，只会拦截该路径的请求；
+                </li>
+                <li>
+                    <strong>匹配方式：</strong>可选通过正则方式和直接相等的方式匹配域名或 url 路径；例如：url路径配置 “/aaa/bbb”，如果选择“使用正则匹配域名或路径”，则会拦截所有url路径中包含“/aaa/bbb”的请求；如果选择“使用=匹配域名或路径”，则只拦截url路径为“/aaa/bbb”的请求；
+                </li>
+                <li>
+                    <strong>拦截方式：</strong>可选直接拦截请求和篡改请求或响应；如果选择“直接拦截请求”，则满足拦截规则请求会被直接拦截并返回设置的值；如果选择“篡改请求或响应”，则满足拦截规则的请求的请求参数或响应值会被篡改；
+                </li>
+                <li>
+                    <strong>状态码：</strong>配置需要返回的状态码；<code>仅当拦截方式选择“直接拦截请求”时生效</code>；
+                </li>
+                <li>
+                    <strong>响应值：</strong>配置需要返回的东西，可以直接配置需要返回的响应值，也可以配置一个本地文件路径；<code>仅当拦截方式选择“直接拦截请求”时生效</code>；为什么这么设计？因为如果响应值很少，则可以直接写在这里；如果响应值很大，则建议把响应值保存到本地，然后把文件的绝对路径配置在这里就好了，这样可以方便查看和修改响应值；
+                </li>
+                <li>
+                    <strong>响应值类型：</strong>配置“响应值”中的内容是什么，如果配置的是文件路径，则选择文件路径；<code>仅当拦截方式选择“直接拦截请求”时生效</code>；
+                </li>
+                <li>
+                    <strong>篡改字段：</strong>篡改请求参数或响应值时，需要修改的字段；<code>仅当拦截方式选择“篡改请求或响应”时生效</code>；具体配置见下文；
+                </li>
+            </ol>
+        </li><br>
+        <li>
+            <p><strong>拦截规则优先级：</strong>优先判断是否满足域名规则，如果满足，则拦截；如果不满足，才会判断是否满足url路径规则；域名和url路径都可以配置为空；</p>
+        </li>
+        <li>
+            <p>列表左上角有一个 <strong style="color: red;">立即生效</strong> 按钮，作用是将列表中启用的规则更新的内存变量中，使规则立即生效。<strong>每次启动程序、修改规则后，需要点击该按钮，</strong>否则不会拦截任何请求；如果暂时不需要拦截某个请求，可以把规则设置禁用，然后点击该按钮；</p>
+        </li>
+        <li>
+            <strong style="color: red;">篡改字段说明</strong>
+            <ol>
+                <li>GET请求仅支持带“?”的传参方式；POST请求仅支持请求体是JSON；如果POST请求的url带有参数（像GET请求一样），也支持</li>
+                <li>响应值仅支持JSON</li>
+                <li>配置示例：<code>{"requestUrl": {"wd": "love", "name": "you"}, "requestBody": {"data.0.id": "520"}, "responseBody": {"data.0.id": "521", "data.1.id": "522"}}</code></li>
+                <li>requestUrl 是篡改 URL 中的参数；requestBody 是篡改POST请求体中的参数；responseBody 是篡改响应值中的字段；如只需篡改请求体中的参数，只需配置 requestBody 即可，其他两个可不配置，即只需配置需要的；</li>
+                <li>requestBody 和 responseBody 中的 <code>{"data.0.id": "520"}</code>解释：<br>
+                    例如这样一个json：{"code": 1, "msg": "success", "data": [{"id": "0", "name": "you"}, {"id": "1", "name": "me"}]}，第一层是 data 字段，data 字段的值是一个数组，数组中的第一个元素索引是 0，然后是一个 id 字段，把这个 id 字段的值修改成 "520"，则需要配置 {"data.0.id": "520"}，如果修改数组中第二个元素中的 id，则需要配置 "data.1.id"。如果需要把 "code" 改成 0， 则需要配置 {"code": 0}<br>
+                    例如这样的json：[{"id": "520", "name": "you"}, {"id": "521", "name": "me"}]，如果把 "me" 修改成 "you"，则需要写成 {"1.name": "you"} <br>
+
+                </li>
+                <li><strong style="color: red;">必须用英文“.”分割</strong></li>
+            </ol>
+        </li>
+    </ol><br>
+    <h2>注意</h2>
+    <ol>
+        <li>每次mock时，需开启系统代理；mock完成后，须关闭代理；</li>
+        <li>由于该工具是拦截 http 请求，所以拦截时，目标IP地址和目标端口必须存在，必须能够完成 TCP 三次握手；</li>
+        <li>如果需要拦截（mock）https的请求，需要安装证书，其他操作和http的基本一样；证书在用户目录下的 .mitmproxy 文件夹中，安装<code>mitmproxy-ca-cert.cer</code>。</li>
+    </ol>
+</div>
+{% endblock %}

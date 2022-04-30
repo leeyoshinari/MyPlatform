@@ -1,0 +1,71 @@
+{% extends 'template.html' %}
+{% load static %}
+
+{% block addcss %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'user/css/home.css' %}">
+{% endblock %}
+
+{% block addjs %}
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+{% endblock %}
+
+
+{% block addbody %}
+<div id="wrapper">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-default navbar-fixed-top" style="height: 50px">
+        <div class="brand">
+            <a href="{% url 'home' %}" style="text-decoration: none;"><h3 style="margin-top: 10px; margin-left: 10px;">Home</h3></a>
+        </div>
+        <div class="container-fluid" style="height: 50px">
+            <div id="navbar-menu">
+                <ul class="nav navbar-nav navbar-right" style="height: 50px">
+                    <li class="dropdown" style="height: 50px">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="height: 50px">
+                            <!-- <img src="/static/img/user.png" class="img-circle" alt="Avatar"> -->
+                            <h3 style="margin-top: -5px;">{{ username }}</h3></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#"><span>My Profile</span></a></li>
+                            <li><a href="{% url 'user:logout' %}"><span>Logout</span></a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="all_index">
+        <ul>
+            <li>
+                <a href="{% url 'shell:index' %}">
+                    <img src="{% static 'img/shell_icon.jpg' %}" width="100px", height="100px"/>
+                    <h4>Shell</h4>
+                </a>
+            </li>
+            {% if is_monitor == 1 %}
+                <li>
+                    <a href="{% url 'monitor:home' %}">
+                        <img src="{% static 'img/monitor.png' %}" width="100px", height="100px"/>
+                        <h4>Monitor</h4>
+                    </a>
+                </li>
+            {% endif %}
+            {% if is_mitm == 1 %}
+                <li>
+                    <a href="{% url 'mitm:home' %}">
+                        <img src="{% static 'img/mitmproxy.ico' %}" width="100px", height="100px"/>
+                        <h4>Mitmproxy</h4>
+                    </a>
+                </li>
+            {% endif %}
+            <li>
+                <a href="{% url 'shell:index' %}">
+                    <img src="{% static 'img/jmeter.png' %}" width="100px", height="100px"/>
+                    <h4>JMeter</h4>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

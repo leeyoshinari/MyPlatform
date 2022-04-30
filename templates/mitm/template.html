@@ -1,0 +1,27 @@
+{% extends 'template.html' %}
+{% load static %}
+
+{% block addcss %}
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+{% endblock %}
+
+
+{% block addbody %}
+    {% block content %}
+        <div class="container" style="width: 93%; margin-left: 3%;">
+            {% block page_content %}
+            {% endblock %}
+        </div>
+        <div class="container" style="width: 32%;">
+            {% block edit_content %}
+            {% endblock %}
+        </div>
+        <div class="container" style="width: 63%;">
+            {% block page_content1 %}
+            {% endblock %}
+        </div>
+    {% endblock %}
+
+    {% block myjs %}
+    {% endblock %}
+{% endblock %}

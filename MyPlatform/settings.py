@@ -34,6 +34,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+IS_MITMPROXY = int(get_config('isMitmProxy'))
+IS_MONITOR = int(get_config('isMonitor'))
 
 # Application definition
 
@@ -47,7 +49,8 @@ INSTALLED_APPS = [
     'user',
     'channels',
     'shell',
-    'monitor'
+    'monitor',
+    'mitm',
 ]
 
 MIDDLEWARE = [
@@ -75,6 +78,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'my_tags': 'templatetags.MyFilter'
+            }
         },
     },
 ]
@@ -191,14 +197,13 @@ LOGGING = {
     'loggers': {
        # 默认的logger应用如下配置
         'django': {
-            'handlers': ['default'],  # 上线之后可以把'console'移除
+            'handlers': ['default', 'console'],  # 上线之后可以把'console'移除
             'level': get_config('level'),
             'propagate': True,  # 向不向更高级别的logger传递
         }
     },
 }
 
-IS_MONITOR = int(get_config('isMonitor'))
 # influxDB
 INFLUX_HOST = get_config('InfluxHost')
 INFLUX_PORT = get_config('InfluxPort')

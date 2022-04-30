@@ -1,0 +1,50 @@
+.navbar-default .brand {
+    float: left;
+    padding: 0 0;
+    height: 50px;
+    background-color: #f8f8f8; }
+@media screen and (max-width: 1024px) {
+.navbar-default .brand {
+  padding-left: 30px;
+  padding-right: 15px; } }
+@media screen and (max-width: 992px) {
+.navbar-default .brand {
+  display: none; } }
+@media screen and (max-width: 640px) {
+    .navbar-default #navbar-menu {
+      float: right; } }
+
+#wrapper .all_index {
+  top: 50px;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  background-color: #f3f5f8;
+}
+
+.all_index ul {
+  top: 18%;
+  width: 70%;
+  height: 200px;
+  padding: 0;
+  list-style: none;
+  margin-left: 15%;
+  position: absolute;
+  text-align: center;
+}
+
+.all_index p {
+  text-align: center;
+  padding-top: 75px;
+  font-size: 24px;
+}
+
+.all_index li {
+  padding-top: 5%;
+  padding-right: 5%;
+  padding-left: 5%;
+  display: inline-block;
+  list-style-type: none;
+  text-align: center;
+}
+

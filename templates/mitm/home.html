@@ -1,0 +1,336 @@
+{% extends "mitm/template.html" %}
+{% load my_tags %}
+
+{% block page_content %}
+<div class="page-header">
+    <h3 style="text-align: center;">拦截规则列表</h3>
+    <button id="Reload" style="width: 11%; float: right; margin-bottom: 2%;">立即生效</button>
+    <a href="{{ context }}/course" target="_blank"><button style="width: 8%; float: right; margin-bottom: 2%; margin-right: 2%;">教程</button></a>
+    <table width="100%" border="1" cellspacing="0" cellpadding="6" align="center" id="monitor" style="table-layout: fixed;">
+        <tr style="align: center; margin: auto; background-color: #99CCFF">
+            <th width=18% style="text-align: center;">Name</th>
+            <th width=17% style="text-align: center;">Domain Name</th>
+            <th width=28% style="text-align: center;">url Path</th>
+            <th width=15% style="text-align: center;">Mitm Model</th>
+            <th width=10% style="text-align: center;">Creator</th>
+            <th width=10% style="text-align: center;">Modifier</th>
+            <th width=22% style="text-align: center;">管理</th>
+        </tr>
+        {% for data in datas %}
+            <tr>
+                <td style="white-space: nowrap;text-overflow: ellipsis; overflow: hidden;" title="{{ data.name }}">{{ data.name }}</td>
+                <td style="white-space: nowrap;text-overflow: ellipsis; overflow: hidden;" title="{{ data.domain }}">{{ data.domain }}</td>
+                <td style="white-space: nowrap;text-overflow: ellipsis; overflow: hidden;" title="{{ data.url_path }}">{{ data.url_path }}</td>
+                <td align="center" title="{{ data.method }}">{{ types |get_list:data.method }}</td>
+                <td align="center">
+                    {% if data.is_valid > 0 %}
+                    <input name="{{ data.id }}" type="radio" value="1" checked onclick="set_is_run('{{ data.id }}', 1)">启用
+                    <input name="{{ data.id }}" type="radio" value="0" onclick="set_is_run('{{ data.id }}', 0)">禁用
+                    {% else %}
+                    <input name="{{ data.id }}" type="radio" value="1" onclick="set_is_run('{{ data.id }}', 1)">启用
+                    <input name="{{ data.id }}" type="radio" value="0" checked onclick="set_is_run('{{ data.id }}', 0)">禁用
+                    {% endif %}
+                    <a href="#" onclick="edit('{{ context }}/edit/{{ data.id }}')" style="margin-left: 2%;">编辑</a>
+                    <a href="#" onclick="openResult('{{ context }}/delete/{{ data.id }}')" style="margin-left: 2%;">删除</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
+
+{% block edit_content %}
+<div class="page-header" style="display: none;">
+    <h3 style="text-align: center;">添加/编辑拦截规则</h3>
+    <div style="margin-left: 3%; margin-right: 3%">
+        <div style="max-width: 100%; margin-top: 3%;">
+            <label id="ID_label" style="width: 15%; text-align: right; display: none">ID: </label>
+            <input type="text" id="ID" value="" style="margin-left: 3%; width: 80%; display: none" readonly="readonly">
+        </div>
+        <div style="max-width: 100%; margin-top: 3%;">
+            <label style="width: 15%; text-align: right;">名称: </label>
+            <input type="text" id="name" placeholder="拦截规则名称" style="margin-left: 3%; width: 80%;">
+        </div>
+        <div style="max-width: 100%; margin-top: 3%;">
+            <label style="width: 15%; text-align: right;">拦截域名: </label>
+            <input type="text" id="domain_name" placeholder="拦截域名，正则表达式匹配，例如：.*baidu.com" style="margin-left: 3%; width: 80%;">
+        </div>
+        <div style="max-width: 100%; margin-top: 3%;">
+            <label style="width: 15%; text-align: right;">拦截路径: </label>
+            <input type="text" id="url_path" placeholder="拦截路径，正则表达式匹配，例如：/static.*json" style="margin-left: 3%; width: 80%;">
+        </div>
+        <div style="max-width: 100%; margin-top: 3%;">
+            <label style="width: 15%; text-align: right;">匹配方式: </label>
+            <select id="is_re" onchange="" style="margin-left: 3%; width: 80%;">
+                <option value="0">使用 “=” 匹配域名或路径</option>
+                <option value="1" selected="selected">使用正则匹配域名或路径</option>
+            </select>
+        </div>
+        <div style="max-width: 100%; margin-top: 3%;">
+            <label style="width: 15%; text-align: right;">拦截方式: </label>
+            <select id="method" onchange="changeMethod()" style="margin-left: 3%; width: 80%;">
+                <option value="0" selected="selected">直接拦截请求</option>
+                <option value="1">篡改请求或响应</option>
+                <!--option value="2">篡改响应值</option>
+                <option value="3">请求响应都篡改</option-->
+            </select>
+        </div>
+        <div id="STATUS" style="max-width: 100%; margin-top: 3%;">
+            <label style="width: 15%; text-align: right;">状态码: </label>
+            <input type="text" id="status_code" placeholder="响应状态码" style="margin-left: 3%; width: 80%;">
+        </div>
+        <div id="RESPONSE" style="max-width: 100%; margin-top: 3%;">
+            <label style="width: 15%; text-align: right; float: left;">响应值: </label>
+            <textarea id="response" placeholder="响应值，可填写需要返回的字符串，或者存放返回值的文件路径" style="margin-left: 3%; width: 80%;" rows="4"></textarea>
+        </div>
+        <div id="FIELD" style="max-width: 100%; margin-top: 3%; display: none">
+            <label style="width: 15%; text-align: right; float: left;">篡改字段: </label>
+            <textarea id="fields" placeholder="详见教程" style="margin-left: 3%; width: 80%;" rows="4"></textarea>
+        </div>
+        <div id="ISRESPONSE" style="max-width: 100%; margin-top: 3%;">
+            <label style="width: 18%; text-align: left;">响应值类型: </label>
+            <select id="is_file" style="margin-left: 3%; width: 76%;">
+                <option value="0" selected="selected">响应值中的内容是需要返回的字符串</option>
+                <option value="1">响应值中的内容是存放返回值的文件路径</option>
+            </select>
+        </div>
+        <div style="text-align: center; margin-top: 5%;">
+            <button id="Save" style="width: 30%;">保存</button>
+            <button id="Update" style="width: 30%; display: none">更新</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block myjs %}
+<script type="text/javascript">
+    window.onload = function() {
+        let height = window.outerHeight;
+        let width = window.outerWidth;
+    }
+    function changeMethod() {
+        let methodValue = document.getElementById('method').value;
+        if(methodValue === '0'){
+            document.getElementById('STATUS').style.display = '';
+            document.getElementById('RESPONSE').style.display = '';
+            document.getElementById('ISRESPONSE').style.display = '';
+            document.getElementById('FIELD').style.display = 'none';
+        }
+        if(methodValue !== '0'){
+            document.getElementById('STATUS').style.display = 'none';
+            document.getElementById('RESPONSE').style.display = 'none';
+            document.getElementById('ISRESPONSE').style.display = 'none';
+            document.getElementById('FIELD').style.display = '';
+        }
+    }
+    $("#Reload").click(function () {
+        $.ajax ({
+            type: 'get',
+            url: '{{ context }}/reload',
+            datatype: 'json',
+            success: function(data) {
+                if(data['code'] === 0) {
+                    console.error(data['msg']);
+                    $.Toast(data['msg'], 'error');
+                } else {
+                    $.Toast(data['msg'], 'success');
+                }
+            }
+        })
+    });
+    $("#Save").click(function () {
+        let name = document.getElementById('name').value;
+        let domain_name = document.getElementById('domain_name').value;
+        let url_path = document.getElementById('url_path').value;
+        let status_code = document.getElementById('status_code').value;
+        let response = document.getElementById('response').value;
+        let is_file = document.getElementById('is_file').value;
+        let is_re = document.getElementById('is_re').value;
+        let method = document.getElementById('method').value;
+        let fields = document.getElementById('fields').value;
+        let postdata = {
+            name: name,
+            domain_name: domain_name,
+            url_path: url_path,
+            status_code: status_code,
+            response: response,
+            is_file: is_file,
+            is_re: is_re,
+            method: method,
+            fields: fields,
+        };
+        $.ajax({
+            type: 'post',
+            url: '{{ context }}/save',
+            data: JSON.stringify(postdata),
+            datatype: 'json',
+            contentType: 'application/json; charset=utf-8',
+            success: function (data) {
+                if(data['code'] === 0) {
+                    console.error(data['msg']);
+                    $.Toast(data['msg'], 'error');
+                } else {
+                    $.Toast(data['msg'], 'success');
+                    window.location.href="";
+                }
+            },
+        });
+    });
+    $("#Update").click(function () {
+        let ID = document.getElementById('ID').value;
+        let name = document.getElementById('name').value;
+        let domain_name = document.getElementById('domain_name').value;
+        let url_path = document.getElementById('url_path').value;
+        let status_code = document.getElementById('status_code').value;
+        let response = document.getElementById('response').value;
+        let is_file = document.getElementById('is_file').value;
+        let is_re = document.getElementById('is_re').value;
+        let method = document.getElementById('method').value;
+        let fields = document.getElementById('fields').value;
+        let postdata = {
+            ID: ID,
+            name: name,
+            domain_name: domain_name,
+            url_path: url_path,
+            status_code: status_code,
+            response: response,
+            is_file: is_file,
+            is_re: is_re,
+            method: method,
+            fields: fields,
+        };
+        $.ajax({
+            type: 'post',
+            url: '{{ context }}/update',
+            data: JSON.stringify(postdata),
+            datatype: 'json',
+            contentType: 'application/json; charset=utf-8',
+            success: function (data) {
+                if(data['code'] === 0) {
+                    console.error(data['msg']);
+                    $.Toast(data['msg'], 'error');
+                } else {
+                    $.Toast(data['msg'], 'success');
+                    window.location.href="";
+                }
+            },
+        });
+    });
+    function set_is_run(Id, isRun){
+        let post_data = {
+            Id: Id,
+            isRun: isRun,
+        }
+        $.ajax({
+            type: 'post',
+            url: '{{ context }}/isRun',
+            data: JSON.stringify(post_data),
+            datatype: 'json',
+            contentType: 'application/json; charset=utf-8',
+            success: function(data){
+                if(data['code'] === 0) {
+                    console.error(data['msg']);
+                    $.Toast(data['msg'], 'error');
+                } else {
+                    $.Toast(data['msg'], 'success');
+                    window.location.href="";
+                }
+            }
+        })
+    }
+    function openResult(del_url){
+        let r = confirm("亲，您确定删除拦截规则吗？")
+        if (r === true) {
+            $.ajax({
+                type: 'get',
+                url: del_url,
+                datatype: 'json',
+                success: function (data) {
+                    if (data['code'] === 0) {
+                        console.error(data['msg']);
+                        $.Toast(data['msg'], 'error');
+                    } else {
+                        $.Toast(data['msg'], 'success');
+                        window.location.href="";
+                    }
+                }
+            })
+        } else {}
+    }
+    function edit(edit_url){
+        $.ajax({
+            type: 'get',
+            url: edit_url,
+            datatype: 'json',
+            success: function (data) {
+                if (data['code'] === 0) {
+                    console.error(data['msg']);
+                    $.Toast(data['msg'], 'error');
+                } else {
+                    $.Toast(data['msg'], 'success');
+                    document.getElementById('ID_label').style.display = '';
+                    document.getElementById('ID').style.display = '';
+                    document.getElementById('ID').value = data['data'][0];
+                    document.getElementById('name').value = data['data'][1];
+                    document.getElementById('domain_name').value = data['data'][2];
+                    document.getElementById('url_path').value = data['data'][3];
+                    if(data['data'][7] === 0){
+                        document.getElementById('is_re').options[0].selected = true;
+                        document.getElementById('is_re').options[1].selected = false;
+                    } else {
+                        document.getElementById('is_re').options[1].selected = true;
+                        document.getElementById('is_re').options[0].selected = false;
+                    }
+
+                    if(data['data'][8] === 0){
+                        document.getElementById('method').options[0].selected = true;
+                        document.getElementById('method').options[1].selected = false;
+                        // document.getElementById('method').options[2].selected = false;
+                        // document.getElementById('method').options[3].selected = false;
+                        document.getElementById('STATUS').style.display = '';
+                        document.getElementById('RESPONSE').style.display = '';
+                        document.getElementById('ISRESPONSE').style.display = '';
+                        document.getElementById('FIELD').style.display = 'none';
+
+                        document.getElementById('status_code').value = data['data'][4];
+                        document.getElementById('response').value = data['data'][5];
+
+                        if(data['data'][6] === 0){
+                            document.getElementById('is_file').options[0].selected = true;
+                            document.getElementById('is_file').options[1].selected = false;
+                        } else {
+                            document.getElementById('is_file').options[1].selected = true;
+                            document.getElementById('is_file').options[0].selected = false;
+                        }
+                    } else {
+                        document.getElementById('method').options[0].selected = false;
+                        document.getElementById('method').options[1].selected = true;
+                        /***if(data['data'][8] === 1) {
+                            document.getElementById('method').options[1].selected = true;
+                            document.getElementById('method').options[2].selected = false;
+                            document.getElementById('method').options[3].selected = false;
+                        }
+                        if(data['data'][8] === 2) {
+                            document.getElementById('method').options[2].selected = true;
+                            document.getElementById('method').options[1].selected = false;
+                            document.getElementById('method').options[3].selected = false;
+                        }
+                        if(data['data'][8] === 3) {
+                            document.getElementById('method').options[3].selected = true;
+                            document.getElementById('method').options[1].selected = false;
+                            document.getElementById('method').options[2].selected = false;
+                        }***/
+
+                        document.getElementById('STATUS').style.display = 'none';
+                        document.getElementById('RESPONSE').style.display = 'none';
+                        document.getElementById('ISRESPONSE').style.display = 'none';
+                        document.getElementById('FIELD').style.display = '';
+                        document.getElementById('fields').value = data['data'][5];
+                    }
+                    document.getElementById('Save').style.display = 'none';
+                    document.getElementById('Update').style.display = '';
+                }
+            }
+        })
+    }
+</script>
+{% endblock %}

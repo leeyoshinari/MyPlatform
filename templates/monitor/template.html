@@ -24,7 +24,12 @@
         {% block body %}
             {% block navbar %}
                 <div class="navbar navbar-inverse" role="navigation">
-                    <div class="container">
+                    <div style="float: left; margin-top: 12px; font-size: large; margin-right: 11%; margin-left: 1%;">
+                        <a href="{% url 'home' %}" style="color:aliceblue;">Home</a>
+                        <span style="color:aliceblue;">>></span>
+                        <a href="{% url 'monitor:home' %}" style="color:aliceblue;">Monitor</a>
+                    </div>
+                    <div class="container" style="float: left;">
                         <div class="navbar-header">
                             <a class="navbar-brand" href="{% url 'monitor:home' %}">
                                 Home

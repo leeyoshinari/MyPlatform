@@ -30,6 +30,22 @@ body{
 	height: 20px;
 }
 
+.home_list {
+    float: left;
+    width: 10%;
+    margin-top: 3px;
+    margin-left: 1%;
+}
+.home_list a {
+    float: left;
+    margin-right: 3%;
+}
+.home_list span {
+    float: left;
+    margin-top: 2%;
+    margin-right: 3%;
+}
+
 .container2 {
 	width: 98%;
 	height: 100%;
