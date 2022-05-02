@@ -26,7 +26,7 @@ def home(request):
         datas = Mitm.objects.all().order_by('-update_time')
         logger.info(f'Get rule list success, operator: {username}')
         return render(request, 'mitm/home.html', context={'datas': datas,
-                                                          'types': ["直接拦截请求", "篡改请求或响应", "篡改响应值", "请求响应都篡改"]})
+                                                          'types': ["Directly intercept", "Tamper with data"]})
 
 def course(request):
     if request.method == 'GET':
@@ -37,7 +37,7 @@ def save(request):
         if request.method == 'POST':
             if request.POST.get('method') != '0':
                 if not isinstance(json.loads(request.POST.get('fields')), dict):
-                    raise Exception('篡改字段的值不是合法的Json')
+                    raise Exception('Tamper Fields is a invalid Json.')
             username = request.user.username
             name = request.POST.get('name')
             domain_name = request.POST.get('domain_name')
@@ -56,7 +56,7 @@ def save(request):
             return result(msg='Save success ~')
     except json.JSONDecodeError:
         logger.error(traceback.format_exc())
-        return result(code=1, msg='篡改字段的值不是合法的Json ~')
+        return result(code=1, msg='Tamper Fields is a invalid Json ~')
     except:
         logger.error(traceback.format_exc())
         return result(code=1, msg='Save failure ~')

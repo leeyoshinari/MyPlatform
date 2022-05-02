@@ -28,14 +28,14 @@
                 <td align="center" style="white-space: nowrap;text-overflow: ellipsis; overflow: hidden;">{{ data.update_time | date:"Y-m-d H:i:s" }}</td>
                 <td align="center">
                     {% if data.is_valid > 0 %}
-                    <input name="{{ data.id }}" type="radio" value="1" checked onclick="set_is_run('{{ data.id }}', 1)">启用
-                    <input name="{{ data.id }}" type="radio" value="0" onclick="set_is_run('{{ data.id }}', 0)">禁用
+                    <input name="{{ data.id }}" type="radio" value="1" checked onclick="set_is_run('{{ data.id }}', 1)">Enable
+                    <input name="{{ data.id }}" type="radio" value="0" onclick="set_is_run('{{ data.id }}', 0)">Disable
                     {% else %}
-                    <input name="{{ data.id }}" type="radio" value="1" onclick="set_is_run('{{ data.id }}', 1)">启用
-                    <input name="{{ data.id }}" type="radio" value="0" checked onclick="set_is_run('{{ data.id }}', 0)">禁用
+                    <input name="{{ data.id }}" type="radio" value="1" onclick="set_is_run('{{ data.id }}', 1)">Enable
+                    <input name="{{ data.id }}" type="radio" value="0" checked onclick="set_is_run('{{ data.id }}', 0)">Disable
                     {% endif %}
-                    <a href="#" onclick="edit('{% url 'mitm:edit' data.id %}')" style="margin-left: 2%; text-decoration: none;">编辑</a>
-                    <a href="#" onclick="openResult('{% url 'mitm:delete' data.id %}')" style="margin-left: 2%; text-decoration: none;">删除</a>
+                    <a href="#" onclick="edit('{% url 'mitm:edit' data.id %}')" style="margin-left: 2%; text-decoration: none;">Edit</a>
+                    <a href="#" onclick="openResult('{% url 'mitm:delete' data.id %}')" style="margin-left: 2%; text-decoration: none;">Delete</a>
                 </td>
             </tr>
         {% endfor %}
@@ -85,25 +85,23 @@
                 </div>
                 <div class="modal-col">
                     <div class="label">
-                        <label>匹配方式: </label>
+                        <label>Matching: </label>
                      </div>
                     <div class="input">
                         <select id="is_re">
-                            <option value="0">使用 “=” 匹配域名或路径</option>
-                            <option value="1" selected="selected">使用正则匹配域名或路径</option>
+                            <option value="0">Use "=" to match domain name or url path</option>
+                            <option value="1" selected="selected">Use regular to match domain name or url path</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-col">
                     <div class="label">
-                        <label>拦截方式: </label>
+                        <label>Intercept: </label>
                      </div>
                     <div class="input">
                         <select id="method" onchange="changeMethod()">
-                            <option value="0" selected="selected">直接拦截请求</option>
-                            <option value="1">篡改请求或响应</option>
-                            <!--option value="2">篡改响应值</option>
-                            <option value="3">请求响应都篡改</option-->
+                            <option value="0" selected="selected">Directly intercept HTTP request</option>
+                            <option value="1">Tamper with HTTP request parameters or response values</option>
                         </select>
                     </div>
                 </div>
@@ -120,25 +118,25 @@
                         <label>Response：</label>
                     </div>
                     <div class="input">
-                        <textarea id="response" placeholder="响应值，可填写需要返回的字符串，或者存放返回值的文件路径" rows="4"></textarea>
+                        <textarea id="response" placeholder="Response values,  it is a string to be returned, or a file path where the returned value is stored." rows="4"></textarea>
                     </div>
                 </div>
                 <div class="modal-col" id="FIELD" style="display: none;">
                     <div class="label">
-                        <label>篡改字段：</label>
+                        <label>Tamper Field：</label>
                     </div>
                     <div class="input">
-                        <textarea id="fields" placeholder="详见教程" rows="4"></textarea>
+                        <textarea id="fields" placeholder='See the tutorial for details. Example: {"requestUrl": {"wd": "love"}, "requestBody": {"data.0.id": "520"}, "responseBody": {"data.0.id": "521"}}' rows="4"></textarea>
                     </div>
                 </div>
                 <div class="modal-col" id="ISRESPONSE">
                     <div class="label">
-                        <label>Response：</label>
+                        <label>Response Type：</label>
                     </div>
                     <div class="input">
                         <select id="is_file">
-                            <option value="0" selected="selected">响应值中的内容是需要返回的字符串</option>
-                            <option value="1">响应值中的内容是存放返回值的文件路径</option>
+                            <option value="0" selected="selected">Content of the 'Response' is the string that needs to be returned.</option>
+                            <option value="1">Content of the 'Response' is the file path where stores returned value.</option>
                         </select>
                     </div>
                 </div>
@@ -263,7 +261,7 @@
         })
     }
     function openResult(del_url){
-        let r = confirm("亲，您确定删除拦截规则吗？")
+        let r = confirm("Dear, are you sure to delete it?")
         if (r === true) {
             $.ajax({
                 type: 'get',
