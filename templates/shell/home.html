@@ -16,9 +16,6 @@
             <a href="{% url 'shell:index' %}">Shell</a>
         </div>
         <a href="{% url 'user:logout' %}">Logout</a>
-        {% if is_staff %}
-            <a href="../admin">Admin Site</a>
-        {% endif %}
     </div>
     <div class="container2">
         <div class="detail">

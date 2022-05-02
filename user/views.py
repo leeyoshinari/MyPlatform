@@ -86,5 +86,6 @@ def parse_pwd(password: str, s: str):
 def home(request):
     if request.method == 'GET':
         username = request.user.username
+        is_staff = request.user.is_staff
         return render(request, 'home.html', context={'username': username, 'is_monitor': settings.IS_MONITOR,
-                                                     'is_mitm': settings.IS_MITMPROXY})
+                                                     'is_mitm': settings.IS_MITMPROXY, 'is_staff': is_staff})

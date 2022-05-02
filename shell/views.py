@@ -26,7 +26,6 @@ def index(request):
     if request.method == 'GET':
         try:
             username = request.user.username
-            is_staff = request.user.is_staff
             page = request.GET.get('page')
             page_size = request.GET.get('pageSize')
             page = int(page) if page else 1
@@ -36,7 +35,7 @@ def index(request):
             servers = Servers.objects.filter(group__in=groups).order_by('-id')[(page - 1) * page_size: page * page_size]
             logger.info(f'access shell index.html. operator: {username}')
             return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page, 'isMonitor': settings.IS_MONITOR,
-                                                                'is_staff': is_staff, 'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1})
+                                                                'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='access shell index.html failure ~')

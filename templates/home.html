@@ -27,6 +27,9 @@
                             <h3 style="margin-top: -5px;">{{ username }}</h3></a>
                         <ul class="dropdown-menu">
                             <li><a href="#"><span>My Profile</span></a></li>
+                            {% if is_staff %}
+                                <li><a href="admin"><span>Admin Site</span></a></li>
+                            {% endif %}
                             <li><a href="{% url 'user:logout' %}"><span>Logout</span></a></li>
                         </ul>
                     </li>
