@@ -103,3 +103,16 @@
     margin-left: 1%;
     margin-right: 1%;
 }
+
+.cancel:hover,
+.cancel:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.submit:hover,
+.submit:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}

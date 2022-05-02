@@ -30,7 +30,7 @@ def get_config(key):
 SECRET_KEY = 'django-insecure-e-f8ypr2q9w4_-v-zx19+^4(7i!lp6yu)w!wvl%+bia-u5+_lk'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -203,6 +203,11 @@ LOGGING = {
         }
     },
 }
+# MitmProxy
+REDIS_HOST = get_config('RedisHost')
+REDIS_PORT = int(get_config('RedisPort'))
+REDIS_PWD = get_config('RedisPassword')
+REDIS_DB = int(get_config('RedisDB'))
 
 # influxDB
 INFLUX_HOST = get_config('InfluxHost')
