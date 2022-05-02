@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['*']
 
 IS_MITMPROXY = int(get_config('isMitmProxy'))
 IS_MONITOR = int(get_config('isMonitor'))
+IS_PERF = int(get_config('isPerformanceTest'))
 
 # Application definition
 
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
     'shell',
     'monitor',
     'mitm',
+    'peformance',
 ]
 
 MIDDLEWARE = [

@@ -62,12 +62,14 @@
                     </a>
                 </li>
             {% endif %}
-            <li>
-                <a href="{% url 'shell:index' %}">
-                    <img src="{% static 'img/jmeter.png' %}" width="100px", height="100px"/>
-                    <h4>JMeter</h4>
-                </a>
-            </li>
+            {% if is_perf == 1 %}
+                <li>
+                    <a href="{% url 'perf:home' %}">
+                        <img src="{% static 'img/jmeter.png' %}" width="100px", height="100px"/>
+                        <h4>JMeter</h4>
+                    </a>
+                </li>
+            {% endif %}
         </ul>
     </div>
 </div>

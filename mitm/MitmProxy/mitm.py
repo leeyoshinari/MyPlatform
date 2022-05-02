@@ -16,6 +16,7 @@ from mitmproxy.options import Options
 from mitmproxy.tools.dump import DumpMaster
 from mitmproxy import ctx, http
 
+# ---------- start configure -----------------------
 # MitmProxy configure
 PROXY_HOST = '127.0.0.1'
 PROXY_PORT = 12021
@@ -29,6 +30,7 @@ REDIS_DB = 1
 # log configure
 LEVEL = 'INFO'
 log_path = 'logs'
+# ---------- end configure -----------------------
 
 if not os.path.exists(log_path):
     os.mkdir(log_path)
