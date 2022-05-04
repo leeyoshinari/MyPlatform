@@ -1,0 +1,97 @@
+{% extends 'template.html' %}
+{% load static %}
+
+{% block addcss %}
+    <link rel="stylesheet" href="{% static 'performance/css/home.css' %}">
+{% endblock %}
+
+{% block addjs %}
+    <script src="{% static 'performance/js/home.js' %}"></script>
+    {% block add_js %}
+    {% endblock %}
+{% endblock %}
+
+{% block addbody %}
+    {% csrf_token %}
+    <div class="container1">
+        <div class="home_list">
+            <a href="{% url 'home' %}">Home</a>
+            <span>>></span>
+            <a href="{% url 'perf:plan_home' %}">Performance Test</a>
+        </div>
+        <a href="{% url 'user:logout' %}">Logout</a>
+    </div>
+    <div class="container2">
+        <div class="list-icon">
+            <a onclick="get_root_folder()">Home</a>
+        </div>
+        <div class="list-icon">
+            <a onclick="get_root_folder()">Test Result</a>
+        </div>
+        <div class="list-icon">
+            <a href="{% url 'perf:plan_home' %}">Test Plan</a>
+        </div>
+        <div class="list-icon">
+            <a href="{% url 'perf:group_home' %}">Thread Group</a>
+        </div>
+        <div class="list-icon">
+            <a href="{% url 'perf:controller_home' %}">Controller</a>
+        </div>
+        <div class="list-icon">
+            <a href="{% url 'perf:sample_home' %}">HTTP Sample</a>
+        </div>
+        <div class="list-icon">
+            <a onclick="files_format('music')">HTTP Header</a>
+        </div>
+        <div class="list-icon">
+            <a onclick="files_format('music')">Upload JMeter</a>
+        </div>
+    </div>
+    <div class="container3">
+        <div class="toolbar">
+            {% block toolbar %}
+                <div style="height: 35px;">
+                    <div class="navigate">
+                        {% block navigate %}{% endblock %}
+                    </div>
+                    {% block searchBlock %}{% endblock %}
+                    <input type="file" name="filename" id="fileUpload-input" multiple style="display: none">
+                </div>
+            {% endblock %}
+            <div class="vertical-bar"></div>
+        </div>
+        <div class="detail">
+            {% block detail %}
+                <div class="detail-action">
+                    {% block detail_action %}
+                    {% endblock %}
+                </div>
+                <table id="layout-table" class="table table-bordered">
+                    <thead>
+                        {% block table_head %}
+                        {% endblock %}
+                    </thead>
+                    <tbody id="tbody">
+                        {% block table_body %}
+                        {% endblock %}
+                    </tbody>
+                </table>
+            {% endblock %}
+        </div>
+    </div>
+    <div id="myModal"></div>
+    <div class="modal_cover">
+        <div class="modal_gif"></div>
+        <progress id="progressBar" value="0" max="100"></progress>
+        <span id="percentage"></span>
+    </div>
+{% block fenye %}
+    <div class="fenye"><ul id="paging" class="pagination"></ul></div>
+{% endblock %}
+{% endblock %}
+{% block backjs %}
+    <script src="{% static 'js/fenye.js' %}"></script>
+{#    <script src="{% static 'js/home.js' %}"></script>#}
+{% endblock %}
+{% block define_js %}
+{% endblock %}

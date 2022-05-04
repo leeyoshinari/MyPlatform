@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
-import time
 import json
 import logging
 import traceback
@@ -11,6 +10,7 @@ from django.core import serializers
 from django.conf import settings
 from .models import Mitm
 from common.Result import result
+from common.generator import primaryKey, strfTime
 
 # Create your views here.
 logger = logging.getLogger('django')
@@ -48,10 +48,10 @@ def save(request):
             response = request.POST.get('response') if method == '0' else request.POST.get('fields')
             is_file = request.POST.get('is_file') if method == '0' else -1
 
-            res = Mitm.objects.create(id=int(time.time() * 1000), name=name, domain=domain_name, url_path=url_path,
+            res = Mitm.objects.create(id=primaryKey(), name=name, domain=domain_name, url_path=url_path,
                                       status_code=status_code, method=method, response=response, is_regular=is_re,
                                       is_file=is_file, is_valid=1, creator=username, modifier=username,
-                                      update_time=time.strftime('%Y-%m-%d %H:%M:%S'))
+                                      update_time=strfTime())
             logger.info(f'{res.id} save success, operator: {username}')
             return result(msg='Save success ~')
     except json.JSONDecodeError:
@@ -85,7 +85,7 @@ def update(request):
             mitm.response = response
             mitm.is_file = is_file
             mitm.modifier = username
-            mitm.update_time = time.strftime('%Y-%m-%d %H:%M:%S')
+            mitm.update_time = strfTime()
             mitm.save()
             logger.info(f'Update rule {ID} success, operator: {username}')
             return result(msg=f'Update rule {ID} success ~')
@@ -103,7 +103,7 @@ def isRun(request):
             mitm = Mitm.objects.get(id=ID)
             mitm.is_valid = is_run
             mitm.modifier = username
-            mitm.update_time = time.strftime('%Y-%m-%d %H:%M:%S')
+            mitm.update_time = strfTime()
             mitm.save()
             logger.info(f'Rule {ID} status is set to {is_run}, operator: {username}')
             return result(msg='Operate success ~')

@@ -1,0 +1,58 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+    <script src="{% static 'performance/js/plan.js' %}"></script>
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:plan_home' %}">Test Plan</a>
+    <span>>></span>
+    <a href="{% url 'perf:plan_variable' %}?id={{ variables.plan_id }}">Variables</a>
+    <span>>></span>
+    <span>Edit Variable</span>
+{% endblock %}
+
+{% block detail %}
+    <div class="list-body">
+        <div class="row-cols">
+            <div class="label-div">
+                <label>ID:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="ID" readonly value="{{ variables.id }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Name:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="name" placeholder="Please input name ~" value="{{ variables.name }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Value:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="value" placeholder="Please input value ~" value="{{ variables.value }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Comment:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="comment" placeholder="Please input test plan comment ~" value="{{ variables.comment }}">
+            </div>
+        </div>
+    </div>
+    <div class="list-footer">
+        <div>
+            <a href="{% url 'perf:plan_variable' %}?id={{ variables.plan_id }}">Cancel</a>
+            <a href="#" onclick="edit_var('{% url 'perf:plan_edit_variable' %}', '{% url 'perf:plan_variable' %}', {{ variables.plan_id }})">Submit</a>
+        </div>
+    </div>
+{% endblock %}
+

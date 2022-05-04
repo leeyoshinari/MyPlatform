@@ -64,13 +64,18 @@
             {% endif %}
             {% if is_perf == 1 %}
                 <li>
-                    <a href="{% url 'perf:home' %}">
+                    <a href="{% url 'perf:plan_home' %}">
                         <img src="{% static 'img/jmeter.png' %}" width="100px", height="100px"/>
                         <h4>JMeter</h4>
                     </a>
                 </li>
             {% endif %}
         </ul>
+    </div>
+</div>
+<div class="footer" id="foot">
+    <div class="copyright">
+        <p>Copyright © 2022~2023 leeyoshinari. All Rights Reserved.</p>
     </div>
 </div>
 {% endblock %}

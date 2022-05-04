@@ -1,0 +1,75 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+    <script src="{% static 'performance/js/group.js' %}"></script>
+{% endblock %}
+
+{% block navigate %}
+    {% if plan_id %}
+        <a href="{% url 'perf:group_home' %}?id={{ plan_id }}">Thread Group</a>
+    {% else %}
+        <a href="{% url 'perf:group_home' %}">Thread Group</a>
+    {% endif %}
+{% endblock %}
+
+{% block detail_action %}
+    {% if plan_id %}
+        <a href="{% url 'perf:group_add' %}?id={{ plan_id }}">Add Thread Group</a>
+    {% else %}
+        <a href="{% url 'perf:group_add' %}">Add Thread Group</a>
+    {% endif %}
+{% endblock %}
+{% block searchBlock %}
+    <div class="search">
+        {% if key_word %}
+            <input type="text" id="searching" placeholder="Please input key words ~" value="{{ key_word }}">
+        {% else %}
+            <input type="text" id="searching" placeholder="Please input key words ~">
+        {% endif %}
+        <button onclick="search('{% url 'perf:group_home' %}?id={{ plan_id }}')">Search</button>
+    </div>
+{% endblock %}
+{% block table_head %}
+    <tr class="table_style">
+        <th width="12%">Plan Name</th>
+        <th width="10%">Name</th>
+        <th width="19%">Comment</th>
+        <th width="13%">Create Time</th>
+        <th width="13%">Update Time</th>
+        <th width="10%">Operator</th>
+        <th width="23%">Actions</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for group in groups %}
+        {% if forloop.counter|divisibleby:2 %}
+            <tr style="background-color: lightcyan">
+        {% else %}
+            <tr>
+        {% endif %}
+            <td><a href="{% url 'perf:plan_edit' %}?id={{ group.plan.id }}">{{ group.plan.name }}</a></td>
+            <td style="text-align: center;"><a href="{% url 'perf:group_edit' %}?id={{ group.id }}">{{ group.name }}</a></td>
+            <td>{{ group.comment }}</td>
+            <td style="text-align: center;">{{ group.create_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ group.update_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ group.operator }}</td>
+            <td>
+                <a href="{% url 'perf:group_edit' %}?id={{ group.id }}">Edit</a>
+                {% if group.is_valid == 'true' %}
+                    <a href="#" onclick="set_status('group', '{{ group.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                {% else %}
+                    <a href="#" onclick="set_status('group', '{{ group.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
+                {% endif %}
+                <a href="{% url 'perf:controller_home' %}?id={{ group.id }}">Controller</a>
+                {% if plan_id %}
+                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:group_home' %}?id={{ plan_id }}', 'group', {{ group.id }})">Delete</a>
+                {% else %}
+                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:group_home' %}', 'group', {{ group.id }})">Delete</a>
+                {% endif %}
+
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

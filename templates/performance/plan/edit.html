@@ -1,0 +1,82 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+    <script src="{% static 'performance/js/plan.js' %}"></script>
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:plan_home' %}">Test Plan</a>
+    <span>>></span>
+    <span>Edit Plan</span>
+{% endblock %}
+
+{% block detail %}
+    <div class="list-body">
+        <div class="row-cols">
+            <div class="label-div">
+                <label>ID:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="ID" readonly value="{{ plan.id }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Name:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="name" placeholder="Please input test plan name ~" value="{{ plan.name }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>
+                <label>tearDown: </label>
+            </div>
+            <div class="value-div">
+                <select id="tearDown">
+                    {% if plan.tearDown == 'true' %}
+                        <option value="true" selected>true</option>
+                        <option value="false">false</option>
+                    {% else %}
+                        <option value="true">true</option>
+                        <option value="false" selected>false</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run Thread Groups consecutively (i.e. one at a time).">?</span></div>
+                <label>serialize:</label>
+            </div>
+            <div class="value-div">
+                <select id="serialize">
+                    {% if plan.serialize == 'true' %}
+                        <option value="true" selected>true</option>
+                        <option value="false">false</option>
+                    {% else %}
+                        <option value="true">true</option>
+                        <option value="false" selected>false</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Comment:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="comment" placeholder="Please input test plan comment ~" value="{{ plan.comment }}">
+            </div>
+        </div>
+    </div>
+    <div class="list-footer">
+        <div>
+            <a href="{% url 'perf:plan_home' %}">Cancel</a>
+            <a href="#" onclick="edit_plan('{% url 'perf:plan_edit' %}', '{% url 'perf:plan_home' %}')">Submit</a>
+        </div>
+    </div>
+{% endblock %}
+

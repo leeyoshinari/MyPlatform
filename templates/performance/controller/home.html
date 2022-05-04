@@ -1,0 +1,75 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+    <script src="{% static 'performance/js/controller.js' %}"></script>
+{% endblock %}
+
+{% block navigate %}
+    {% if group_id %}
+        <a href="{% url 'perf:controller_home' %}?id={{ group_id }}">Controller</a>
+    {% else %}
+        <a href="{% url 'perf:controller_home' %}">Controller</a>
+    {% endif %}
+{% endblock %}
+
+{% block detail_action %}
+    {% if group_id %}
+        <a href="{% url 'perf:controller_add' %}?id={{ group_id }}">Add Controller</a>
+    {% else %}
+        <a href="{% url 'perf:controller_add' %}">Add Controller</a>
+    {% endif %}
+{% endblock %}
+{% block searchBlock %}
+    <div class="search">
+        {% if key_word %}
+            <input type="text" id="searching" placeholder="Please input key words ~" value="{{ key_word }}">
+        {% else %}
+            <input type="text" id="searching" placeholder="Please input key words ~">
+        {% endif %}
+        <button onclick="search('{% url 'perf:controller_home' %}?id={{ group_id }}')">Search</button>
+    </div>
+{% endblock %}
+{% block table_head %}
+    <tr class="table_style">
+        <th width="12%">Thread Group Name</th>
+        <th width="10%">Name</th>
+        <th width="19%">Comment</th>
+        <th width="13%">Create Time</th>
+        <th width="13%">Update Time</th>
+        <th width="10%">Operator</th>
+        <th width="23%">Actions</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for ctl in controllers %}
+        {% if forloop.counter|divisibleby:2 %}
+            <tr style="background-color: lightcyan">
+        {% else %}
+            <tr>
+        {% endif %}
+            <td><a href="{% url 'perf:group_edit' %}?id={{ ctl.thread_group.id }}">{{ ctl.thread_group.name }}</a></td>
+            <td style="text-align: center;"><a href="{% url 'perf:controller_edit' %}?id={{ ctl.id }}">{{ ctl.name }}</a></td>
+            <td>{{ ctl.comment }}</td>
+            <td style="text-align: center;">{{ ctl.create_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ ctl.update_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ ctl.operator }}</td>
+            <td>
+                <a href="{% url 'perf:controller_edit' %}?id={{ ctl.id }}">Edit</a>
+                {% if ctl.is_valid == 'true' %}
+                    <a href="#" onclick="set_status('controller', '{{ ctl.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                {% else %}
+                    <a href="#" onclick="set_status('controller', '{{ ctl.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
+                {% endif %}
+                <a href="{% url 'perf:sample_home' %}?id={{ ctl.id }}">HttpSample</a>
+                {% if group_id %}
+                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:controller_home' %}?id={{ group_id }}', 'controller', {{ ctl.id }})">Delete</a>
+                {% else %}
+                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:controller_home' %}', 'controller', {{ ctl.id }})">Delete</a>
+                {% endif %}
+
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

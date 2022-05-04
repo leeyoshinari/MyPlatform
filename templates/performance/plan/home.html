@@ -1,0 +1,66 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+    <script src="{% static 'performance/js/plan.js' %}"></script>
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:plan_home' %}">Test Plan</a>
+{% endblock %}
+
+{% block detail_action %}
+    <a href="{% url 'perf:plan_add' %}">Add Plan</a>
+    <a>Export Plan</a>
+{% endblock %}
+{% block searchBlock %}
+    <div class="search">
+        {% if key_word %}
+            <input type="text" id="searching" placeholder="Please input key words ~" value="{{ key_word }}">
+        {% else %}
+            <input type="text" id="searching" placeholder="Please input key words ~">
+        {% endif %}
+        <button onclick="search('{% url 'perf:plan_home' %}')">Search</button>
+    </div>
+{% endblock %}
+{% block table_head %}
+    <tr class="table_style">
+        <th width="20%">Name</th>
+        <th width="6%"><div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>tearDown</th>
+        <th width="6%"><div class="helpstyle"><span data-tooltip="Run Thread Groups consecutively (i.e. one at a time).">?</span></div>Serialize</th>
+        <th width="12%">Create Time</th>
+        <th width="12%">Update Time</th>
+        <th width="8%">Operator</th>
+        <th width="36%">Actions</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for plan in plans %}
+        {% if forloop.counter|divisibleby:2 %}
+            <tr style="background-color: lightcyan">
+        {% else %}
+            <tr>
+        {% endif %}
+            <td title="{{ plan.comment }}"><a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">{{ plan.name }}</a></td>
+            <td style="text-align: center;">{{ plan.tearDown }}</td>
+            <td style="text-align: center;">{{ plan.serialize }}</td>
+            <td style="text-align: center;">{{ plan.create_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ plan.update_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ plan.operator }}</td>
+            <td>
+                <a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">Edit</a>
+                {% if plan.is_valid == 'true' %}
+                    <a href="#" onclick="set_status('plan','{{ plan.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                {% else %}
+                    <a href="#" onclick="set_status('plan', '{{ plan.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
+                {% endif %}
+                <a href="{% url 'perf:plan_variable' %}?id={{ plan.id }}">Variables</a>
+                <a href="{% url 'perf:group_home' %}?id={{ plan.id }}">ThreadGroup</a>
+                <a href="#" onclick="">Running</a>
+                <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:plan_home' %}', 'plan', {{ plan.id }})">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+

@@ -1,0 +1,121 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+    <script src="{% static 'performance/js/group.js' %}"></script>
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:group_home' %}?id={{ groups.plan_id }}">Thread Group</a>
+    <span>>></span>
+    <span>Edit Thread Group</span>
+{% endblock %}
+
+{% block detail %}
+    <div class="list-body">
+        <div class="row-cols">
+            <div class="label-div">
+                <label>ID:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="ID" readonly value="{{ groups.id }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Plan ID: </label>
+            </div>
+            <div class="value-div">
+                <select id="planid">
+                    {% for foo in plans %}
+                        {% if foo.id == groups.plan_id %}
+                            <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
+                        {% else %}
+                            <option value="{{ foo.id }}">{{ foo.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Name:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="name" placeholder="Please input name ~" value="{{ groups.name }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Number of Threads (users).">?</span></div>
+                <label>Num Threads:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="num_threads" placeholder="Please input num threads ~" value="{{ groups.num_threads }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Ramp-up period (seconds).">?</span></div>
+                <label>Ramp Time:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="ramp_time" placeholder="Please input ramp time ~" value="{{ groups.ramp_time }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Scheduler, specify Thread lifetime. true: need to set duration; false: thread groups run forever.">?</span></div>
+                <label>scheduler: </label>
+            </div>
+            <div class="value-div">
+                <select id="scheduler" onchange="change_duration();">
+                    {% if groups.scheduler == 'true' %}
+                        <option value="true" selected>true</option>
+                        <option value="false">false</option>
+                    {% else %}
+                        <option value="true">true</option>
+                        <option value="false" selected>false</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols" id="DURATION">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Duration (seconds).">?</span></div>
+                <label>Duration:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="duration" placeholder="Please input duration ~" value="{{ groups.duration }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Comment:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="comment" placeholder="Please input thread group comment ~" value="{{ groups.comment }}">
+            </div>
+        </div>
+    </div>
+    <div class="list-footer">
+        <div>
+            <a href="{% url 'perf:group_home' %}?id={{ groups.plan_id }}">Cancel</a>
+            <a href="#" onclick="edit_group('{% url 'perf:group_edit' %}', '{% url 'perf:group_home' %}', {{ groups.plan_id }})">Submit</a>
+        </div>
+    </div>
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+        function change_duration () {
+            let s = document.getElementById('scheduler').value;
+            if(s === 'true') {
+                document.getElementById('DURATION').style.display = '';
+            } else {
+                document.getElementById('DURATION').style.display = 'none';
+            }
+        }
+
+        change_duration();
+    </script>
+{% endblock %}

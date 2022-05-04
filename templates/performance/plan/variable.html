@@ -1,0 +1,61 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+    <script src="{% static 'performance/js/plan.js' %}"></script>
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:plan_home' %}">Test Plan</a>
+    <span>>></span>
+    <span>Variables</span>
+{% endblock %}
+
+{% block detail_action %}
+    <a href="{% url 'perf:plan_add_variable' %}?id={{ plan_id }}">Add Variable</a>
+{% endblock %}
+{% block searchBlock %}
+    <div class="search">
+        {% if key_word %}
+            <input type="text" id="searching" placeholder="Please input key words ~" value="{{ key_word }}">
+        {% else %}
+            <input type="text" id="searching" placeholder="Please input key words ~">
+        {% endif %}
+        <button onclick="search('{% url 'perf:plan_variable' %}?id={{ plan_id }}')">Search</button>
+    </div>
+{% endblock %}
+{% block table_head %}
+    <tr class="table_style">
+        <th width="10%">Plan Name</th>
+        <th width="10%">Name</th>
+        <th width="10%">Value</th>
+        <th width="19%">Comment</th>
+        <th width="13%">Create Time</th>
+        <th width="13%">Update Time</th>
+        <th width="10%">Operator</th>
+        <th width="15%">Actions</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for v in variables %}
+        {% if forloop.counter|divisibleby:2 %}
+            <tr style="background-color: lightcyan">
+        {% else %}
+            <tr>
+        {% endif %}
+            <td><a href="{% url 'perf:plan_edit' %}?id={{ v.plan.id }}">{{ v.plan.name }}</a></td>
+            <td style="text-align: center;"><a href="{% url 'perf:plan_edit_variable' %}?id={{ v.id }}">{{ v.name }}</a></td>
+            <td style="text-align: center;">{{ v.value }}</td>
+            <td>{{ v.comment }}</td>
+            <td style="text-align: center;">{{ v.create_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ v.update_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ v.operator }}</td>
+            <td>
+                <a href="{% url 'perf:plan_edit_variable' %}?id={{ v.id }}">Edit</a>
+                <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:plan_variable' %}?id={{ plan_id }}', 'variable', {{ v.id }})">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+

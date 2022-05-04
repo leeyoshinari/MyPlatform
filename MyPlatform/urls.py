@@ -25,7 +25,7 @@ urlpatterns = [
     path('shell/', include('shell.urls'), name='shell'),
     path('monitor/', include('monitor.urls'), name='monitor'),
     path('mitm/', include('mitm.urls'), name='mitm'),
-    path('perf/', include('peformance.urls'), name='perf'),
+    path('perf/', include('performance.urls'), name='perf'),
 ]
 
 urlpatterns = [
