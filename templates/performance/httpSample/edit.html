@@ -2,33 +2,25 @@
 {% load static %}
 
 {% block add_js %}
-    <script src="{% static 'performance/js/group.js' %}"></script>
+    <script src="{% static 'performance/js/sample.js' %}"></script>
 {% endblock %}
 
 {% block navigate %}
-    <a href="{% url 'perf:group_home' %}?id={{ groups.plan_id }}">Thread Group</a>
+    <a href="{% url 'perf:sample_home' %}?id={{ samples.controller.id }}">HTTP Sample</a>
     <span>>></span>
-    <span>Edit Thread Group</span>
+    <span>Edit HTTP Sample</span>
 {% endblock %}
 
 {% block detail %}
     <div class="list-body">
         <div class="row-cols">
             <div class="label-div">
-                <label>ID:</label>
+                <label>Controller ID: </label>
             </div>
             <div class="value-div">
-                <input type="text" id="ID" readonly value="{{ groups.id }}">
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Plan ID: </label>
-            </div>
-            <div class="value-div">
-                <select id="planid">
-                    {% for foo in plans %}
-                        {% if foo.id == groups.plan_id %}
+                <select id="controllerid">
+                    {% for foo in controllers %}
+                        {% if foo.id == samples.controller.id %}
                             <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
                         {% else %}
                             <option value="{{ foo.id }}">{{ foo.name }}</option>
@@ -42,51 +34,129 @@
                 <label>Name:</label>
             </div>
             <div class="value-div">
-                <input type="text" id="name" placeholder="Please input name ~" value="{{ groups.name }}">
+                <input type="text" id="name" placeholder="Please input name ~">
             </div>
         </div>
         <div class="row-cols">
             <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Number of Threads (users).">?</span></div>
-                <label>Num Threads:</label>
+                <label>Protocol: </label>
             </div>
             <div class="value-div">
-                <input type="text" id="num_threads" placeholder="Please input num threads ~" value="{{ groups.num_threads }}">
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Ramp-up period (seconds).">?</span></div>
-                <label>Ramp Time:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="ramp_time" placeholder="Please input ramp time ~" value="{{ groups.ramp_time }}">
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Scheduler, specify Thread lifetime. true: need to set duration; false: thread groups run forever.">?</span></div>
-                <label>scheduler: </label>
-            </div>
-            <div class="value-div">
-                <select id="scheduler" onchange="change_duration();">
-                    {% if groups.scheduler == 'true' %}
-                        <option value="true" selected>true</option>
-                        <option value="false">false</option>
-                    {% else %}
-                        <option value="true">true</option>
-                        <option value="false" selected>false</option>
-                    {% endif %}
+                <select id="protocol">
+                    <option value="GET">HTTP</option>
+                    <option value="POST">HTTPS</option>
                 </select>
             </div>
         </div>
-        <div class="row-cols" id="DURATION">
+        <div class="row-cols">
             <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Duration (seconds).">?</span></div>
-                <label>Duration:</label>
+                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>
+                <label>Domain Name:</label>
             </div>
             <div class="value-div">
-                <input type="text" id="duration" placeholder="Please input duration ~" value="{{ groups.duration }}">
+                <input type="text" id="domain" placeholder="Please input domain name ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>
+                <label>Port:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="port" placeholder="Please input port ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Path: </label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="path" placeholder="Please input path ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Method: </label>
+            </div>
+            <div class="value-div">
+                <select id="method">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="HEAD">HEAD</option>
+                    <option value="PUT">PUT</option>
+                    <option value="OPTIONS">OPTIONS</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="TRACE">TRACE</option>
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>
+                <label>Arguments: </label>
+            </div>
+            <div class="value-div">
+                <label>Data Type:</label>
+                <select id="data_type" style="width: 8%; margin-right: 2%;" onchange="change_data_type();">
+                    <option value="json">Json Data</option>
+                    <option value="form">Form Data</option>
+                </select>
+                <button onclick="add_arguments();">Add Argument + </button>
+                <button onclick="delete_arguments();">Del Argument - </button>
+            </div>
+            <div id="add_arguments"></div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>
+                <label>HTTP Header: </label>
+            </div>
+            <div class="value-div">
+                <select id="http_header">
+                    {% for header in http_headers %}
+                        <option value="{{ header.id }}">{{ header.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>
+                <label>Assertion:</label>
+            </div>
+            <div class="value-div">
+                <label>Type:</label>
+                <select id="assertion_type" style="width: 8%;">
+                    <option value="2">Contain</option>
+                    <option value="8">Equal</option>
+                    <option value="1">Match</option>
+                </select>
+                <label style="margin-left: 2%;">String:</label>
+                <input type="text" id="assertion_string" placeholder="Please input assert string ~" style="width: 32%;">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>
+                <label>Post Extractor:</label>
+            </div>
+            <div class="value-div">
+                <button onclick="add_json_extractor();">Add Json Extractor + </button>
+                <button onclick="add_regex_extractor();">Add Regex Extractor + </button>
+                <button onclick="delete_extractor();">Del Extractor - </button>
+            </div>
+            <div id="add_extractors"></div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Usually, GET request contentEncoding is Blank(None), POST request contentEncoding is UTF-8.">?</span></div>
+                <label>contentEncoding:</label>
+            </div>
+            <div class="value-div">
+                <select id="contentEncoding">
+                    <option value="">None</option>
+                    <option value="UTF-8" selected>UTF-8</option>
+                </select>
             </div>
         </div>
         <div class="row-cols">
@@ -94,28 +164,79 @@
                 <label>Comment:</label>
             </div>
             <div class="value-div">
-                <input type="text" id="comment" placeholder="Please input thread group comment ~" value="{{ groups.comment }}">
+                <input type="text" id="comment" placeholder="Please input thread group comment ~">
             </div>
         </div>
     </div>
     <div class="list-footer">
         <div>
-            <a href="{% url 'perf:group_home' %}?id={{ groups.plan_id }}">Cancel</a>
-            <a href="#" onclick="edit_group('{% url 'perf:group_edit' %}', '{% url 'perf:group_home' %}', {{ groups.plan_id }})">Submit</a>
+            {% if controller_id %}
+                <a href="{% url 'perf:sample_home' %}?id={{ controller_id }}">Cancel</a>
+                <a href="#" onclick="save_sample('{% url 'perf:sample_add' %}', '{% url 'perf:sample_home' %}', {{ controller_id }})">Submit</a>
+            {% else %}
+                <a href="{% url 'perf:sample_home' %}">Cancel</a>
+                <a href="#" onclick="save_sample('{% url 'perf:sample_add' %}', '{% url 'perf:sample_home' %}', '')">Submit</a>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
 {% block define_js %}
     <script type="text/javascript">
-        function change_duration () {
-            let s = document.getElementById('scheduler').value;
-            if(s === 'true') {
-                document.getElementById('DURATION').style.display = '';
+        function add_arguments () {
+            let c = document.getElementById('add_arguments');
+            let datatype = document.getElementById('data_type').value;
+            if (datatype === 'json') {
+                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%;"><label>Key:</label>' +
+                    '<input type="text" placeholder="Please input argument key ~" style="width: 19%;">\n' +
+                    '<label style="margin-left: 2%;">Value:</label><input type="text" placeholder=' +
+                    '"Please input argument value ~" style="width: 21%;"></div>';
+                c.appendChild(document.createRange().createContextualFragment(s));
             } else {
-                document.getElementById('DURATION').style.display = 'none';
+                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%;"><label>Key:</label>' +
+                    '<input type="text" placeholder="Please input argument key ~" style="width: 13%;">\n' +
+                    '<label style="margin-left: 2%;">Value:</label><input type="text" placeholder=' +
+                    '"Please input argument value ~" style="width: 16%;"><label style="margin-left: 2%;">Is Enoding:</label>' +
+                    '<select id="is_Encoding" style="width: 6%;"><option value="false">False</option><option value="true">True</option></select></div>';
+                c.appendChild(document.createRange().createContextualFragment(s));
             }
         }
-
-        change_duration();
+        function delete_arguments () {
+            let c = document.getElementById('add_arguments');
+            let div = c.getElementsByTagName('div');
+            if(div.length > 0) {
+                c.removeChild(div[div.length - 1]);
+            }
+        }
+        function change_data_type() {
+            document.getElementById('add_arguments').innerHTML = '';
+        }
+        function add_json_extractor() {
+            let c = document.getElementById('add_extractors');
+            let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 69%;"><div class="helpstyle" ' +
+                'style="float: left;"><span data-tooltip="JSON Extractor, Name: Names of created variables. Expr: JSON Path expressions. Number: Match No.(0 for Random).">?</span></div>\n' +
+                '<label style="margin-left: 1%;">Type:</label><input type="text" style="width: 6%;" readonly value="Json">\n' +
+                '<label style="margin-left: 1%;">Name:</label><input type="text" style="width: 13%;"><label style="margin-left: 1%;">Number:</label>\n' +
+                '<input type="text" style="width: 10%;" value="1"><label style="margin-left: 1%;">Expr:</label>\n' +
+                '<input type="text" style="width: 28%;"></div>';
+            c.appendChild(document.createRange().createContextualFragment(s));
+        }
+        function add_regex_extractor() {
+            let c = document.getElementById('add_extractors');
+            let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 69%;"><div class="helpstyle" ' +
+                'style="float: left;"><span data-tooltip="Regular Expression Extractor, Name: Names of created variables. Expr: Regular Expression. Number: Match No.(0 for Random). Template: Template ($i$ where i is capturing group number).">?</span></div>\n' +
+                '<label style="margin-left: 1%;">Type:</label><input type="text" style="width: 6%;" readonly value="Regex">\n' +
+                '<label style="margin-left: 1%;">Name:</label><input type="text" style="width: 9%;">\n' +
+                '<label style="margin-left: 1%;">Number:</label><input type="text" style="width: 3%;" value="1">\n' +
+                '<label style="margin-left: 1%;">Template:</label><input type="text" style="width: 6%;" value="$1$">\n' +
+                '<label style="margin-left: 1%;">Expr:</label><input type="text" style="width: 25%;"></div>';
+            c.appendChild(document.createRange().createContextualFragment(s));
+        }
+        function delete_extractor () {
+            let c = document.getElementById('add_extractors');
+            let div = c.getElementsByClassName('value-div');
+            if(div.length > 0) {
+                c.removeChild(div[div.length - 1]);
+            }
+        }
     </script>
 {% endblock %}

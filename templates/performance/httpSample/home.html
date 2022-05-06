@@ -49,8 +49,8 @@
         {% else %}
             <tr>
         {% endif %}
-            <td>{{ sample.controller.name }}</td>
-            <td>{{ sample.name }}</td>
+            <td><a href="{% url 'perf:controller_edit' %}?id={{ sample.controller.id }}">{{ sample.controller.name }}</a></td>
+            <td title="{{ sample.comment }}"><a href="{% url 'perf:sample_edit' %}?id={{ sample.id }}">{{ sample.name }}</a></td>
             <td>{{ sample.path }}</td>
             <td style="text-align: center;">{{ sample.create_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ sample.update_time | date:"Y-m-d H:i:s" }}</td>

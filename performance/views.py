@@ -73,7 +73,7 @@ def is_valid(request):
             return result(code=1, msg='Set failure ~')
 
 def parse_jmx(request):
-    if request.method == 'POST':
+    if request.method == 'GET':
         try:
             username = request.user.username
             res = jmx_parser.read_jmeter_from_file()

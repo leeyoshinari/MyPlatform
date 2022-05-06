@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block add_js %}
-    <script src="{% static 'performance/js/group.js' %}"></script>
+    <script src="{% static 'performance/js/sample.js' %}"></script>
 {% endblock %}
 
 {% block navigate %}
@@ -46,7 +46,10 @@
                 <label>Protocol: </label>
             </div>
             <div class="value-div">
-                <input type="text" id="protocol" placeholder="Please input protocol ~">
+                <select id="protocol">
+                    <option value="GET">HTTP</option>
+                    <option value="POST">HTTPS</option>
+                </select>
             </div>
         </div>
         <div class="row-cols">
@@ -97,6 +100,11 @@
                 <label>Arguments: </label>
             </div>
             <div class="value-div">
+                <label>Data Type:</label>
+                <select id="data_type" style="width: 8%; margin-right: 2%;" onchange="change_data_type();">
+                    <option value="json">Json Data</option>
+                    <option value="form">Form Data</option>
+                </select>
                 <button onclick="add_arguments();">Add Argument + </button>
                 <button onclick="delete_arguments();">Del Argument - </button>
             </div>
@@ -128,7 +136,7 @@
                     <option value="1">Match</option>
                 </select>
                 <label style="margin-left: 2%;">String:</label>
-                <input type="text" id="assertion" placeholder="Please input assert string ~" style="width: 32%;">
+                <input type="text" id="assertion_string" placeholder="Please input assert string ~" style="width: 32%;">
             </div>
         </div>
         <div class="row-cols">
@@ -145,6 +153,18 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Usually, GET request contentEncoding is Blank(None), POST request contentEncoding is UTF-8.">?</span></div>
+                <label>contentEncoding:</label>
+            </div>
+            <div class="value-div">
+                <select id="contentEncoding">
+                    <option value="">None</option>
+                    <option value="UTF-8" selected>UTF-8</option>
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
                 <label>Comment:</label>
             </div>
             <div class="value-div">
@@ -155,11 +175,11 @@
     <div class="list-footer">
         <div>
             {% if controller_id %}
-                <a href="{% url 'perf:group_home' %}?id={{ controller_id }}">Cancel</a>
-                <a href="#" onclick="save_group('{% url 'perf:group_add' %}', '{% url 'perf:group_home' %}', {{ controller_id }})">Submit</a>
+                <a href="{% url 'perf:sample_home' %}?id={{ controller_id }}">Cancel</a>
+                <a href="#" onclick="save_sample('{% url 'perf:sample_add' %}', '{% url 'perf:sample_home' %}', {{ controller_id }})">Submit</a>
             {% else %}
-                <a href="{% url 'perf:group_home' %}">Cancel</a>
-                <a href="#" onclick="save_group('{% url 'perf:group_add' %}', '{% url 'perf:group_home' %}', '')">Submit</a>
+                <a href="{% url 'perf:sample_home' %}">Cancel</a>
+                <a href="#" onclick="save_sample('{% url 'perf:sample_add' %}', '{% url 'perf:sample_home' %}', '')">Submit</a>
             {% endif %}
         </div>
     </div>
@@ -168,11 +188,21 @@
     <script type="text/javascript">
         function add_arguments () {
             let c = document.getElementById('add_arguments');
-            let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%;"><label>Key:</label>' +
-                '<input type="text" placeholder="Please input argument key ~" style="width: 19%;">\n' +
-                '<label style="margin-left: 2%;">Value:</label><input type="text" placeholder=' +
-                '"Please input argument value ~" style="width: 21%;"></div>';
-            c.appendChild(document.createRange().createContextualFragment(s));
+            let datatype = document.getElementById('data_type').value;
+            if (datatype === 'json') {
+                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%;"><label>Key:</label>' +
+                    '<input type="text" placeholder="Please input argument key ~" style="width: 19%;">\n' +
+                    '<label style="margin-left: 2%;">Value:</label><input type="text" placeholder=' +
+                    '"Please input argument value ~" style="width: 21%;"></div>';
+                c.appendChild(document.createRange().createContextualFragment(s));
+            } else {
+                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%;"><label>Key:</label>' +
+                    '<input type="text" placeholder="Please input argument key ~" style="width: 13%;">\n' +
+                    '<label style="margin-left: 2%;">Value:</label><input type="text" placeholder=' +
+                    '"Please input argument value ~" style="width: 16%;"><label style="margin-left: 2%;">Is Enoding:</label>' +
+                    '<select id="is_Encoding" style="width: 6%;"><option value="false">False</option><option value="true">True</option></select></div>';
+                c.appendChild(document.createRange().createContextualFragment(s));
+            }
         }
         function delete_arguments () {
             let c = document.getElementById('add_arguments');
@@ -180,6 +210,9 @@
             if(div.length > 0) {
                 c.removeChild(div[div.length - 1]);
             }
+        }
+        function change_data_type() {
+            document.getElementById('add_arguments').innerHTML = '';
         }
         function add_json_extractor() {
             let c = document.getElementById('add_extractors');

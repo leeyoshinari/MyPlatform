@@ -22,6 +22,7 @@ from . import sampleViews
 
 app_name = 'perf'
 urlpatterns = [
+    path('home', views.parse_jmx),
     path('delete', views.delete, name='delete'),
     path('setStatus', views.is_valid, name='set_status'),
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
+import json
 import logging
 import traceback
 from django.shortcuts import render
@@ -47,12 +48,26 @@ def add_sample(request):
     if request.method == 'POST':
         try:
             username = request.user.username
-            name = request.POST.get('name')
-            group_id = request.POST.get('controller_id')
-            comment = request.POST.get('comment')
-            controller = TransactionController.objects.create(id=primaryKey(), name=name, comment=comment, is_valid='true',
-                          thread_group_id=group_id, create_time=strfTime(), update_time=strfTime(), operator=username)
-            logger.info(f'Controller {name} {controller.id} is save success, operator: {username}')
+            data = json.loads(request.body)
+            name = data.get('name')
+            controller_id = data.get('controller_id')
+            protocol = data.get('protocol')
+            contentEncoding = data.get('contentEncoding')
+            domain = data.get('domain')
+            port = data.get('port')
+            path = data.get('path')
+            method = data.get('method')
+            http_header = data.get('http_header')
+            assertion_type = data.get('assertion_type')
+            assertion_string = data.get('assertion_string')
+            argument = data.get('argument')
+            extractor = data.get('extractor')
+            comment = data.get('comment')
+            sample = HTTPSampleProxy.objects.create(id=primaryKey(), name=name, protocol=protocol, comment=comment, is_valid='true',
+                          domain=domain, port=port, path=path, method=method, http_header_id=http_header, assert_type=assertion_type,
+                          assert_content=assertion_string, argument=argument, extractor=extractor, controller_id=controller_id,
+                          contentEncoding=contentEncoding, create_time=strfTime(), update_time=strfTime(), operator=username)
+            logger.info(f'Http Sample {name} {sample.id} is save success, operator: {username}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
@@ -86,7 +101,7 @@ def edit_sample(request):
             logger.error(traceback.format_exc())
             return  result(code=1, msg='Edit failure ~')
     else:
-        group_id = request.GET.get('id')
-        controllers = TransactionController.objects.get(id=group_id)
-        groups = ThreadGroup.objects.all().order_by('-update_time')
-        return render(request, 'performance/controller/edit.html', context={'controllers': controllers, 'groups': groups})
+        sample_id = request.GET.get('id')
+        samples = HTTPSampleProxy.objects.get(id=sample_id)
+        controllers = TransactionController.objects.all().order_by('-update_time')
+        return render(request, 'performance/httpSample/edit.html', context={'controllers': controllers, 'samples': samples})

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
+import json
 import traceback
 import xml.etree.ElementTree as ET
 
@@ -141,14 +142,19 @@ class JMeter:
                 stringProps = ele.findall('stringProp')
                 bool_prop_encode = [bool_prop.text for bool_prop in ele.findall('boolProp')
                                     if bool_prop.attrib['name'] == 'HTTPArgument.always_encode'][0]
+                argument_name = None
+                argument_value = None
                 for stringProp in stringProps:
                     if stringProp.attrib['name'] == 'Argument.name':
                         argument_name = stringProp.text
                     if stringProp.attrib['name'] == 'Argument.value':
                         argument_value = stringProp.text
-                arguments.update({argument_name: {argument_name: argument_value}, 'encode': bool_prop_encode})
+                if argument_name:
+                    arguments.update({argument_name: {argument_name: argument_value, 'bool_prop_encode': bool_prop_encode}})
+                else:
+                    arguments.update({'request_body_json': json.loads(argument_value)})
         except:
-            pass
+            print(traceback.format_exc())
         return arguments
 
     def get_http_sample_dict(self, parent_node):
