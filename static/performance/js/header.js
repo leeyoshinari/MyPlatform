@@ -39,7 +39,7 @@ function save_header(url, location_url) {
     })
 }
 
-function edit_controller(url, location_url, group_id) {
+function edit_header(url, location_url) {
     let controller_id = document.getElementById('ID').value;
     let groupid = document.getElementById('groupid').value;
     let name = document.getElementById('name').value;
