@@ -51,7 +51,7 @@
         {% endif %}
             <td><a href="{% url 'perf:group_edit' %}?id={{ ctl.thread_group.id }}">{{ ctl.thread_group.name }}</a></td>
             <td><a href="{% url 'perf:controller_edit' %}?id={{ ctl.id }}">{{ ctl.name }}</a></td>
-            <td>{{ ctl.comment }}</td>
+            <td title="{{ ctl.comment }}">{{ ctl.comment }}</td>
             <td style="text-align: center;">{{ ctl.create_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ ctl.update_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ ctl.operator }}</td>

@@ -47,8 +47,9 @@
             </div>
             <div class="value-div">
                 <select id="protocol">
-                    <option value="GET">HTTP</option>
-                    <option value="POST">HTTPS</option>
+                    {% for k, v in protocols.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
@@ -84,13 +85,9 @@
             </div>
             <div class="value-div">
                 <select id="method">
-                    <option value="GET">GET</option>
-                    <option value="POST">POST</option>
-                    <option value="HEAD">HEAD</option>
-                    <option value="PUT">PUT</option>
-                    <option value="OPTIONS">OPTIONS</option>
-                    <option value="DELETE">DELETE</option>
-                    <option value="TRACE">TRACE</option>
+                    {% for k, v in methods.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
@@ -102,8 +99,9 @@
             <div class="value-div">
                 <label>Data Type:</label>
                 <select id="data_type" style="width: 8%; margin-right: 2%;" onchange="change_data_type();">
-                    <option value="json">Json Data</option>
-                    <option value="form">Form Data</option>
+                    {% for k, v in data_types.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
                 </select>
                 <button onclick="add_arguments();">Add Argument + </button>
                 <button onclick="delete_arguments();">Del Argument - </button>
@@ -131,9 +129,9 @@
             <div class="value-div">
                 <label>Type:</label>
                 <select id="assertion_type" style="width: 8%;">
-                    <option value="2">Contain</option>
-                    <option value="8">Equal</option>
-                    <option value="1">Match</option>
+                    {% for k, v in assertion_types.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
                 </select>
                 <label style="margin-left: 2%;">String:</label>
                 <input type="text" id="assertion_string" placeholder="Please input assert string ~" style="width: 32%;">
@@ -158,8 +156,9 @@
             </div>
             <div class="value-div">
                 <select id="contentEncoding">
-                    <option value="">None</option>
-                    <option value="UTF-8" selected>UTF-8</option>
+                    {% for k, v in contentEncodings.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
@@ -190,17 +189,17 @@
             let c = document.getElementById('add_arguments');
             let datatype = document.getElementById('data_type').value;
             if (datatype === 'json') {
-                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%;"><label>Key:</label>' +
-                    '<input type="text" placeholder="Please input argument key ~" style="width: 19%;">\n' +
-                    '<label style="margin-left: 2%;">Value:</label><input type="text" placeholder=' +
-                    '"Please input argument value ~" style="width: 21%;"></div>';
+                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Key:</label>' +
+                    '<input type="text" placeholder="Please input argument key ~" style="width: 35%;">\n' +
+                    '<label style="margin-left: 3%;">Value:</label><input type="text" placeholder=' +
+                    '"Please input argument value ~" style="width: 45%;"></div>';
                 c.appendChild(document.createRange().createContextualFragment(s));
             } else {
-                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%;"><label>Key:</label>' +
-                    '<input type="text" placeholder="Please input argument key ~" style="width: 13%;">\n' +
+                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 53%;"><label>Key:</label>' +
+                    '<input type="text" placeholder="Please input argument key ~" style="width: 25%;">\n' +
                     '<label style="margin-left: 2%;">Value:</label><input type="text" placeholder=' +
-                    '"Please input argument value ~" style="width: 16%;"><label style="margin-left: 2%;">Is Enoding:</label>' +
-                    '<select id="is_Encoding" style="width: 6%;"><option value="false">False</option><option value="true">True</option></select></div>';
+                    '"Please input argument value ~" style="width: 32%;"><label style="margin-left: 2%;">Is Enoding:</label>' +
+                    '<select id="is_Encoding" style="width: 12%;"><option value="false">False</option><option value="true">True</option></select></div>';
                 c.appendChild(document.createRange().createContextualFragment(s));
             }
         }

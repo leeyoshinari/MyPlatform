@@ -19,6 +19,7 @@ from . import planViews
 from . import threadViews
 from . import controllerViews
 from . import sampleViews
+from . import headerViews
 
 app_name = 'perf'
 urlpatterns = [
@@ -42,7 +43,12 @@ urlpatterns = [
     path('controller/edit', controllerViews.edit_group, name='controller_edit'),
 
     path('sample', sampleViews.home, name='sample_home'),
+    path('sample/header', sampleViews.get_from_header, name='sample_header_home'),
     path('sample/add', sampleViews.add_sample, name='sample_add'),
     path('sample/edit', sampleViews.edit_sample, name='sample_edit'),
+
+    path('header', headerViews.home, name='header_home'),
+    path('header/add', headerViews.add_header, name='header_add'),
+    path('header/edit', headerViews.edit_header, name='header_edit'),
 
 ] if settings.IS_PERF == 1 else []

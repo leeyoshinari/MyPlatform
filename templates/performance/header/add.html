@@ -1,0 +1,80 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+    <script src="{% static 'performance/js/header.js' %}"></script>
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:header_home' %}">HTTP Header</a>
+    <span>>></span>
+    <span>Add HTTP Header</span>
+{% endblock %}
+
+{% block detail %}
+    <div class="list-body">
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Name:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="name" placeholder="Please input name ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Method:</label>
+            </div>
+            <div class="value-div">
+                <select id="method">
+                    {% for k, v in methods.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Request Header:</label>
+            </div>
+            <div class="value-div">
+                <button onclick="add_headers();">Add Header + </button>
+                <button onclick="delete_headers();">Del Header - </button>
+            </div>
+            <div id="add_headers"></div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Comment:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="comment" placeholder="Please input http header comment ~">
+            </div>
+        </div>
+    </div>
+    <div class="list-footer">
+        <div>
+            <a href="{% url 'perf:header_home' %}">Cancel</a>
+            <a href="#" onclick="save_header('{% url 'perf:header_add' %}', '{% url 'perf:header_home' %}')">Submit</a>
+        </div>
+    </div>
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+        function add_headers () {
+            let c = document.getElementById('add_headers');
+            let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Key:</label>' +
+                '<input type="text" placeholder="Please input request header key ~" style="width: 35%;">\n' +
+                '<label style="margin-left: 3%;">Value:</label><input type="text" placeholder=' +
+                '"Please input request header value ~" style="width: 45%;"></div>';
+            c.appendChild(document.createRange().createContextualFragment(s));
+        }
+        function delete_headers () {
+            let c = document.getElementById('add_headers');
+            let div = c.getElementsByTagName('div');
+            if(div.length > 0) {
+                c.removeChild(div[div.length - 1]);
+            }
+        }
+    </script>
+{% endblock %}
