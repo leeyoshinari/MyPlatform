@@ -131,3 +131,4 @@ migrations/
 .idea/
 temp/
 logs/
+files/

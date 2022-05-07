@@ -105,6 +105,3 @@ def parse_jmx(request):
                                         extractor=sample.get('extractor'), create_time=strfTime(), update_time=strfTime(), operator=username)
         except:
             logger.error(traceback.format_exc())
-
-
-

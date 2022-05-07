@@ -62,7 +62,7 @@
         <div class="row-cols">
             <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Scheduler, specify Thread lifetime. true: need to set duration; false: thread groups run forever.">?</span></div>
-                <label>scheduler: </label>
+                <label>Scheduler: </label>
             </div>
             <div class="value-div">
                 <select id="scheduler" onchange="change_duration();">
@@ -78,6 +78,53 @@
             </div>
             <div class="value-div">
                 <input type="text" id="duration" placeholder="Please input duration ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="CSV Data Set Config, that stores variables used during running.">?</span></div>
+                <label>CSVDataSet:</label>
+            </div>
+            <div class="value-div">
+                <button onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 12%;">Upload File</button>
+                <button id="download_file" onclick="download_file('{% static 'files/' %}')" style="width: 12%; display: none;">Download File</button>
+                <input type="file" id="fileUpload-input" style="display: none;">
+                <input type="text" id="file_path" value="" readonly style="width: 30%; margin-left: 2%; border: none; background-color: white;" disabled>
+            </div>
+            <div class="small-div" style="display:none;">
+                <div class="label">
+                    <div class="helpstyle"><span data-tooltip="Variable Names (comma-delimited). Each variable corresponds to each column in the CSV file.">?</span></div>
+                    <label>Variable Names:</label>
+                </div>
+                <input type="text" id="variable_names" placeholder="Please input variable names, split by ',' ~">
+            </div>
+            <div class="small-div" style="display:none;">
+                <div class="label">
+                    <div class="helpstyle"><span data-tooltip="Delimiter (use '\t' for tab)">?</span></div>
+                    <label>Delimiter:</label>
+                </div>
+                <input type="text" id="delimiter" placeholder="Please input delimiter ~">
+            </div>
+            <div class="small-div" style="display:none;">
+                <div class="label">
+                    <div class="helpstyle"><span data-tooltip="Recycle on EOF ? True: recycle when EOF. False: stop when EOF.">?</span></div>
+                    <label>Recycle:</label>
+                </div>
+                <select id="recycle">
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                </select>
+            </div>
+            <div class="small-div" style="display:none;">
+                <div class="label">
+                    <div class="helpstyle"><span data-tooltip="Sharing mode">?</span></div>
+                    <label>Share Mode:</label>
+                </div>
+                <select id="share_mode">
+                    <option value="shareMode.all">All threads</option>
+                    <option value="shareMode.group">Current thread group</option>
+                    <option value="shareMode.thread">Current thread</option>
+                </select>
             </div>
         </div>
         <div class="row-cols">

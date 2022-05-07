@@ -37,6 +37,7 @@ urlpatterns = [
     path('group', threadViews.home, name='group_home'),
     path('group/add', threadViews.add_group, name='group_add'),
     path('group/edit', threadViews.edit_group, name='group_edit'),
+    path('group/file/upload', threadViews.upload_file, name='group_upload_file'),
 
     path('controller', controllerViews.home, name='controller_home'),
     path('controller/add', controllerViews.add_group, name='controller_add'),

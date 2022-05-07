@@ -42,6 +42,8 @@ class ThreadGroup(models.Model):
     ramp_time = models.IntegerField(null=True, verbose_name='ramp_time')
     duration = models.IntegerField(null=True, verbose_name='duration')
     scheduler = models.CharField(null=True, max_length=8, verbose_name='scheduler')
+    # cookie = models.JSONField(null=True, verbose_name='cookie')
+    file = models.JSONField(null=True, verbose_name='CSVDataSet')
     comment = models.CharField(null=True, max_length=200, verbose_name='comment')
     create_time = models.DateTimeField(verbose_name='Create time')
     update_time = models.DateTimeField(verbose_name='Update time')

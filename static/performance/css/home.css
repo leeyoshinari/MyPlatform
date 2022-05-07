@@ -86,7 +86,7 @@ body{
 	position: fixed;
 	top: 30px;
 	width: 90%;
-	z-index: 100;
+	z-index: 10;
 	background-color: white;
 }
 .toolbar .navigate {
@@ -209,6 +209,28 @@ tr:hover td {
     width: 15%;
 	height: 25px;
 }
+.row-cols .small-div {
+    width: 55%;
+    margin-left: 32%;
+    margin-top: 1%;
+}
+.row-cols .small-div .label {
+    width: 20%;
+    float: left;
+    margin-right: 1%;
+}
+.row-cols .small-div label {
+    float: right;
+}
+.row-cols .small-div input {
+    width: 60%;
+    height: 22px;
+}
+.row-cols .small-div select {
+    width: 60%;
+    height: 25px;
+}
+
 .list-footer {
     margin-top: 2%;
     margin-bottom: 3%;
@@ -367,39 +389,22 @@ tr:hover td {
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 198;
     background-color: rgba(0, 0, 0, .6);
 }
 .modal_gif {
     display: none;
     position: absolute;
-    width: 100px;
-    z-index: 99;
-    height: 100px;
-    /* 水平垂直居中 */
-    left: 45%;
-    top: 45%;
+    width: 130px;
+    z-index: 199;
+    height: 180px;
+    left: 48%;
+    top: 48%;
     transform: translate(-50%,-50%);
-    /* 超出高度右侧出现垂直滚动条 */
     overflow:auto;
     overflow-x:hidden;
     background: url("loading.gif") no-repeat;
-    background-size: 80px 80px;
-}
-
-#progressBar {
-	position: absolute;
-	top: 50%;
-	left: 34%;
-	width: 20%;
-	height: 3%;
-}
-#percentage {
-	position: absolute;
-	top: 50%;
-	left: 43%;
-	font-weight: bolder;
-	font-size: large;
-	color: #d9534f;
+    background-size: 100px 136px;
 }
 
 .helpstyle {
@@ -420,7 +425,7 @@ tr:hover td {
 }
 [data-tooltip] {
 	position: relative;
-	z-index: 99;
+	z-index: 9;
 	cursor: help;
 }
 [data-tooltip]:before,

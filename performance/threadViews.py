@@ -2,17 +2,22 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
+import os
+import time
 import logging
 import traceback
 from django.shortcuts import render
-from .models import TestPlan, GlobalVariable, ThreadGroup, TransactionController
-from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
+from django.conf import settings
+from .models import TestPlan, ThreadGroup
 from common.Result import result
 from common.generator import primaryKey, strfTime
 # Create your views here.
 
 
 logger = logging.getLogger('django')
+file_path_root = os.path.join(settings.STATICFILES_DIRS[0], 'files')
+if not os.path.exists(file_path_root):
+    os.mkdir(file_path_root)
 
 
 def home(request):
@@ -55,9 +60,19 @@ def add_group(request):
             duration = request.POST.get('duration')
             duration = duration if duration else None
             comment = request.POST.get('comment')
+            file_path = request.POST.get('file_path')
+            if file_path:
+                file_dict = {
+                    'file_path': file_path,
+                    'variable_names': request.POST.get('variable_names'),
+                    'delimiter': request.POST.get('delimiter'),
+                    'recycle': request.POST.get('recycle'),
+                    'share_mode': request.POST.get('share_mode')}
+            else:
+                file_dict = None
             group = ThreadGroup.objects.create(id=primaryKey(), name=name, num_threads=num_threads, ramp_time=ramp_time,
                                 duration=duration, comment=comment, scheduler=scheduler, is_valid='true', plan_id=plan_id,
-                                create_time=strfTime(), update_time=strfTime(), operator=username)
+                                file=file_dict, create_time=strfTime(), update_time=strfTime(), operator=username)
             logger.info(f'Thread Group {name} {group.id} is save success, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -103,3 +118,22 @@ def edit_group(request):
         groups = ThreadGroup.objects.get(id=group_id)
         plans = TestPlan.objects.all().order_by('-update_time')
         return render(request, 'performance/threadGroup/edit.html', context={'groups': groups, 'plans': plans})
+
+
+def upload_file(request):
+    if request.method == 'POST':
+        form = request.FILES['file']
+        file_name = form.name
+        plan_id = request.POST.get('plan_id')
+        try:
+            file_folder = os.path.join(file_path_root, plan_id)
+            if not os.path.exists(file_folder):
+                os.mkdir(file_folder)
+            file_path = os.path.join(file_folder, file_name)
+            with open(file_path, 'wb') as f:
+                f.write(form.file.read())
+            return result(msg=f'{file_name} Upload Success ~', data=f'{plan_id}/{file_name}')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg=f'{file_name} Upload Failure ~', data=file_name)
+

@@ -6,8 +6,7 @@ import json
 import logging
 import traceback
 from django.shortcuts import render
-from .models import TestPlan, GlobalVariable, ThreadGroup, TransactionController
-from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
+from .models import HTTPRequestHeader, HTTPSampleProxy, TransactionController
 from common.Result import result
 from common.generator import primaryKey, strfTime
 # Create your views here.
