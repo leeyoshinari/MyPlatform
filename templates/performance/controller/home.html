@@ -44,8 +44,8 @@
 
 {% block table_body %}
     {% for ctl in controllers %}
-        {% if forloop.counter|divisibleby:2 %}
-            <tr style="background-color: lightcyan">
+        {% if ctl.is_valid == 'false' %}
+            <tr style="background-color: #ffd5d5">
         {% else %}
             <tr>
         {% endif %}

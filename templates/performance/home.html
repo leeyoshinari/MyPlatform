@@ -28,19 +28,19 @@
         <div class="list-icon">
             <a onclick="get_root_folder()">Test Result</a>
         </div>
-        <div class="list-icon">
+        <div class="list-icon" title="Corresponds to Test Plan in JMeter.">
             <a href="{% url 'perf:plan_home' %}">Test Plan</a>
         </div>
-        <div class="list-icon">
+        <div class="list-icon" title="Corresponds to Thread Group in JMeter.">
             <a href="{% url 'perf:group_home' %}">Thread Group</a>
         </div>
-        <div class="list-icon">
+        <div class="list-icon" title="Corresponds to Transaction Controller in JMeter.">
             <a href="{% url 'perf:controller_home' %}">Controller</a>
         </div>
-        <div class="list-icon">
+        <div class="list-icon" title="Corresponds to HTTP Request in JMeter.">
             <a href="{% url 'perf:sample_home' %}">HTTP Sample</a>
         </div>
-        <div class="list-icon">
+        <div class="list-icon" title="Corresponds to HTTP Header Manager in JMeter.">
             <a href="{% url 'perf:header_home' %}">HTTP Header</a>
         </div>
         <div class="list-icon">
@@ -89,7 +89,6 @@
 {% endblock %}
 {% block backjs %}
     <script src="{% static 'js/fenye.js' %}"></script>
-{#    <script src="{% static 'js/home.js' %}"></script>#}
 {% endblock %}
 {% block define_js %}
 {% endblock %}

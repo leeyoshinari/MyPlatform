@@ -103,7 +103,7 @@
                     <div class="helpstyle"><span data-tooltip="Delimiter (use '\t' for tab)">?</span></div>
                     <label>Delimiter:</label>
                 </div>
-                <input type="text" id="delimiter" placeholder="Please input delimiter ~">
+                <input type="text" id="delimiter" placeholder="Please input delimiter ~" value=",">
             </div>
             <div class="small-div" style="display:none;">
                 <div class="label">
@@ -117,13 +117,13 @@
             </div>
             <div class="small-div" style="display:none;">
                 <div class="label">
-                    <div class="helpstyle"><span data-tooltip="Sharing mode">?</span></div>
+                    <div class="helpstyle"><span data-tooltip="Threads Sharing mode">?</span></div>
                     <label>Share Mode:</label>
                 </div>
                 <select id="share_mode">
-                    <option value="shareMode.all">All threads</option>
-                    <option value="shareMode.group">Current thread group</option>
-                    <option value="shareMode.thread">Current thread</option>
+                    {% for k, v in share_mode.items %}
+                        <option value="{{ v }}">{{ k}}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>

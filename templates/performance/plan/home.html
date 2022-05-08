@@ -37,8 +37,8 @@
 
 {% block table_body %}
     {% for plan in plans %}
-        {% if forloop.counter|divisibleby:2 %}
-            <tr style="background-color: lightcyan">
+        {% if plan.is_valid == 'false' %}
+            <tr style="background-color: #ffd5d5">
         {% else %}
             <tr>
         {% endif %}

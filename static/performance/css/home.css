@@ -52,7 +52,7 @@ body{
 	float: left;
 	height: 100%;
 	min-width: 180px;
-	z-index: -1;
+	z-index: 20;
 	/*border: 1px solid #000000;*/
 	background-color: lavender;
 }
@@ -150,7 +150,7 @@ th {
 }
 .table_style {
     margin: auto;
-    background-color: #e2e2e2;
+    background-color: darkgray;
 }
 
 td {
@@ -209,6 +209,34 @@ tr:hover td {
     width: 15%;
 	height: 25px;
 }
+
+.list-body .row-cookie {
+	width: 93%;
+    margin-bottom: 1%;
+    margin-left: 3%;
+}
+.list-body .row-cookie label{
+	margin-top: 5px;
+    margin-left: 1%;
+}
+.list-body .row-cookie input{
+	width: 12%;
+	height: 25px;
+}
+.list-body .row-cookie #cookie-value {
+	width: 30%;
+}
+.list-body .row-cookie #cookie-domain {
+	width: 13%;
+}
+.list-body .row-cookie #cookie-path {
+	width: 15%;
+}
+.list-body .row-cookie select{
+	width: 5%;
+	height: 25px;
+}
+
 .row-cols .small-div {
     width: 55%;
     margin-left: 32%;
@@ -415,7 +443,7 @@ tr:hover td {
     font-size: 9px;
     color: #fff;
     text-shadow: #254162 1px -1px 3px;
-    font-weight: bolder;
+    font-weight: normal;
     display: flex;
     align-items: center;
     justify-content: center;

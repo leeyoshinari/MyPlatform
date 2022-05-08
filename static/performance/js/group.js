@@ -90,6 +90,47 @@ function edit_group(url, location_url, plan_id) {
     })
 }
 
+function save_cookie(url, location_url, plan_id) {
+    let cookies = document.getElementsByClassName('row-cookie');
+    if (cookies.length < 1) {
+        $.Toast('Please add cookie firstly ~', 'warning');
+        return;
+    }
+    let s = [];
+    for (let i=0; i<cookies.length; i++) {
+        let values = cookies[i].getElementsByTagName('input');
+        let cookie_dict = {
+            name: values[0].value,
+            value: values[1].value,
+            domain: values[2].value,
+            path: values[3].value,
+            secure: cookies[i].getElementsByTagName('select')[0].value
+        }
+        s.push(cookie_dict)
+    }
+
+    let post_data = {
+        plan_id: plan_id,
+        cookies: s
+    }
+
+    $.ajax({
+        type: 'post',
+        url: url,
+        data: JSON.stringify(post_data),
+        dataType: 'json',
+        contentType: 'application/json; charset=utf-8',
+        success: function (data) {
+            if(data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+                window.location.href = location_url;
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
+}
+
 function upload_file(url) {
     let plan_id = document.getElementById('planid').value;
     let fileUpload_input = document.getElementById("fileUpload-input");

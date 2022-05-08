@@ -12,6 +12,12 @@ function search(url) {
 }
 
 function Delete(url, location_url, delete_type, delete_id) {
+    if (delete_type === 'header') {
+        if (delete_id === 1 || delete_id === 2) {
+            $.Toast('Default request header do not be deleted ~', 'warning');
+            return;
+        }
+    }
     let post_data = {
         type: delete_type,
         id: delete_id

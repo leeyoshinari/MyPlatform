@@ -39,11 +39,7 @@
 
 {% block table_body %}
     {% for v in variables %}
-        {% if forloop.counter|divisibleby:2 %}
-            <tr style="background-color: lightcyan">
-        {% else %}
             <tr>
-        {% endif %}
             <td><a href="{% url 'perf:plan_edit' %}?id={{ v.plan.id }}">{{ v.plan.name }}</a></td>
             <td style="text-align: center;"><a href="{% url 'perf:plan_edit_variable' %}?id={{ v.id }}">{{ v.name }}</a></td>
             <td style="text-align: center;">{{ v.value }}</td>

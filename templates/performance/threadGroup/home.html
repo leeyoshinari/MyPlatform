@@ -34,18 +34,18 @@
     <tr class="table_style">
         <th width="12%">Plan Name</th>
         <th width="10%">Name</th>
-        <th width="19%">Comment</th>
+        <th width="17%">Comment</th>
         <th width="13%">Create Time</th>
         <th width="13%">Update Time</th>
         <th width="10%">Operator</th>
-        <th width="23%">Actions</th>
+        <th width="25%">Actions</th>
     </tr>
 {% endblock %}
 
 {% block table_body %}
     {% for group in groups %}
-        {% if forloop.counter|divisibleby:2 %}
-            <tr style="background-color: lightcyan">
+        {% if group.is_valid == 'false' %}
+            <tr style="background-color: #ffd5d5">
         {% else %}
             <tr>
         {% endif %}
@@ -62,6 +62,7 @@
                 {% else %}
                     <a href="#" onclick="set_status('group', '{{ group.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
                 {% endif %}
+                <a href="{% url 'perf:group_cookie' %}?id={{ group.id }}">Set Cookie</a>
                 <a href="{% url 'perf:controller_home' %}?id={{ group.id }}">Controller</a>
                 {% if plan_id %}
                     <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:group_home' %}?id={{ plan_id }}', 'group', {{ group.id }})">Delete</a>

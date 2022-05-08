@@ -44,8 +44,8 @@
 
 {% block table_body %}
     {% for sample in samples %}
-        {% if forloop.counter|divisibleby:2 %}
-            <tr style="background-color: lightcyan">
+        {% if sample.is_valid == 'false' %}
+            <tr style="background-color: #ffd5d5">
         {% else %}
             <tr>
         {% endif %}
@@ -57,10 +57,10 @@
             <td style="text-align: center;">{{ sample.operator }}</td>
             <td>
                 <a href="{% url 'perf:sample_edit' %}?id={{ sample.id }}">Edit</a>
-                {% if group.is_valid == 'true' %}
-                    <a href="#" onclick="set_status('sample', '{{ group.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                {% if sample.is_valid == 'true' %}
+                    <a href="#" onclick="set_status('sample', '{{ sample.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
                 {% else %}
-                    <a href="#" onclick="set_status('sample', '{{ group.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
+                    <a href="#" onclick="set_status('sample', '{{ sample.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
                 {% endif %}
                 {% if controller_id %}
                     <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:sample_home' %}?id={{ controller_id }}', 'sample', {{ sample.id }})">Delete</a>

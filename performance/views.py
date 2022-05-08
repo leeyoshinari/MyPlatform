@@ -38,11 +38,13 @@ def delete(request):
                 TransactionController.objects.get(id=delete_id).delete()
             if delete_type == 'sample':
                 HTTPSampleProxy.objects.get(id=delete_id).delete()
+            if delete_type == 'header':
+                HTTPRequestHeader.objects.get(id=delete_id).delete()
             logger.info(f'{delete_type} {delete_id} is deleted success ~')
             return result(msg='Delete success ~')
         except ProtectedError:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Delete failure, because they are referenced through protected foreign keys')
+            return result(code=1, msg='Delete failure, because it is referenced through protected foreign keys ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Delete failure ~')

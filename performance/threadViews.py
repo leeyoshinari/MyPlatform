@@ -3,7 +3,7 @@
 # Author: leeyoshinari
 
 import os
-import time
+import json
 import logging
 import traceback
 from django.shortcuts import render
@@ -18,6 +18,7 @@ logger = logging.getLogger('django')
 file_path_root = os.path.join(settings.STATICFILES_DIRS[0], 'files')
 if not os.path.exists(file_path_root):
     os.mkdir(file_path_root)
+share_mode = {'All threads': 'shareMode.all','Current thread group': 'shareMode.group', 'Current thread': 'shareMode.thread'}
 
 
 def home(request):
@@ -82,7 +83,8 @@ def add_group(request):
         plan_id = request.GET.get('id')
         plan_id = int(plan_id) if plan_id else plan_id
         plans = TestPlan.objects.all().order_by('-update_time')
-        return render(request, 'performance/threadGroup/add.html', context={'plan_id': plan_id, 'plans': plans})
+        return render(request, 'performance/threadGroup/add.html', context={'plan_id': plan_id, 'plans': plans, 'share_mode': share_mode})
+
 
 def edit_group(request):
     if request.method == 'POST':
@@ -97,6 +99,16 @@ def edit_group(request):
             duration = request.POST.get('duration')
             duration = duration if duration else None
             comment = request.POST.get('comment')
+            file_path = request.POST.get('file_path')
+            if file_path:
+                file_dict = {
+                    'file_path': file_path,
+                    'variable_names': request.POST.get('variable_names'),
+                    'delimiter': request.POST.get('delimiter'),
+                    'recycle': request.POST.get('recycle'),
+                    'share_mode': request.POST.get('share_mode')}
+            else:
+                file_dict = None
             groups = ThreadGroup.objects.get(id=group_id)
             groups.name = name
             groups.plan_id = plan_id
@@ -105,6 +117,7 @@ def edit_group(request):
             groups.scheduler = scheduler
             groups.duration = duration
             groups.comment = comment
+            groups.file = file_dict
             groups.update_time = strfTime()
             groups.operator = username
             groups.save()
@@ -117,7 +130,7 @@ def edit_group(request):
         group_id = request.GET.get('id')
         groups = ThreadGroup.objects.get(id=group_id)
         plans = TestPlan.objects.all().order_by('-update_time')
-        return render(request, 'performance/threadGroup/edit.html', context={'groups': groups, 'plans': plans})
+        return render(request, 'performance/threadGroup/edit.html', context={'groups': groups, 'plans': plans, 'share_mode': share_mode})
 
 
 def upload_file(request):
@@ -136,4 +149,33 @@ def upload_file(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg=f'{file_name} Upload Failure ~', data=file_name)
+
+
+def edit_cookie(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            data = json.loads(request.body)
+            plan_id = data.get('plan_id')
+            cookies = data.get('cookies')
+            group = ThreadGroup.objects.get(id=plan_id)
+            group.cookie = cookies
+            group.update_time = strfTime()
+            group.operator = username
+            group.save()
+            logger.info(f'Thread Group {group.name} {group.id} cookies is save success, operator: {username}')
+            return result(msg='Save success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Save failure ~')
+    else:
+        try:
+            username = request.user.username
+            group_id = request.GET.get('id')
+            cookies = ThreadGroup.objects.get(id=group_id)
+            logger.info(f'Get thread group cookies success, operator: {username}')
+            return render(request, 'performance/threadGroup/cookie.html', context={'cookies': cookies})
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get cookies failure ~')
 
