@@ -30,20 +30,24 @@ def home(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 15
+            page_size = int(page_size) if page_size else 20
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word and plan_id:
+                total_page = ThreadGroup.objects.filter(plan_id=plan_id, name__contains=key_word).count()
                 groups = ThreadGroup.objects.filter(plan_id=plan_id, name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
             elif plan_id and not key_word:
+                total_page = ThreadGroup.objects.filter(plan_id=plan_id).count()
                 groups = ThreadGroup.objects.filter(plan_id=plan_id).order_by('-update_time')[page_size * (page - 1): page_size * page]
             elif key_word and not plan_id:
+                total_page = ThreadGroup.objects.filter(name__contains=key_word).count()
                 groups = ThreadGroup.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
             else:
+                total_page = ThreadGroup.objects.all().count()
                 groups = ThreadGroup.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get thread group success, operator: {username}')
             return render(request, 'performance/threadGroup/home.html', context={'groups': groups, 'page': page, 'page_size': page_size,
-                                                                     'key_word': key_word, 'plan_id': plan_id})
+                                                                     'key_word': key_word, 'plan_id': plan_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get test plan failure ~')

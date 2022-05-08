@@ -18,7 +18,7 @@
                 <label>ID:</label>
             </div>
             <div class="value-div">
-                <input type="text" id="ID" readonly value="{{ groups.id }}">
+                <input type="text" id="ID" readonly value="{{ groups.id }}" disabled>
             </div>
         </div>
         <div class="row-cols">
@@ -98,7 +98,7 @@
                 <div class="value-div">
                     <button onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 12%;">Upload File</button>
                     <button id="download_file" onclick="download_file('{% static 'files/' %}')" style="width: 12%;">Download File</button>
-                    <input type="file" id="fileUpload-input" style="display: none;">
+                    <input type="file" id="fileUpload-input" accept=".xls,.xlsx,.csv,.txt" style="display: none;">
                     <input type="text" id="file_path" value="{{ groups.file.file_path }}" readonly style="width: 30%; margin-left: 2%; border: none; background-color: white;" disabled>
                 </div>
                 <div class="small-div">

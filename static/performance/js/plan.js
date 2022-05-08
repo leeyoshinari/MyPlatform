@@ -115,3 +115,60 @@ function edit_var(url, location_url, plan_id) {
         }
     })
 }
+
+function upload_file(url) {
+    let fileUpload_input = document.getElementById("fileUpload-input");
+    fileUpload_input.click();
+
+    fileUpload_input.onchange = function (event) {
+        $('.modal_cover').css("display", "block");
+        $('.modal_gif').css("display", "block");
+        let files = event.target.files;
+        let total_files = files.length;
+        if (total_files < 1) {
+            $('.modal_cover').css("display", "none");
+            $('.modal_gif').css("display", "none");
+            return;
+        }
+
+        for (let i=0; i<total_files; i++) {
+            let form_data = new FormData();
+            form_data.append("file", files[i]);
+            form_data.append("name", files[i].name);
+            form_data.append("type", files[i].type ? files[i].type : "");
+            form_data.append("size", files[i].size);
+            form_data.append("index", i + 1);
+            form_data.append("total", total_files);
+
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", url);
+            xhr.setRequestHeader("processData", "false");
+
+            xhr.upload.onprogress = function(event) {
+                if (event.lengthComputable) {
+                }
+            };
+            xhr.onload = function(event) {
+            }
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if(xhr.status === 200) {
+                        let res = JSON.parse(xhr.responseText);
+                        if (res['code'] === 0) {
+                            $.Toast(res['msg'], 'success');
+                            window.location.reload();
+                        } else {
+                            $.Toast(res['msg'], 'error');
+                        }
+                    } else {
+                        $.Toast('File Upload Failure ~', 'error');
+                    }
+                }
+                $('.modal_cover').css("display", "none");
+                $('.modal_gif').css("display", "none");
+            }
+            xhr.send(form_data);
+        }
+    }
+}

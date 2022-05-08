@@ -5,9 +5,11 @@
 import logging
 import traceback
 from django.shortcuts import render
-from .models import TestPlan, GlobalVariable
+from .models import TestPlan, GlobalVariable, ThreadGroup, TransactionController
+from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from common.Result import result
 from common.generator import primaryKey, strfTime
+from .common.parseJmx import read_jmeter_from_byte
 # Create your views here.
 
 
@@ -23,16 +25,18 @@ def home(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 15
+            page_size = int(page_size) if page_size else 20
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word:
+                total_page = TestPlan.objects.filter(name__contains=key_word).count()
                 plans = TestPlan.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
             else:
+                total_page = TestPlan.objects.all().count()
                 plans = TestPlan.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get test plan success, operator: {username}')
             return render(request, 'performance/plan/home.html', context={'plans': plans, 'page': page, 'page_size': page_size,
-                                                                     'key_word': key_word})
+                                                                     'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get test plan failure ~')
@@ -92,20 +96,15 @@ def variable(request):
         try:
             username = request.user.username
             plan_id = request.GET.get('id')
-            page_size = request.GET.get('pageSize')
-            page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
-            page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 15
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word:
-                variables = GlobalVariable.objects.filter(plan_id=plan_id, name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                variables = GlobalVariable.objects.filter(plan_id=plan_id, name__contains=key_word).order_by('-update_time')
             else:
-                variables = GlobalVariable.objects.filter(plan_id=plan_id).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                variables = GlobalVariable.objects.filter(plan_id=plan_id).order_by('-update_time')
 
             logger.info(f'Get variables success, operator: {username}')
-            return render(request, 'performance/plan/variable.html', context={'variables': variables, 'page': page, 'page_size': page_size,
-                                                                     'key_word': key_word, 'plan_id': plan_id})
+            return render(request, 'performance/plan/variable.html', context={'variables': variables, 'key_word': key_word, 'plan_id': plan_id})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get variables failure ~')
@@ -154,3 +153,51 @@ def edit_variable(request):
         var_id = request.GET.get('id')
         variables = GlobalVariable.objects.get(id=var_id)
         return render(request, 'performance/plan/edit_variable.html', context={'variables': variables})
+
+
+def upload_file(request):
+    if request.method == 'POST':
+        username = request.user.username
+        form = request.FILES['file']
+        file_name = form.name
+        file_byte = form.file.read()
+        try:
+            res = read_jmeter_from_byte(file_byte)
+            parse_jmx_to_database(res, username)
+            logger.info(f'{file_name} Import Success, operator: {username}')
+            return result(msg=f'{file_name} Import Success ~', data=file_name)
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg=f'{file_name} Import Failure ~', data=file_name)
+
+
+def parse_jmx_to_database(res, username):
+    try:
+        for plan in res:
+            testPlan = TestPlan.objects.create(id=primaryKey(), name=plan.get('testname'), comment=plan.get('comments'),
+                                    tearDown=plan.get('tearDown_on_shutdown'), serialize=plan.get('serialize_threadgroups'),
+                                    is_valid=plan.get('enabled'), create_time=strfTime(), update_time=strfTime(),
+                                    operator=username)
+            for k, v in plan['arguments'].items():
+                global_variable = GlobalVariable.objects.create(id=primaryKey(), plan_id=testPlan.id, name=k, value=v,
+                                                                create_time=strfTime(), update_time=strfTime(), operator=username)
+            for tg in plan['thread_group']:
+                thread = ThreadGroup.objects.create(id=primaryKey(), plan_id=testPlan.id, name=tg.get('testname'),
+                                    is_valid=tg.get('enabled'), num_threads=tg.get('num_threads'), ramp_time=tg.get('ramp_time'),
+                                    duration=tg.get('duration'), scheduler=tg.get('scheduler'), comment=tg.get('comments'),
+                                    create_time=strfTime(), update_time=strfTime(), operator=username)
+                for ctl in tg['controller']:
+                    controller = TransactionController.objects.create(id=primaryKey(), thread_group_id=thread.id,
+                                    name=ctl.get('testname'), is_valid=ctl.get('enabled'), comment=ctl.get('comments'),
+                                    create_time=strfTime(), update_time=strfTime(), operator=username)
+                    for sample in ctl['http_sample']:
+                        http = HTTPSampleProxy.objects.create(id=primaryKey(), controller_id=controller.id, name=sample.get('testname'),
+                                    is_valid=sample.get('enabled'), comment=sample.get('sample_dict').get('comments'),
+                                    domain=sample.get('sample_dict').get('domain'), port=sample.get('sample_dict').get('port'),
+                                    protocol=sample.get('sample_dict').get('protocol'), path=sample.get('sample_dict').get('path'),
+                                    method=sample.get('sample_dict').get('method'), contentEncoding=sample.get('sample_dict').get('contentEncoding'),
+                                    argument=sample.get('arguments'), http_header_id=header_type.get(sample.get('sample_dict').get('method')),
+                                    assert_type=sample.get('assertion').get('test_type'), assert_content=sample.get('assertion').get('test_string'),
+                                    extractor=sample.get('extractor'), create_time=strfTime(), update_time=strfTime(), operator=username)
+    except:
+        raise

@@ -29,20 +29,24 @@ def home(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 15
+            page_size = int(page_size) if page_size else 20
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word and ctl_id:
+                total_page = HTTPSampleProxy.objects.filter(controller_id=ctl_id, name__contains=key_word).count()
                 samples = HTTPSampleProxy.objects.filter(controller_id=ctl_id, name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
             elif ctl_id and not key_word:
+                total_page = HTTPSampleProxy.objects.filter(controller_id=ctl_id).count()
                 samples = HTTPSampleProxy.objects.filter(controller_id=ctl_id).order_by('-update_time')[page_size * (page - 1): page_size * page]
             elif key_word and not ctl_id:
+                total_page = HTTPSampleProxy.objects.filter(name__contains=key_word).count()
                 samples = HTTPSampleProxy.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
             else:
+                total_page = HTTPSampleProxy.objects.all().count()
                 samples = HTTPSampleProxy.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get http samples success, operator: {username}')
             return render(request, 'performance/httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
-                                                                     'key_word': key_word, 'controller_id': ctl_id})
+                                                                     'key_word': key_word, 'controller_id': ctl_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get controller failure ~')

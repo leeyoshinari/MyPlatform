@@ -24,16 +24,18 @@ def home(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 15
+            page_size = int(page_size) if page_size else 2
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word:
+                total_page = HTTPRequestHeader.objects.filter(name__contains=key_word).count()
                 headers = HTTPRequestHeader.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
             else:
+                total_page = HTTPRequestHeader.objects.all().count()
                 headers = HTTPRequestHeader.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get controller success, operator: {username}')
             return render(request, 'performance/header/home.html', context={'headers': headers, 'page': page, 'page_size': page_size,
-                                                                     'key_word': key_word})
+                                                                     'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get controller failure ~')

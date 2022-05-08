@@ -14,13 +14,12 @@ from .models import TestPlan, GlobalVariable, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from common.Result import result
 from common.generator import primaryKey, strfTime
-from .common import parseJmx, generateJmx
+from .common.parseJmx import read_jmeter_from_byte
 # Create your views here.
 
 
 header_type = {'GET': 1, 'POST': 2}
 logger = logging.getLogger('django')
-jmx_parser = parseJmx.JMeter()
 
 
 def delete(request):
@@ -78,7 +77,7 @@ def parse_jmx(request):
     if request.method == 'GET':
         try:
             username = request.user.username
-            res = jmx_parser.read_jmeter_from_file()
+            res = read_jmeter_from_byte('')
             for plan in res:
                 testPlan = TestPlan.objects.create(id=primaryKey(), name=plan.get('testname'), comment=plan.get('comments'),
                                         tearDown=plan.get('tearDown_on_shutdown'), serialize=plan.get('serialize_threadgroups'),

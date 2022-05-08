@@ -23,20 +23,24 @@ def home(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 15
+            page_size = int(page_size) if page_size else 20
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word and group_id:
+                total_page = TransactionController.objects.filter(thread_group_id=group_id, name__contains=key_word).count()
                 controllers = TransactionController.objects.filter(thread_group_id=group_id, name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
             elif group_id and not key_word:
+                total_page = TransactionController.objects.filter(thread_group_id=group_id).count()
                 controllers = TransactionController.objects.filter(thread_group_id=group_id).order_by('-update_time')[page_size * (page - 1): page_size * page]
             elif key_word and not group_id:
+                total_page = TransactionController.objects.filter(name__contains=key_word).count()
                 controllers = TransactionController.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
             else:
+                total_page = TransactionController.objects.all().count()
                 controllers = TransactionController.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get controller success, operator: {username}')
             return render(request, 'performance/controller/home.html', context={'controllers': controllers, 'page': page, 'page_size': page_size,
-                                                                     'key_word': key_word, 'group_id': group_id})
+                                                                     'key_word': key_word, 'group_id': group_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get controller failure ~')

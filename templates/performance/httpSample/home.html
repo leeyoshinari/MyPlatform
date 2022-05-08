@@ -27,7 +27,11 @@
         {% else %}
             <input type="text" id="searching" placeholder="Please input key words ~">
         {% endif %}
-        <button onclick="search('{% url 'perf:sample_home' %}?id={{ ctl_id }}')">Search</button>
+        {% if controller_id %}
+            <button onclick="search('{% url 'perf:sample_home' %}?id={{ controller_id }}')">Search</button>
+        {% else %}
+            <button onclick="search('{% url 'perf:sample_home' %}')">Search</button>
+        {% endif %}
     </div>
 {% endblock %}
 {% block table_head %}
@@ -71,4 +75,16 @@
             </td>
         </tr>
     {% endfor %}
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+        let url = '{% url 'perf:sample_home' %}?';
+        {% if key_word %}
+            url += 'keyWord={{ key_word }}&';
+        {% endif %}
+        {% if controller_id %}
+            url += 'id={{ controller_id }}&';
+        {% endif %}
+        PagingManage($('#paging'), {{ total_page }}, {{ page }}, url + 'page=');
+    </script>
 {% endblock %}

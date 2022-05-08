@@ -158,7 +158,7 @@ function upload_file(url) {
             form_data.append("plan_id", plan_id);
 
             let xhr = new XMLHttpRequest();
-            xhr.open("POST", url, false);
+            xhr.open("POST", url);
             xhr.setRequestHeader("processData", "false");
 
             xhr.upload.onprogress = function(event) {

@@ -44,7 +44,7 @@
         {% endif %}
             <td><a href="{% url 'perf:header_edit' %}?id={{ header.id }}">{{ header.id }}</a></td>
             <td><a href="{% url 'perf:header_edit' %}?id={{ header.id }}">{{ header.name }}</a></td>
-            <td>{{ header.method }}</td>
+            <td style="text-align: center;">{{ header.method }}</td>
             <td title="{{ header.comment }}">{{ header.comment }}</td>
             <td style="text-align: center;">{{ header.create_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ header.update_time | date:"Y-m-d H:i:s" }}</td>
@@ -56,4 +56,13 @@
             </td>
         </tr>
     {% endfor %}
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+        {% if key_word %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'perf:header_home' %}?keyWord={{ key_word }}&page=');
+        {% else %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'perf:header_home' %}?page=');
+        {% endif %}
+    </script>
 {% endblock %}

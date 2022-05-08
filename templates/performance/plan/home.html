@@ -11,7 +11,8 @@
 
 {% block detail_action %}
     <a href="{% url 'perf:plan_add' %}">Add Plan</a>
-    <a>Export Plan</a>
+    <a href="#" onclick="upload_file('{% url 'perf:plan_upload_file' %}');">Import Plan</a>
+    <input type="file" id="fileUpload-input" accept=".jmx" style="display: none">
 {% endblock %}
 {% block searchBlock %}
     <div class="search">
@@ -63,4 +64,12 @@
         </tr>
     {% endfor %}
 {% endblock %}
-
+{% block define_js %}
+    <script type="text/javascript">
+        {% if key_word %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'perf:plan_home' %}?keyWord={{ key_word }}&page=');
+        {% else %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'perf:plan_home' %}?page=');
+        {% endif %}
+    </script>
+{% endblock %}
