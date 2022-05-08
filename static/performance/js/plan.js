@@ -3,11 +3,21 @@ function add_plan(url, location_url) {
     let teardown = document.getElementById('tearDown').value;
     let serialize = document.getElementById('serialize').value;
     let comment = document.getElementById('comment').value;
+    let run_type = document.getElementById('run_type').value;
+    let schedule = document.getElementById('schedule').value;
+    let init_number = document.getElementById('init_number').value;
+    let target_number = document.getElementById('target_number').value;
+    let time_setting = document.getElementById('time_setting').value;
 
     let post_data = {
         name: name,
         teardown: teardown,
         serialize: serialize,
+        run_type: run_type,
+        schedule: schedule,
+        init_number: init_number,
+        target_number: target_number,
+        time_setting: time_setting,
         comment: comment
     }
 
@@ -33,12 +43,22 @@ function edit_plan(url, location_url) {
     let teardown = document.getElementById('tearDown').value;
     let serialize = document.getElementById('serialize').value;
     let comment = document.getElementById('comment').value;
+    let run_type = document.getElementById('run_type').value;
+    let schedule = document.getElementById('schedule').value;
+    let init_number = document.getElementById('init_number').value;
+    let target_number = document.getElementById('target_number').value;
+    let time_setting = document.getElementById('time_setting').value;
 
     let post_data = {
         plan_id: plan_id,
         name: name,
         teardown: teardown,
         serialize: serialize,
+        run_type: run_type,
+        schedule: schedule,
+        init_number: init_number,
+        target_number: target_number,
+        time_setting: time_setting,
         comment: comment
     }
 

@@ -23,7 +23,7 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>
+                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads. Default: True.">?</span></div>
                 <label>tearDown: </label>
             </div>
             <div class="value-div">
@@ -35,7 +35,7 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Run Thread Groups consecutively (i.e. one at a time).">?</span></div>
+                <div class="helpstyle"><span data-tooltip="Run Thread Groups consecutively (i.e. one at a time). Default: True.">?</span></div>
                 <label>serialize:</label>
             </div>
             <div class="value-div">
@@ -43,6 +43,56 @@
                     <option value="true">true</option>
                     <option value="false">false</option>
                 </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run type. Special thread group or special TPS.">?</span></div>
+                <label>runType:</label>
+            </div>
+            <div class="value-div">
+                <select id="run_type">
+                    <option value="0">Thread</option>
+                    <option value="1">TPS</option>
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Task type. Regular: manual running. Crontab: set time to auto-run.">?</span></div>
+                <label>Schedule:</label>
+            </div>
+            <div class="value-div">
+                <select id="schedule" onchange="change_schedule();">
+                    <option value="0">Regular</option>
+                    <option value="1">Crontab</option>
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Initial Number, it is used to when thread group just starts running. When 'runType' is 'Thread', it is initial number of thread group. When 'runType' is 'TPS', it is initial number of TPS.">?</span></div>
+                <label>Init Number:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="init_number" placeholder="Please input initial number ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Target Number. it is target number of the test. When 'runType' is 'Thread', it is target number of thread group. When 'runType' is 'TPS', it is target number of TPS.">?</span></div>
+                <label>Target Number:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="target_number" placeholder="Please input target number ~">
+            </div>
+        </div>
+        <div class="row-cols" id="time-setting" style="display: none;">
+            <div class="label-div">
+                <label>Time Setting:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="time_setting" placeholder="Please input the time of Crontab ~">
             </div>
         </div>
         <div class="row-cols">
@@ -61,4 +111,15 @@
         </div>
     </div>
 {% endblock %}
-
+{% block define_js %}
+    <script type="text/javascript">
+        function change_schedule() {
+            let s = document.getElementById('schedule').value;
+            if (s === '0') {
+                document.getElementById('time-setting').style.display = 'none';
+            } else {
+                document.getElementById('time-setting').style.display = '';
+            }
+        }
+    </script>
+{% endblock %}

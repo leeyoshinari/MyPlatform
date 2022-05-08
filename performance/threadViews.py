@@ -6,7 +6,7 @@ import os
 import json
 import logging
 import traceback
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.conf import settings
 from .models import TestPlan, ThreadGroup
 from common.Result import result
@@ -183,3 +183,20 @@ def edit_cookie(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get cookies failure ~')
 
+
+def copy_group(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            group_id = request.GET.get('id')
+            groups = ThreadGroup.objects.get(id=group_id)
+            groups.id = primaryKey()
+            groups.name = groups.name + ' - Copy'
+            groups.update_time = strfTime()
+            groups.operator = username
+            groups.save()
+            logger.info(f'Copy thread group {group_id} success, target thread group is {groups.id}, operator: {username}')
+            return redirect('perf:group_home')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Copy thread group Failure ~')

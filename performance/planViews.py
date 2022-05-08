@@ -4,7 +4,7 @@
 
 import logging
 import traceback
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import TestPlan, GlobalVariable, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from common.Result import result
@@ -48,10 +48,16 @@ def add(request):
             name = request.POST.get('name')
             teardown = request.POST.get('teardown')
             serialize = request.POST.get('serialize')
+            run_type = request.POST.get('run_type')
+            schedule = request.POST.get('schedule')
+            init_number = request.POST.get('init_number')
+            target_number = request.POST.get('target_number')
+            time_setting = request.POST.get('time_setting') if schedule == '1' else None
             comment = request.POST.get('comment')
             plans = TestPlan.objects.create(id=primaryKey(), name=name, tearDown=teardown, serialize=serialize, is_valid='true',
+                            type=run_type, schedule=schedule, init_num=init_number, target_num=target_number,time_setting=time_setting,
                             comment=comment, create_time=strfTime(), update_time=strfTime(), operator=username)
-            logger.info(f'Test plan {name} is save success ~')
+            logger.info(f'Test plan {name} is save success, id is {plans.id}, operator: {username}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
@@ -68,16 +74,26 @@ def edit(request):
             name = request.POST.get('name')
             teardown = request.POST.get('teardown')
             serialize = request.POST.get('serialize')
+            run_type = request.POST.get('run_type')
+            schedule = request.POST.get('schedule')
+            init_number = request.POST.get('init_number')
+            target_number = request.POST.get('target_number')
+            time_setting = request.POST.get('time_setting') if schedule == '1' else None
             comment = request.POST.get('comment')
             plan = TestPlan.objects.get(id=plan_id)
             plan.name = name
             plan.tearDown = teardown
             plan.serialize = serialize
+            plan.type = run_type
+            plan.schedule = schedule
+            plan.init_num = init_number
+            plan.target_num = target_number
+            plan.time_setting = time_setting
             plan.comment = comment
             plan.update_time = strfTime()
             plan.operator = username
             plan.save()
-            logger.info(f'Test plan {plan_id} is edited success ~')
+            logger.info(f'Test plan {plan_id} is edited success, operator: {username}')
             return result(msg='Edit success ~')
         except:
             logger.error(traceback.format_exc())
@@ -201,3 +217,33 @@ def parse_jmx_to_database(res, username):
                                     extractor=sample.get('extractor'), create_time=strfTime(), update_time=strfTime(), operator=username)
     except:
         raise
+
+
+def copy_plan(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            plan_id = request.GET.get('id')
+            plans = TestPlan.objects.get(id=plan_id)
+            plans.id = primaryKey()
+            plans.name = plans.name + ' - Copy'
+            plans.update_time = strfTime()
+            plans.operator = username
+            plans.save()
+            logger.info(f'Copy plan {plan_id} success, target plan is {plans.id}, operator: {username}')
+            return redirect('perf:plan_home')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Copy Plan Failure ~')
+
+
+def add_to_task(request):
+    if request.method == 'GET':
+        try:
+            plan_id = request.GET.get('id')
+            plans = TestPlan.objects.get(id=plan_id)
+            tasks = PerformanceTestTask.objects.filter(plan_id=plan_id)
+            return render(request, 'performance/plan/task.html', context={'plans': plans, 'tasks': tasks})
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Running Failure ~')

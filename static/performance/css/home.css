@@ -128,6 +128,21 @@ body{
 .detail .detail-action {
 	margin-bottom: 20px;
 }
+.detail-action .plan-detail {
+    float: left;
+    width: 20%;
+    margin-top: 1%;
+    margin-bottom: 2%;
+}
+.detail-action .plan-detail a{
+    text-decoration: none;
+	cursor: pointer;
+	color: blue;
+}
+.detail-action .plan-detail label{
+    font-size: large;
+    font-weight: bold;
+}
 .detail-action a {
 	text-decoration: none;
 	cursor: pointer;

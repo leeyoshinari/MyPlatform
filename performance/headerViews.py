@@ -5,7 +5,7 @@
 import json
 import logging
 import traceback
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import HTTPRequestHeader
 from common.Result import result
 from common.generator import primaryKey, strfTime
@@ -24,7 +24,7 @@ def home(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 2
+            page_size = int(page_size) if page_size else 20
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word:
                 total_page = HTTPRequestHeader.objects.filter(name__contains=key_word).count()
@@ -87,3 +87,21 @@ def edit_header(request):
         header_id = request.GET.get('id')
         headers = HTTPRequestHeader.objects.get(id=header_id)
         return render(request, 'performance/header/edit.html', context={'methods':methods, 'headers': headers})
+
+
+def copy_header(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            header_id = request.GET.get('id')
+            headers = HTTPRequestHeader.objects.get(id=header_id)
+            headers.id = primaryKey()
+            headers.name = headers.name + ' - Copy'
+            headers.update_time = strfTime()
+            headers.operator = username
+            headers.save()
+            logger.info(f'Copy HTTP Header {header_id} success, target HTTP Header is {headers.id}, operator: {username}')
+            return redirect('perf:header_home')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Copy HTTP Header Failure ~')

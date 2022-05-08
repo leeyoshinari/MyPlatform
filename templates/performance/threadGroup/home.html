@@ -36,13 +36,13 @@
 {% endblock %}
 {% block table_head %}
     <tr class="table_style">
-        <th width="12%">Plan Name</th>
+        <th width="10%">Plan Name</th>
         <th width="10%">Name</th>
         <th width="17%">Comment</th>
-        <th width="13%">Create Time</th>
-        <th width="13%">Update Time</th>
-        <th width="10%">Operator</th>
-        <th width="25%">Actions</th>
+        <th width="12%">Create Time</th>
+        <th width="12%">Update Time</th>
+        <th width="9%">Operator</th>
+        <th width="30%">Actions</th>
     </tr>
 {% endblock %}
 
@@ -53,9 +53,9 @@
         {% else %}
             <tr>
         {% endif %}
-            <td><a href="{% url 'perf:plan_edit' %}?id={{ group.plan.id }}">{{ group.plan.name }}</a></td>
-            <td style="text-align: center;"><a href="{% url 'perf:group_edit' %}?id={{ group.id }}">{{ group.name }}</a></td>
-            <td>{{ group.comment }}</td>
+            <td title="{{ group.plan.name }}"><a href="{% url 'perf:plan_edit' %}?id={{ group.plan.id }}">{{ group.plan.name }}</a></td>
+            <td style="text-align: center;" title="{{ group.name }}"><a href="{% url 'perf:group_edit' %}?id={{ group.id }}">{{ group.name }}</a></td>
+            <td title="{{ group.comment }}">{{ group.comment }}</td>
             <td style="text-align: center;">{{ group.create_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ group.update_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ group.operator }}</td>
@@ -66,6 +66,7 @@
                 {% else %}
                     <a href="#" onclick="set_status('group', '{{ group.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
                 {% endif %}
+                <a href="{% url 'perf:group_copy' %}?id={{ group.id }}">Copy</a>
                 <a href="{% url 'perf:group_cookie' %}?id={{ group.id }}">Set Cookie</a>
                 <a href="{% url 'perf:controller_home' %}?id={{ group.id }}">Controller</a>
                 {% if plan_id %}

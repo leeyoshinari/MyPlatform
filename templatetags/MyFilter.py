@@ -26,12 +26,23 @@ def get_argument_type(v1):
         return 'json'
 
 
+# @register.filter
+# def get_value(v1):
+#     try:
+#         if v1.get("request_body_json"):
+#             return 'json'
+#         else:
+#             return 'form'
+#     except:
+#         return 'json'
+
+
 @register.filter
-def get_value(v1):
+def get_value_from_list(v1, v2):
     try:
-        if v1.get("request_body_json"):
-            return 'json'
-        else:
-            return 'form'
+        if v2 == 'plan_type':
+            return ['Thread', 'TPS'][v1]
+        if v2 == 'plan_schedule':
+            return ['Regular', 'Crontab'][v1]
     except:
-        return 'json'
+        return None

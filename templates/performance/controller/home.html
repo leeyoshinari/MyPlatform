@@ -38,11 +38,11 @@
     <tr class="table_style">
         <th width="12%">Thread Group Name</th>
         <th width="10%">Name</th>
-        <th width="19%">Comment</th>
+        <th width="17%">Comment</th>
         <th width="13%">Create Time</th>
         <th width="13%">Update Time</th>
         <th width="10%">Operator</th>
-        <th width="23%">Actions</th>
+        <th width="25%">Actions</th>
     </tr>
 {% endblock %}
 
@@ -53,8 +53,8 @@
         {% else %}
             <tr>
         {% endif %}
-            <td><a href="{% url 'perf:group_edit' %}?id={{ ctl.thread_group.id }}">{{ ctl.thread_group.name }}</a></td>
-            <td><a href="{% url 'perf:controller_edit' %}?id={{ ctl.id }}">{{ ctl.name }}</a></td>
+            <td title="{{ ctl.thread_group.name }}"><a href="{% url 'perf:group_edit' %}?id={{ ctl.thread_group.id }}">{{ ctl.thread_group.name }}</a></td>
+            <td title="{{ ctl.name }}"><a href="{% url 'perf:controller_edit' %}?id={{ ctl.id }}">{{ ctl.name }}</a></td>
             <td title="{{ ctl.comment }}">{{ ctl.comment }}</td>
             <td style="text-align: center;">{{ ctl.create_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ ctl.update_time | date:"Y-m-d H:i:s" }}</td>
@@ -66,6 +66,7 @@
                 {% else %}
                     <a href="#" onclick="set_status('controller', '{{ ctl.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
                 {% endif %}
+                <a href="{% url 'perf:controller_copy' %}?id={{ ctl.id }}">Copy</a>
                 <a href="{% url 'perf:sample_home' %}?id={{ ctl.id }}">HttpSample</a>
                 {% if group_id %}
                     <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:controller_home' %}?id={{ group_id }}', 'controller', {{ ctl.id }})">Delete</a>

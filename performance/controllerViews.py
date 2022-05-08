@@ -4,7 +4,7 @@
 
 import logging
 import traceback
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import ThreadGroup, TransactionController
 from common.Result import result
 from common.generator import primaryKey, strfTime
@@ -91,3 +91,22 @@ def edit_group(request):
         controllers = TransactionController.objects.get(id=group_id)
         groups = ThreadGroup.objects.all().order_by('-update_time')
         return render(request, 'performance/controller/edit.html', context={'controllers': controllers, 'groups': groups})
+
+
+def copy_controller(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            controller_id = request.GET.get('id')
+            controllers = TransactionController.objects.get(id=controller_id)
+            controllers.id = primaryKey()
+            controllers.name = controllers.name + ' - Copy'
+            controllers.update_time = strfTime()
+            controllers.operator = username
+            controllers.save()
+            logger.info(f'Copy controller {controller_id} success, target controller is {controllers.id}, operator: {username}')
+            return redirect('perf:controller_home')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Copy controller Failure ~')
+

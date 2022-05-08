@@ -5,7 +5,7 @@
 import json
 import logging
 import traceback
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import HTTPRequestHeader, HTTPSampleProxy, TransactionController
 from common.Result import result
 from common.generator import primaryKey, strfTime
@@ -169,3 +169,21 @@ def edit_sample(request):
         return render(request, 'performance/httpSample/edit.html', context={
             'controllers': controllers, 'samples': samples, 'protocols': protocols, 'methods': methods, 'http_headers': http_headers,
             'assertion_types': assertion_types, 'contentEncodings': contentEncodings, 'data_types': data_types})
+
+
+def copy_sample(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            sample_id = request.GET.get('id')
+            samples = HTTPSampleProxy.objects.get(id=sample_id)
+            samples.id = primaryKey()
+            samples.name = samples.name + ' - Copy'
+            samples.update_time = strfTime()
+            samples.operator = username
+            samples.save()
+            logger.info(f'Copy HTTP Sample {sample_id} success, target HTTP Sample is {samples.id}, operator: {username}')
+            return redirect('perf:sample_home')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Copy HTTP Sample Failure ~')
