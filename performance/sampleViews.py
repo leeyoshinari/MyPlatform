@@ -8,7 +8,7 @@ import traceback
 from django.shortcuts import render, redirect
 from .models import HTTPRequestHeader, HTTPSampleProxy, TransactionController
 from common.Result import result
-from common.generator import primaryKey, strfTime
+from common.generator import primaryKey
 # Create your views here.
 
 
@@ -102,7 +102,7 @@ def add_sample(request):
             sample = HTTPSampleProxy.objects.create(id=primaryKey(), name=name, protocol=protocol, comment=comment, is_valid='true',
                           domain=domain, port=port, path=path, method=method, http_header_id=http_header, assert_type=assertion_type,
                           assert_content=assertion_string, argument=argument, extractor=extractor, controller_id=controller_id,
-                          contentEncoding=contentEncoding, create_time=strfTime(), update_time=strfTime(), operator=username)
+                          contentEncoding=contentEncoding, operator=username)
             logger.info(f'Http Sample {name} {sample.id} is save success, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -153,7 +153,6 @@ def edit_sample(request):
             samples.argument = argument
             samples.extractor = extractor
             samples.comment = comment
-            samples.update_time = strfTime()
             samples.operator = username
             samples.save()
             logger.info(f'HTTP Sample {sample_id} is edit success, operator: {username}')
@@ -179,7 +178,6 @@ def copy_sample(request):
             samples = HTTPSampleProxy.objects.get(id=sample_id)
             samples.id = primaryKey()
             samples.name = samples.name + ' - Copy'
-            samples.update_time = strfTime()
             samples.operator = username
             samples.save()
             logger.info(f'Copy HTTP Sample {sample_id} success, target HTTP Sample is {samples.id}, operator: {username}')

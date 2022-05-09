@@ -8,7 +8,7 @@ import traceback
 from django.shortcuts import render, redirect
 from .models import HTTPRequestHeader
 from common.Result import result
-from common.generator import primaryKey, strfTime
+from common.generator import primaryKey
 # Create your views here.
 
 
@@ -51,7 +51,7 @@ def add_header(request):
             header = data.get('header')
             comment = data.get('comment')
             headers = HTTPRequestHeader.objects.create(id=primaryKey(), name=name, comment=comment, method=method,
-                          value=header, create_time=strfTime(), update_time=strfTime(), operator=username)
+                          value=header, operator=username)
             logger.info(f'HTTP request header {name} {headers.id} is save success, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -75,7 +75,6 @@ def edit_header(request):
             headers.method = method
             headers.value = header
             headers.comment = comment
-            headers.update_time = strfTime()
             headers.operator = username
             headers.save()
             logger.info(f'HTTP request header {header_id} is edit success, operator: {username}')
@@ -97,7 +96,6 @@ def copy_header(request):
             headers = HTTPRequestHeader.objects.get(id=header_id)
             headers.id = primaryKey()
             headers.name = headers.name + ' - Copy'
-            headers.update_time = strfTime()
             headers.operator = username
             headers.save()
             logger.info(f'Copy HTTP Header {header_id} success, target HTTP Header is {headers.id}, operator: {username}')

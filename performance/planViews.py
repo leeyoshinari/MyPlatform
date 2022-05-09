@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from .models import TestPlan, GlobalVariable, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from common.Result import result
-from common.generator import primaryKey, strfTime
+from common.generator import primaryKey
 from .common.parseJmx import read_jmeter_from_byte
 # Create your views here.
 
@@ -52,11 +52,12 @@ def add(request):
             schedule = request.POST.get('schedule')
             init_number = request.POST.get('init_number')
             target_number = request.POST.get('target_number')
+            duration = request.POST.get('duration')
             time_setting = request.POST.get('time_setting') if schedule == '1' else None
             comment = request.POST.get('comment')
             plans = TestPlan.objects.create(id=primaryKey(), name=name, tearDown=teardown, serialize=serialize, is_valid='true',
                             type=run_type, schedule=schedule, init_num=init_number, target_num=target_number,time_setting=time_setting,
-                            comment=comment, create_time=strfTime(), update_time=strfTime(), operator=username)
+                            duration=duration, comment=comment, operator=username)
             logger.info(f'Test plan {name} is save success, id is {plans.id}, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -78,6 +79,7 @@ def edit(request):
             schedule = request.POST.get('schedule')
             init_number = request.POST.get('init_number')
             target_number = request.POST.get('target_number')
+            duration = request.POST.get('duration')
             time_setting = request.POST.get('time_setting') if schedule == '1' else None
             comment = request.POST.get('comment')
             plan = TestPlan.objects.get(id=plan_id)
@@ -88,9 +90,9 @@ def edit(request):
             plan.schedule = schedule
             plan.init_num = init_number
             plan.target_num = target_number
+            plan.duration = duration
             plan.time_setting = time_setting
             plan.comment = comment
-            plan.update_time = strfTime()
             plan.operator = username
             plan.save()
             logger.info(f'Test plan {plan_id} is edited success, operator: {username}')
@@ -134,7 +136,7 @@ def add_variable(request):
             value = request.POST.get('value')
             comment = request.POST.get('comment')
             variables = GlobalVariable.objects.create(id=primaryKey(), name=name, value=value, plan_id=plan_id, comment=comment,
-                                                      create_time=strfTime(), update_time=strfTime(), operator=username)
+                                                      operator=username)
             logger.info(f'Test Plan {plan_id} variable {name} save success, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -157,7 +159,6 @@ def edit_variable(request):
             variables.name = name
             variables.value = value
             variables.comment = comment
-            variables.update_time = strfTime()
             variables.operator = username
             variables.save()
             logger.info(f'Test Plan {plan_id} variable {name} edit success, operator: {username}')
@@ -192,20 +193,18 @@ def parse_jmx_to_database(res, username):
         for plan in res:
             testPlan = TestPlan.objects.create(id=primaryKey(), name=plan.get('testname'), comment=plan.get('comments'),
                                     tearDown=plan.get('tearDown_on_shutdown'), serialize=plan.get('serialize_threadgroups'),
-                                    is_valid=plan.get('enabled'), create_time=strfTime(), update_time=strfTime(),
-                                    operator=username)
+                                    is_valid=plan.get('enabled'), operator=username)
             for k, v in plan['arguments'].items():
                 global_variable = GlobalVariable.objects.create(id=primaryKey(), plan_id=testPlan.id, name=k, value=v,
-                                                                create_time=strfTime(), update_time=strfTime(), operator=username)
+                                                                operator=username)
             for tg in plan['thread_group']:
                 thread = ThreadGroup.objects.create(id=primaryKey(), plan_id=testPlan.id, name=tg.get('testname'),
-                                    is_valid=tg.get('enabled'), num_threads=tg.get('num_threads'), ramp_time=tg.get('ramp_time'),
-                                    duration=tg.get('duration'), scheduler=tg.get('scheduler'), comment=tg.get('comments'),
-                                    create_time=strfTime(), update_time=strfTime(), operator=username)
+                                    is_valid=tg.get('enabled'), ramp_time=tg.get('ramp_time'),
+                                    duration=tg.get('duration'), comment=tg.get('comments'), operator=username)
                 for ctl in tg['controller']:
                     controller = TransactionController.objects.create(id=primaryKey(), thread_group_id=thread.id,
                                     name=ctl.get('testname'), is_valid=ctl.get('enabled'), comment=ctl.get('comments'),
-                                    create_time=strfTime(), update_time=strfTime(), operator=username)
+                                    operator=username)
                     for sample in ctl['http_sample']:
                         http = HTTPSampleProxy.objects.create(id=primaryKey(), controller_id=controller.id, name=sample.get('testname'),
                                     is_valid=sample.get('enabled'), comment=sample.get('sample_dict').get('comments'),
@@ -214,7 +213,7 @@ def parse_jmx_to_database(res, username):
                                     method=sample.get('sample_dict').get('method'), contentEncoding=sample.get('sample_dict').get('contentEncoding'),
                                     argument=sample.get('arguments'), http_header_id=header_type.get(sample.get('sample_dict').get('method')),
                                     assert_type=sample.get('assertion').get('test_type'), assert_content=sample.get('assertion').get('test_string'),
-                                    extractor=sample.get('extractor'), create_time=strfTime(), update_time=strfTime(), operator=username)
+                                    extractor=sample.get('extractor'), operator=username)
     except:
         raise
 
@@ -227,7 +226,6 @@ def copy_plan(request):
             plans = TestPlan.objects.get(id=plan_id)
             plans.id = primaryKey()
             plans.name = plans.name + ' - Copy'
-            plans.update_time = strfTime()
             plans.operator = username
             plans.save()
             logger.info(f'Copy plan {plan_id} success, target plan is {plans.id}, operator: {username}')
@@ -246,7 +244,7 @@ def add_to_task(request):
             task = PerformanceTestTask.objects.filter(plan_id=plan_id, status__lte=1)
             if not task:
                 task = PerformanceTestTask.objects.create(id=primaryKey(), plan_id=plan_id, ratio=1, status=0,
-                                            create_time=strfTime(), update_time=strfTime(), operator=username)
+                                                        operator=username)
                 logger.info(f'Create tesk {task.id} success, operator: {username}')
             tasks = PerformanceTestTask.objects.filter(plan_id=plan_id).order_by('-update_time')
             return render(request, 'performance/plan/task.html', context={'plans': plans, 'tasks': tasks})

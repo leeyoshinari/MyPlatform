@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from .models import TestPlan, ThreadGroup
 from common.Result import result
-from common.generator import primaryKey, strfTime
+from common.generator import primaryKey
 # Create your views here.
 
 
@@ -77,7 +77,7 @@ def add_group(request):
                 file_dict = None
             group = ThreadGroup.objects.create(id=primaryKey(), name=name, ramp_time=ramp_time,
                                 duration=duration, comment=comment, is_valid='true', plan_id=plan_id,
-                                file=file_dict, create_time=strfTime(), update_time=strfTime(), operator=username)
+                                file=file_dict, operator=username)
             logger.info(f'Thread Group {name} {group.id} is save success, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -120,7 +120,6 @@ def edit_group(request):
             groups.duration = duration
             groups.comment = comment
             groups.file = file_dict
-            groups.update_time = strfTime()
             groups.operator = username
             groups.save()
             logger.info(f'Thread Group {group_id} is edit success, operator: {username}')
@@ -162,7 +161,6 @@ def edit_cookie(request):
             cookies = data.get('cookies')
             group = ThreadGroup.objects.get(id=plan_id)
             group.cookie = cookies
-            group.update_time = strfTime()
             group.operator = username
             group.save()
             logger.info(f'Thread Group {group.name} {group.id} cookies is save success, operator: {username}')
@@ -190,7 +188,6 @@ def copy_group(request):
             groups = ThreadGroup.objects.get(id=group_id)
             groups.id = primaryKey()
             groups.name = groups.name + ' - Copy'
-            groups.update_time = strfTime()
             groups.operator = username
             groups.save()
             logger.info(f'Copy thread group {group_id} success, target thread group is {groups.id}, operator: {username}')

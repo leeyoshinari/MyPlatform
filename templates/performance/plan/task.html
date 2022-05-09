@@ -32,13 +32,9 @@
             {% endif %}
             <span>{{ plans.target_num }}</span>
         </div>
-        <div class="plan-detail">
-            <label>Create Time: </label>
-            <span>{{ plans.create_time | date:"Y-m-d H:i:s" }}</span>
-        </div>
-        <div class="plan-detail">
-            <label>Update Time: </label>
-            <span>{{ plans.update_time | date:"Y-m-d H:i:s" }}</span>
+        <div class="plan-detail" style="width: 12%;">
+            <label>Duration: </label>
+            <span>{{ plans.duration }} s</span>
         </div>
     </div>
 {% endblock %}

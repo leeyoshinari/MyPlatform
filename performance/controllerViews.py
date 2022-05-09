@@ -7,7 +7,7 @@ import traceback
 from django.shortcuts import render, redirect
 from .models import ThreadGroup, TransactionController
 from common.Result import result
-from common.generator import primaryKey, strfTime
+from common.generator import primaryKey
 # Create your views here.
 
 
@@ -54,7 +54,7 @@ def add_group(request):
             group_id = request.POST.get('group_id')
             comment = request.POST.get('comment')
             controller = TransactionController.objects.create(id=primaryKey(), name=name, comment=comment, is_valid='true',
-                          thread_group_id=group_id, create_time=strfTime(), update_time=strfTime(), operator=username)
+                          thread_group_id=group_id, operator=username)
             logger.info(f'Controller {name} {controller.id} is save success, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -78,7 +78,6 @@ def edit_group(request):
             controllers.name = name
             controllers.thread_group_id = group_id
             controllers.comment = comment
-            controllers.update_time = strfTime()
             controllers.operator = username
             controllers.save()
             logger.info(f'Controller {controller_id} is edit success, operator: {username}')
@@ -101,7 +100,6 @@ def copy_controller(request):
             controllers = TransactionController.objects.get(id=controller_id)
             controllers.id = primaryKey()
             controllers.name = controllers.name + ' - Copy'
-            controllers.update_time = strfTime()
             controllers.operator = username
             controllers.save()
             logger.info(f'Copy controller {controller_id} success, target controller is {controllers.id}, operator: {username}')

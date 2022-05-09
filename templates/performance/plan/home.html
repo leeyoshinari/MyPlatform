@@ -32,7 +32,7 @@
         <th width="7%"><div class="helpstyle"><span data-tooltip="Task type. Regular: manual running. Crontab: set time to auto-run.">?</span></div>Schedule</th>
         <th width="8%"><div class="helpstyle"><span data-tooltip="Initial Number, it is used to when thread group just starts running. When 'runType' is 'Thread', it is initial number of thread group. When 'runType' is 'TPS', it is initial number of TPS.">?</span></div>Init Number</th>
         <th width="8%"><div class="helpstyle"><span data-tooltip="Target Number. it is target number of the test. When 'runType' is 'Thread', it is target number of thread group. When 'runType' is 'TPS', it is target number of TPS.">?</span></div>Target Number</th>
-        <th width="8%">Operator</th>
+        <th width="8%">Duration</th>
         <th width="42%">Actions</th>
     </tr>
 {% endblock %}
@@ -49,7 +49,7 @@
             <td style="text-align: center;">{{ plan.schedule | get_value_from_list:'plan_schedule' }}</td>
             <td style="text-align: center;">{{ plan.init_num }}</td>
             <td style="text-align: center;">{{ plan.target_num }}</td>
-            <td style="text-align: center;">{{ plan.operator }}</td>
+            <td style="text-align: center;">{{ plan.duration }}</td>
             <td>
                 <a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">Edit</a>
                 {% if plan.is_valid == 'true' %}
