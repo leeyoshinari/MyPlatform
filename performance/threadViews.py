@@ -59,9 +59,9 @@ def add_group(request):
             username = request.user.username
             name = request.POST.get('name')
             plan_id = request.POST.get('plan_id')
-            num_threads = request.POST.get('num_threads')
+            # num_threads = request.POST.get('num_threads')
             ramp_time = request.POST.get('ramp_time')
-            scheduler = request.POST.get('scheduler')
+            # scheduler = request.POST.get('scheduler')
             duration = request.POST.get('duration')
             duration = duration if duration else None
             comment = request.POST.get('comment')
@@ -75,8 +75,8 @@ def add_group(request):
                     'share_mode': request.POST.get('share_mode')}
             else:
                 file_dict = None
-            group = ThreadGroup.objects.create(id=primaryKey(), name=name, num_threads=num_threads, ramp_time=ramp_time,
-                                duration=duration, comment=comment, scheduler=scheduler, is_valid='true', plan_id=plan_id,
+            group = ThreadGroup.objects.create(id=primaryKey(), name=name, ramp_time=ramp_time,
+                                duration=duration, comment=comment, is_valid='true', plan_id=plan_id,
                                 file=file_dict, create_time=strfTime(), update_time=strfTime(), operator=username)
             logger.info(f'Thread Group {name} {group.id} is save success, operator: {username}')
             return result(msg='Save success ~')
@@ -97,9 +97,9 @@ def edit_group(request):
             group_id = request.POST.get('id')
             name = request.POST.get('name')
             plan_id = request.POST.get('plan_id')
-            num_threads = request.POST.get('num_threads')
+            # num_threads = request.POST.get('num_threads')
             ramp_time = request.POST.get('ramp_time')
-            scheduler = request.POST.get('scheduler')
+            # scheduler = request.POST.get('scheduler')
             duration = request.POST.get('duration')
             duration = duration if duration else None
             comment = request.POST.get('comment')
@@ -116,9 +116,7 @@ def edit_group(request):
             groups = ThreadGroup.objects.get(id=group_id)
             groups.name = name
             groups.plan_id = plan_id
-            groups.num_threads = num_threads
             groups.ramp_time = ramp_time
-            groups.scheduler = scheduler
             groups.duration = duration
             groups.comment = comment
             groups.file = file_dict

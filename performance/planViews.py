@@ -240,9 +240,15 @@ def copy_plan(request):
 def add_to_task(request):
     if request.method == 'GET':
         try:
+            username = request.user.username
             plan_id = request.GET.get('id')
             plans = TestPlan.objects.get(id=plan_id)
-            tasks = PerformanceTestTask.objects.filter(plan_id=plan_id)
+            task = PerformanceTestTask.objects.filter(plan_id=plan_id, status__lte=1)
+            if not task:
+                task = PerformanceTestTask.objects.create(id=primaryKey(), plan_id=plan_id, ratio=1, status=0,
+                                            create_time=strfTime(), update_time=strfTime(), operator=username)
+                logger.info(f'Create tesk {task.id} success, operator: {username}')
+            tasks = PerformanceTestTask.objects.filter(plan_id=plan_id).order_by('-update_time')
             return render(request, 'performance/plan/task.html', context={'plans': plans, 'tasks': tasks})
         except:
             logger.error(traceback.format_exc())

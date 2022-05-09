@@ -1,5 +1,6 @@
 {% extends 'performance/home.html' %}
 {% load static %}
+{% load my_tags %}
 
 {% block add_js %}
     <script src="{% static 'performance/js/plan.js' %}"></script>
@@ -53,35 +54,27 @@
             <th width="10%"><div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>Current TPS</th>
         {% endif %}
         <th width="12%">Ratio</th>
-        <th width="8%">Schedule</th>
         <th width="36%">Actions</th>
     </tr>
 {% endblock %}
 
 {% block table_body %}
-    {% for plan in pla %}
-        {% if plan.is_valid == 'false' %}
-            <tr style="background-color: #ffd5d5">
-        {% else %}
+    {% for task in tasks %}
             <tr>
-        {% endif %}
-            <td title="{{ plan.comment }}"><a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">{{ plan.name }}</a></td>
-            <td style="text-align: center;">{{ plan.tearDown }}</td>
-            <td style="text-align: center;">{{ plan.serialize }}</td>
-            <td style="text-align: center;">{{ plan.create_time | date:"Y-m-d H:i:s" }}</td>
-            <td style="text-align: center;">{{ plan.update_time | date:"Y-m-d H:i:s" }}</td>
-            <td style="text-align: center;">{{ plan.operator }}</td>
+            <td title="{{ plans.comment }}"><a href="{% url 'perf:plan_edit' %}?id={{ plans.id }}">{{ plans.name }}</a></td>
+            <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
+            <td style="text-align: center;">{{ task.ratio | multiple:plans.target_num }}</td>
+            <td style="text-align: center;">{{ task.ratio }}</td>
             <td>
-                <a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">Edit</a>
-                {% if plan.is_valid == 'true' %}
-                    <a href="#" onclick="set_status('plan','{{ plan.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                {% if task.status == 0 %}
+                    <a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">Start</a>
                 {% else %}
-                    <a href="#" onclick="set_status('plan', '{{ plan.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
+                    <a href="{% url 'perf:group_home' %}?id={{ plan.id }}">View</a>
+                    {% if task.status == 1 %}
+                        <a href="{% url 'perf:plan_variable' %}?id={{ plan.id }}">Stop</a>
+                    {% endif %}
                 {% endif %}
-                <a href="{% url 'perf:plan_variable' %}?id={{ plan.id }}">Variables</a>
-                <a href="{% url 'perf:group_home' %}?id={{ plan.id }}">ThreadGroup</a>
-                <a href="#" onclick="">Running</a>
-                <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:plan_home' %}', 'plan', {{ plan.id }})">Delete</a>
+                <a href="#" onclick="">Delete</a>
             </td>
         </tr>
     {% endfor %}

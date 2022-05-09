@@ -44,5 +44,17 @@ def get_value_from_list(v1, v2):
             return ['Thread', 'TPS'][v1]
         if v2 == 'plan_schedule':
             return ['Regular', 'Crontab'][v1]
+        if v2 == 'task_status':
+            return ['Pending', 'Running', 'Success', 'Stopped', 'Failure'][v1]
+        if v2 == 'task_color':
+            return ['gray', 'blue', 'green', 'orange', 'red'][v1]
     except:
         return None
+
+
+@register.filter
+def multiple(v1, v2):
+    try:
+        return int(v1 * v2 / 100)
+    except:
+        return 0

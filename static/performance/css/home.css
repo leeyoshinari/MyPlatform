@@ -560,3 +560,13 @@ tr:hover td {
     visibility: visible;
     opacity: 1;
 }
+
+.round{
+    width:15px;
+    height:15px;
+    display: inline-block;
+    border-radius: 50%;
+    background-color: red;
+    text-decoration:none;
+    margin-right: 5%;
+}

@@ -47,11 +47,11 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Number of Threads (users).">?</span></div>
+                <div class="helpstyle"><span data-tooltip="Number of Threads (users). This is a reference, and can not modify. When running test task, it will be set.">?</span></div>
                 <label>Num Threads:</label>
             </div>
             <div class="value-div">
-                <input type="text" id="num_threads" placeholder="Please input num threads ~" value="{{ groups.num_threads }}">
+                <input type="text" id="num_threads" value="${num_threads}" readonly disabled>
             </div>
         </div>
         <div class="row-cols">
@@ -65,22 +65,14 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Scheduler, specify Thread lifetime. true: need to set duration; false: thread groups run forever.">?</span></div>
+                <div class="helpstyle"><span data-tooltip="Scheduler default is 'true', can not modify. It specifies Thread lifetime. true: need to set duration; false: thread groups run forever.">?</span></div>
                 <label>Scheduler: </label>
             </div>
             <div class="value-div">
-                <select id="scheduler" onchange="change_duration();">
-                    {% if groups.scheduler == 'true' %}
-                        <option value="true" selected>true</option>
-                        <option value="false">false</option>
-                    {% else %}
-                        <option value="true">true</option>
-                        <option value="false" selected>false</option>
-                    {% endif %}
-                </select>
+                <input type="text" id="scheduler" value="true" readonly disabled>
             </div>
         </div>
-        <div class="row-cols" id="DURATION">
+        <div class="row-cols">
             <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Duration (seconds).">?</span></div>
                 <label>Duration:</label>
@@ -207,15 +199,5 @@
 {% endblock %}
 {% block define_js %}
     <script type="text/javascript">
-        function change_duration () {
-            let s = document.getElementById('scheduler').value;
-            if(s === 'true') {
-                document.getElementById('DURATION').style.display = '';
-            } else {
-                document.getElementById('DURATION').style.display = 'none';
-            }
-        }
-
-        change_duration();
     </script>
 {% endblock %}
