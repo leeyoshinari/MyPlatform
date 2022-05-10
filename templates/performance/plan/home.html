@@ -1,6 +1,6 @@
 {% extends 'performance/home.html' %}
 {% load static %}
-{% load my_tags %}
+{% load myFilter %}
 
 {% block add_js %}
     <script src="{% static 'performance/js/plan.js' %}"></script>
@@ -60,7 +60,7 @@
                 <a href="{% url 'perf:plan_copy' %}?id={{ plan.id }}">Copy</a>
                 <a href="{% url 'perf:plan_variable' %}?id={{ plan.id }}">Variables</a>
                 <a href="{% url 'perf:group_home' %}?id={{ plan.id }}">ThreadGroup</a>
-                <a href="{% url 'perf:task_home' %}?id={{ plan.id }}">Running</a>
+                <a href="#" onclick="add_task('{% url 'perf:task_add' %}', '{% url 'perf:task_home' %}', {{ plan.id }})">Running</a>
                 <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:plan_home' %}', 'plan', {{ plan.id }})">Delete</a>
             </td>
         </tr>

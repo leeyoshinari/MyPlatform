@@ -196,3 +196,34 @@ function upload_file(url) {
         }
     }
 }
+
+function add_task(url, location_url, plan_id) {
+    $.ajax({
+        type: 'get',
+        url: url + '?id=' + plan_id,
+        success: function (data) {
+            if(data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+                window.location.href = location_url + '?id=' + plan_id;
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
+}
+
+function start_task(url) {
+    $.ajax({
+        type: 'get',
+        url: url,
+        success: function (data) {
+            if(data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+                window.location.reload();
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
+}
+

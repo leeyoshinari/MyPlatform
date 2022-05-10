@@ -1,6 +1,6 @@
 {% extends 'performance/home.html' %}
 {% load static %}
-{% load my_tags %}
+{% load myFilter %}
 
 {% block add_js %}
     <script src="{% static 'performance/js/plan.js' %}"></script>
@@ -63,11 +63,11 @@
             <td style="text-align: center;">{{ task.ratio }}</td>
             <td>
                 {% if task.status == 0 %}
-                    <a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">Start</a>
+                    <a href="#" onclick="start_task('{% url 'perf:task_start' %}?id={{ task.id }}')">Start</a>
                 {% else %}
-                    <a href="{% url 'perf:group_home' %}?id={{ plan.id }}">View</a>
+                    <a href="{% url 'perf:group_home' %}?id={{ task.id }}">View</a>
                     {% if task.status == 1 %}
-                        <a href="{% url 'perf:plan_variable' %}?id={{ plan.id }}">Stop</a>
+                        <a href="#" onclick="start_task('{% url 'perf:task_stop' %}?id={{ task.id }}')">Stop</a>
                     {% endif %}
                 {% endif %}
                 <a href="#" onclick="">Delete</a>

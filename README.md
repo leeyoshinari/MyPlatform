@@ -1,19 +1,39 @@
 # MyPlatform
-这个项目可以在浏览器上打开 shell 页面，连接linux，可以输入 shell 命令，支持文件上传和下载。
+这是一个集成了一些工具的平台
 
-## 功能
-- 服务器基本信息统一查看<br>
-- 通过浏览器打开服务器shell<br>
-- 文件上传到服务器，或从服务器下载文件<br>
-- 集成服务器资源监控服务，详见 [performance_monitor](https://github.com/leeyoshinari/performance_monitor) <br>
-- 支持权限控制<br>
+## 目录
+- MyPlatform - 项目文件
+- static - 静态文件
+- templates - 模板文件
+- templateFilter - 模板自定义过滤器
+- common - 通用的函数
+- user - 用户相关
+- shell - shell 工具
+- monitor - 监控工具
+- mitm - http 请求拦截工具
+- performance - 性能测试平台(doing)
 
-[可点我查看更多信息](https://mp.weixin.qq.com/s?__biz=Mzg5OTA3NDk2MQ==&mid=2247483884&idx=1&sn=6d45ded5e4ad5e4a9953adcd4010b8a1&chksm=c0599f12f72e160452e3d91e40fcaccb49d1ec262ebda9914be979c0fe6a562c84dbfaa136ef&token=1310566414&lang=zh_CN#rd)
 
+## 其他组件
+- 关系型数据库：SQLite3 or MySQL - 用于存储平台数据
+- 时序数据库：InfluxDB - 用于存储监控数据
+- 键值数据库：Redis - 用于进程间数据传递 和 集群部署数据同步(doing)
+- 拦截工具：MitmProxy - 用于拦截 HTTP 请求
+- 性能测试工具： JMeter - 用于执行 JMeter 脚本
 
-## 技术选型
-- 系统框架：django<br>
-- 数据库：django支持的所有关系型数据库<br>
+## 介绍
+1、shell<br>
+在浏览器上打开 shell 页面，连接linux，可以输入 shell 命令，支持文件上传和下载；[详见README.md]()
+
+2、monitor<br>
+监控服务器资源(CPU、内存、磁盘、网络等)使用情况；[详见README.md]()
+
+3、mitm<br>
+拦截指定的 HTTP 协议请求，可直接返回响应值，或修改请求参数或响应值；[详见README.md]()
+
+4、performance
+性能测试工具，底层是JMeter；[详见README.md]()
+
 
 ## 部署
 1、克隆 `git clone https://github.com/leeyoshinari/MyPlatform.git` ；
@@ -25,7 +45,6 @@
 ```shell script
 python3 manage.py migrate
 python3 manage.py makemigrations
-python3 manage.py sqlmigrate shell 0001
 python3 manage.py migrate
 ```
 
@@ -37,7 +56,7 @@ python3 manage.py createsuperuser
 5、修改`startup.sh`中的端口号；
 
 6、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`tencent`是url上下文，即url前缀，可根据自己需要修改)<br>
-（1）静态请求：通过nginx直接访问静态文件，配置静态文件路径
+（1）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
 ```shell script
 location /tencent/static {
     alias /home/MyPlatform/static;
@@ -67,39 +86,6 @@ sh startup.sh
 ```
 
 8、访问页面，url是 `http://ip:port/上下文`
-![](https://github.com/leeyoshinari/MyPlatform/blob/main/static/img/home.jpg)
-![](https://github.com/leeyoshinari/MyPlatform/blob/main/static/img/shell.jpg)
+
 9、访问权限控制页面，url是 `http://ip:port/上下文/admin`
 
-## 使用
-1、创建用户：使用超级管理员账号登陆权限管理页面，创建用户；
-
-2、创建用户组：登陆系统，创建用户组；
-
-3、把用户添加到用户组中，管理员用户默认添加到所有用户组中；
-
-4、录入服务器连接信息；设置服务器所属的用户组；
-
-5、用户登陆系统后，用户只能看到自己组中的服务器；
-
-6、点击`OpenShell`，即可打开 shell；
-
-7、上传/下载文件，需要输入文件要上传的路径和下载的文件的路径；
-
-8、部署服务器监控，点击`DeployMonitor`，部署成功后，可点击`ViewMonitor`查看监控，也可点击`StopMonitor`停止监控；部署监控的zip包需要按照 [这个项目](https://github.com/leeyoshinari/performance_monitor.git) 进行打包，然后重命名成对应的"系统_CPU架构_agent.zip"，并放在 monitor/agent 目录下；
-
-9、点击`Delete`，即可从用户组中删除服务器信息；
-
-## 注意
-1、少部分特殊字符出现解码报错，会导致 ssh 连接中断，重新连接即可；
-
-2、如果部署服务器监控时，出现部署失败的问题，可以尝试在服务器上手动部署，参考[这个项目的部署注意事项](https://github.com/leeyoshinari/performance_monitor.git) ；
-
-3、如只需要监控服务器，可[按照这个项目部署](https://github.com/leeyoshinari/performance_monitor.git) ；
-
-## Requirements
-- Django>=4.0.1
-- PyMySQL>=1.0.2
-- paramiko>=2.10.3
-- channels>=3.0.4
-- python 3.7+

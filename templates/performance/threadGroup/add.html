@@ -85,7 +85,7 @@
             <div class="value-div">
                 <button onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 12%;">Upload File</button>
                 <button id="download_file" onclick="download_file('{% static 'files/' %}')" style="width: 12%; display: none;">Download File</button>
-                <input type="file" id="fileUpload-input" style="display: none;">
+                <input type="file" id="fileUpload-input" accept=".xls,.xlsx,.csv,.txt" style="display: none;">
                 <input type="text" id="file_path" value="" readonly style="width: 30%; margin-left: 2%; border: none; background-color: white;" disabled>
             </div>
             <div class="small-div" style="display:none;">

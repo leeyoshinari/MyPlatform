@@ -36,7 +36,10 @@ urlpatterns = [
     path('plan/variable/add', planViews.add_variable, name='plan_add_variable'),
     path('plan/variable/edit', planViews.edit_variable, name='plan_edit_variable'),
 
-    path('task', planViews.add_to_task, name='task_home'),
+    path('task', planViews.task_home, name='task_home'),
+    path('task/add', planViews.add_to_task, name='task_add'),
+    path('task/start', planViews.start_task, name='task_start'),
+    path('task/stop', planViews.stop_task, name='task_stop'),
 
     path('group', threadViews.home, name='group_home'),
     path('group/add', threadViews.add_group, name='group_add'),

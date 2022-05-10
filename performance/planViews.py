@@ -245,9 +245,52 @@ def add_to_task(request):
             if not task:
                 task = PerformanceTestTask.objects.create(id=primaryKey(), plan_id=plan_id, ratio=1, status=0,
                                                         operator=username)
-                logger.info(f'Create tesk {task.id} success, operator: {username}')
+                logger.info(f'Create task {task.id} success, operator: {username}')
+            return result(msg='Add task success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Add task Failure ~')
+
+
+def task_home(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            plan_id = request.GET.get('id')
+            plans = TestPlan.objects.get(id=plan_id)
             tasks = PerformanceTestTask.objects.filter(plan_id=plan_id).order_by('-update_time')
+            logger.info(f'Get task success, operator: {username}')
             return render(request, 'performance/plan/task.html', context={'plans': plans, 'tasks': tasks})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Running Failure ~')
+            return result(code=1, msg='Get task Failure ~')
+
+
+def start_task(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            task_id = request.GET.get('id')
+            tasks = PerformanceTestTask.objects.get(id=task_id)
+            tasks.status = 1
+            tasks.save()
+            logger.info(f'Task {task_id} start success, operator: {username}')
+            return result(msg=f'Start success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Start failure ~')
+
+
+def stop_task(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            task_id = request.GET.get('id')
+            tasks = PerformanceTestTask.objects.get(id=task_id)
+            tasks.status = 3
+            tasks.save()
+            logger.info(f'Task {task_id} stop success, operator: {username}')
+            return result(msg=f'Stop success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Stop failure ~')
