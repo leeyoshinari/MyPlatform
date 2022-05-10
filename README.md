@@ -23,16 +23,16 @@
 
 ## 介绍
 1、shell<br>
-在浏览器上打开 shell 页面，连接linux，可以输入 shell 命令，支持文件上传和下载；[详见README.md]()
+在浏览器上打开 shell 页面，连接linux，可以输入 shell 命令，支持文件上传和下载；[详见README.md](https://github.com/leeyoshinari/MyPlatform/tree/main/shell)
 
 2、monitor<br>
-监控服务器资源(CPU、内存、磁盘、网络等)使用情况；[详见README.md]()
+监控服务器资源(CPU、内存、磁盘、网络等)使用情况；[详见README.md](https://github.com/leeyoshinari/MyPlatform/tree/main/monitor)
 
 3、mitm<br>
-拦截指定的 HTTP 协议请求，可直接返回响应值，或修改请求参数或响应值；[详见README.md]()
+拦截指定的 HTTP 协议请求，可直接返回响应值，或修改请求参数或响应值；[详见README.md](https://github.com/leeyoshinari/MyPlatform/tree/main/mitm)
 
 4、performance
-性能测试工具，底层是JMeter；[详见README.md]()
+性能测试工具，底层是JMeter；[详见README.md](https://github.com/leeyoshinari/MyPlatform/tree/main/performance)
 
 
 ## 部署
