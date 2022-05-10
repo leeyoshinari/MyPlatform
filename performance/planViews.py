@@ -2,14 +2,16 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
+import json
 import logging
 import traceback
 from django.shortcuts import render, redirect
-from .models import TestPlan, GlobalVariable, ThreadGroup, TransactionController
+from .models import TestPlan, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from common.Result import result
 from common.generator import primaryKey
 from .common.parseJmx import read_jmeter_from_byte
+from .common.generateJmx import JMeter
 # Create your views here.
 
 
@@ -109,67 +111,31 @@ def edit(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get test plan failure ~')
 
-def variable(request):
-    if request.method == 'GET':
-        try:
-            username = request.user.username
-            plan_id = request.GET.get('id')
-            key_word = request.GET.get('keyWord')
-            key_word = key_word.replace('%', '').strip() if key_word else ''
-            if key_word:
-                variables = GlobalVariable.objects.filter(plan_id=plan_id, name__contains=key_word).order_by('-update_time')
-            else:
-                variables = GlobalVariable.objects.filter(plan_id=plan_id).order_by('-update_time')
-
-            logger.info(f'Get variables success, operator: {username}')
-            return render(request, 'performance/plan/variable.html', context={'variables': variables, 'key_word': key_word, 'plan_id': plan_id})
-        except:
-            logger.error(traceback.format_exc())
-            return result(code=1, msg='Get variables failure ~')
-
-def add_variable(request):
-    if request.method == 'POST':
-        try:
-            username = request.user.username
-            plan_id = request.POST.get('plan_id')
-            name = request.POST.get('name')
-            value = request.POST.get('value')
-            comment = request.POST.get('comment')
-            variables = GlobalVariable.objects.create(id=primaryKey(), name=name, value=value, plan_id=plan_id, comment=comment,
-                                                      operator=username)
-            logger.info(f'Test Plan {plan_id} variable {name} save success, operator: {username}')
-            return result(msg='Save success ~')
-        except:
-            logger.error(traceback.format_exc())
-            return result(msg='Save failure ~')
-    else:
-        plan_id = request.GET.get('id')
-        return render(request, 'performance/plan/add_variable.html', context={'plan_id': plan_id})
-
 def edit_variable(request):
     if request.method == 'POST':
         try:
             username = request.user.username
-            var_id = request.POST.get('id')
-            plan_id = request.POST.get('plan_id')
-            name = request.POST.get('name')
-            value = request.POST.get('value')
-            comment = request.POST.get('comment')
-            variables = GlobalVariable.objects.get(id=var_id)
-            variables.name = name
-            variables.value = value
-            variables.comment = comment
-            variables.operator = username
-            variables.save()
-            logger.info(f'Test Plan {plan_id} variable {name} edit success, operator: {username}')
-            return result(msg='Edit success ~')
+            data = json.loads(request.body)
+            plan_id = data.get('plan_id')
+            variables = data.get('variables')
+            plans = TestPlan.objects.get(id=plan_id)
+            plans.variables = variables
+            plans.save()
+            logger.info(f'Test Plan {plan_id} variable save success, operator: {username}')
+            return result(msg='Save variables success ~')
         except:
             logger.error(traceback.format_exc())
-            return result(msg='Edit failure ~')
+            return result(msg='Save variables failure ~')
     else:
-        var_id = request.GET.get('id')
-        variables = GlobalVariable.objects.get(id=var_id)
-        return render(request, 'performance/plan/edit_variable.html', context={'variables': variables})
+        try:
+            username = request.user.username
+            plan_id = request.GET.get('id')
+            variables = TestPlan.objects.get(id=plan_id)
+            logger.info(f'Get test plan variables success, operator: {username}')
+            return render(request, 'performance/plan/variable.html', context={'variables': variables})
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get variables failure ~')
 
 
 def upload_file(request):
@@ -193,10 +159,7 @@ def parse_jmx_to_database(res, username):
         for plan in res:
             testPlan = TestPlan.objects.create(id=primaryKey(), name=plan.get('testname'), comment=plan.get('comments'),
                                     tearDown=plan.get('tearDown_on_shutdown'), serialize=plan.get('serialize_threadgroups'),
-                                    is_valid=plan.get('enabled'), operator=username)
-            for k, v in plan['arguments'].items():
-                global_variable = GlobalVariable.objects.create(id=primaryKey(), plan_id=testPlan.id, name=k, value=v,
-                                                                operator=username)
+                                    variables=plan['arguments'], is_valid=plan.get('enabled'), operator=username)
             for tg in plan['thread_group']:
                 thread = ThreadGroup.objects.create(id=primaryKey(), plan_id=testPlan.id, name=tg.get('testname'),
                                     is_valid=tg.get('enabled'), ramp_time=tg.get('ramp_time'),
@@ -267,11 +230,15 @@ def task_home(request):
 
 
 def start_task(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         try:
+            jmx_writer = JMeter()
             username = request.user.username
-            task_id = request.GET.get('id')
+            task_id = request.POST.get('task_id')
+            plan_id = request.POST.get('plan_id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
+            plans = TestPlan.objects.get(id=plan_id)
+            jmx_writer.generate_test_plan(plans)
             tasks.status = 1
             tasks.save()
             logger.info(f'Task {task_id} start success, operator: {username}')

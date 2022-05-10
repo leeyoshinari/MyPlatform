@@ -58,7 +58,7 @@
                     <a href="#" onclick="set_status('plan', '{{ plan.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
                 {% endif %}
                 <a href="{% url 'perf:plan_copy' %}?id={{ plan.id }}">Copy</a>
-                <a href="{% url 'perf:plan_variable' %}?id={{ plan.id }}">Variables</a>
+                <a href="{% url 'perf:plan_variable' %}?id={{ plan.id }}">Set Variables</a>
                 <a href="{% url 'perf:group_home' %}?id={{ plan.id }}">ThreadGroup</a>
                 <a href="#" onclick="add_task('{% url 'perf:task_add' %}', '{% url 'perf:task_home' %}', {{ plan.id }})">Running</a>
                 <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:plan_home' %}', 'plan', {{ plan.id }})">Delete</a>

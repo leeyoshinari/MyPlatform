@@ -251,6 +251,22 @@ tr:hover td {
 	width: 5%;
 	height: 25px;
 }
+.list-body .row-var {
+	width: 85%;
+    margin-bottom: 1%;
+    margin-left: 3%;
+}
+.list-body .row-var label{
+	margin-top: 5px;
+    margin-left: 1%;
+}
+.list-body .row-var input{
+	width: 20%;
+	height: 25px;
+}
+.list-body .row-var #var-comment {
+	width: 40%;
+}
 
 .row-cols .small-div {
     width: 55%;

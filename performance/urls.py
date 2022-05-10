@@ -32,9 +32,7 @@ urlpatterns = [
     path('plan/edit', planViews.edit, name='plan_edit'),
     path('plan/copy', planViews.copy_plan, name='plan_copy'),
     path('plan/file/upload', planViews.upload_file, name='plan_upload_file'),
-    path('plan/variable', planViews.variable, name='plan_variable'),
-    path('plan/variable/add', planViews.add_variable, name='plan_add_variable'),
-    path('plan/variable/edit', planViews.edit_variable, name='plan_edit_variable'),
+    path('plan/variable', planViews.edit_variable, name='plan_variable'),
 
     path('task', planViews.task_home, name='task_home'),
     path('task/add', planViews.add_to_task, name='task_add'),

@@ -15,6 +15,7 @@ class TestPlan(models.Model):
     duration = models.IntegerField(default=600, verbose_name='duration (second)')
     time_setting = models.CharField(null=True, max_length=8, verbose_name='time setting run')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
+    variables = models.JSONField(null=True, verbose_name='variables')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
     update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
     operator = models.CharField(max_length=50, verbose_name='operator')
@@ -22,21 +23,6 @@ class TestPlan(models.Model):
 
     class Meta:
         db_table = 'jmeter_test_plan'
-
-
-class GlobalVariable(models.Model):
-    id = models.IntegerField(verbose_name='variable id', primary_key=True)
-    plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE, verbose_name='test plan id')
-    name = models.CharField(max_length=32, verbose_name='variable name')
-    value = models.CharField(max_length=64, verbose_name='variable value')
-    comment = models.CharField(null=True, max_length=200, verbose_name='comment')
-    create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
-    update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
-    operator = models.CharField(max_length=50, verbose_name='operator')
-    objects = models.Manager()
-
-    class Meta:
-        db_table = 'jmeter_variable'
 
 
 class ThreadGroup(models.Model):
@@ -121,6 +107,10 @@ class PerformanceTestTask(models.Model):
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE, verbose_name='plan id')
     ratio = models.FloatField(verbose_name='ratio, target_num * ratio')
     status = models.IntegerField(verbose_name='status, 0-pending run, 1-running, 2-success, 3-stop, 4-failure')
+    samples = models.IntegerField(default=0, verbose_name='# Samples')
+    average_rt = models.FloatField(null=True, verbose_name='Average Response Time (ms)')
+    tps = models.FloatField(null=True, verbose_name='TPS (/s)')
+    error = models.FloatField(default=0, verbose_name='error(%)')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
     update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
     start_time = models.DateTimeField(null=True, verbose_name='task start time')

@@ -110,6 +110,45 @@ function save_var(url, location_url, plan_id) {
     })
 }
 
+function save_variable(url, location_url, plan_id) {
+    let variables = document.getElementsByClassName('row-var');
+    if (variables.length < 1) {
+        $.Toast('Please add variable firstly ~', 'warning');
+        return;
+    }
+    let s = [];
+    for (let i=0; i<variables.length; i++) {
+        let values = variables[i].getElementsByTagName('input');
+        let variable_dict = {
+            name: values[0].value,
+            value: values[1].value,
+            comment: values[2].value
+        }
+        s.push(variable_dict)
+    }
+
+    let post_data = {
+        plan_id: plan_id,
+        variables: s
+    }
+
+    $.ajax({
+        type: 'post',
+        url: url,
+        data: JSON.stringify(post_data),
+        dataType: 'json',
+        contentType: 'application/json; charset=utf-8',
+        success: function (data) {
+            if(data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+                window.location.href = location_url;
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
+}
+
 function edit_var(url, location_url, plan_id) {
     let var_id = document.getElementById('ID').value;
     let name = document.getElementById('name').value;
@@ -212,7 +251,7 @@ function add_task(url, location_url, plan_id) {
     })
 }
 
-function start_task(url) {
+function stop_task(url) {
     $.ajax({
         type: 'get',
         url: url,
@@ -227,3 +266,27 @@ function start_task(url) {
     })
 }
 
+function start_task(url, task_id, plan_id) {
+    $('.modal_cover').css("display", "block");
+    $('.modal_gif').css("display", "block");
+    let post_data = {
+        task_id: task_id,
+        plan_id: plan_id
+    }
+    $.ajax({
+        type: 'post',
+        url: url,
+        data: post_data,
+        dataType: 'json',
+        success: function (data) {
+            $('.modal_cover').css("display", "none");
+            $('.modal_gif').css("display", "none");
+            if(data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+                window.location.reload();
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
+}

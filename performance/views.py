@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
-import time
-import json
 import logging
 import traceback
 from django.shortcuts import render
 from django.core import serializers
 from django.conf import settings
 from django.db.models.deletion import ProtectedError
-from .models import TestPlan, GlobalVariable, ThreadGroup, TransactionController
+from .models import TestPlan, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from common.Result import result
 from common.generator import primaryKey, strfTime
@@ -39,6 +37,8 @@ def delete(request):
                 HTTPSampleProxy.objects.get(id=delete_id).delete()
             if delete_type == 'header':
                 HTTPRequestHeader.objects.get(id=delete_id).delete()
+            if delete_type == 'task':
+                PerformanceTestTask.objects.get(id=delete_id).delete()
             logger.info(f'{delete_type} {delete_id} is deleted success ~')
             return result(msg='Delete success ~')
         except ProtectedError:

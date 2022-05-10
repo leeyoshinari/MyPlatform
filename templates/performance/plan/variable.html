@@ -11,47 +11,59 @@
     <span>Variables</span>
 {% endblock %}
 
-{% block detail_action %}
-    <a href="{% url 'perf:plan_add_variable' %}?id={{ plan_id }}">Add Variable</a>
-{% endblock %}
 {% block searchBlock %}
-    <div class="search">
-        {% if key_word %}
-            <input type="text" id="searching" placeholder="Please input key words ~" value="{{ key_word }}">
+{% endblock %}
+{% block detail %}
+    <div class="detail-action" style="margin-bottom: 3%;">
+        <a href="#" onclick="add_variable();">Add Variable</a>
+        <a href="#" onclick="delete_variable();">Delete Variable</a>
+    </div>
+    <div class="list-body" id="variable-list">
+        {% if variables.variables %}
+            {% for foo in variables.variables %}
+                <div class="row-var">
+                    <label>Name:</label>
+                    <input type="text" id="var-name" placeholder="Please input variable name ~" value="{{ foo.name }}">
+                    <label>Value:</label>
+                    <input type="text" id="var-value" placeholder="Please input variable value ~" value="{{ foo.value }}">
+                    <label>Comment:</label>
+                    <input type="text" id="var-comment" placeholder="Please input variable comment ~" value="{{ foo.comment }}">
+                </div>
+            {% endfor %}
         {% else %}
-            <input type="text" id="searching" placeholder="Please input key words ~">
+            <div class="row-var">
+                <label>Name:</label>
+                <input type="text" id="var-name" placeholder="Please input variable name ~">
+                <label>Value:</label>
+                <input type="text" id="var-value" placeholder="Please input variable value ~">
+                <label>Comment:</label>
+                <input type="text" id="var-comment" placeholder="Please input variable comment ~">
+            </div>
         {% endif %}
-        <button onclick="search('{% url 'perf:plan_variable' %}?id={{ plan_id }}')">Search</button>
+    </div>
+    <div class="list-footer">
+        <div>
+            <a href="{% url 'perf:plan_home' %}">Cancel</a>
+            <a href="#" onclick="save_variable('{% url 'perf:plan_variable' %}', '{% url 'perf:plan_home' %}', {{ variables.id }})">Submit</a>
+        </div>
     </div>
 {% endblock %}
-{% block table_head %}
-    <tr class="table_style">
-        <th width="10%">Plan Name</th>
-        <th width="10%">Name</th>
-        <th width="10%">Value</th>
-        <th width="19%">Comment</th>
-        <th width="13%">Create Time</th>
-        <th width="13%">Update Time</th>
-        <th width="10%">Operator</th>
-        <th width="15%">Actions</th>
-    </tr>
+{% block define_js %}
+    <script type="text/javascript">
+        function add_variable() {
+            let c = document.getElementById('variable-list');
+            let s = '<div class="row-var">' +
+                '<label>Name:</label> <input type="text" id="var-name" placeholder="Please input variable name ~"> ' +
+                '<label>Value:</label> <input type="text" id="var-value" placeholder="Please input variable value ~"> ' +
+                '<label>Comment:</label> <input type="text" id="var-comment" placeholder="Please input variable comment ~"></div>';
+            c.appendChild(document.createRange().createContextualFragment(s));
+        }
+        function delete_variable() {
+            let c = document.getElementById('variable-list');
+            let div = c.getElementsByTagName('div');
+            if(div.length > 0) {
+                c.removeChild(div[div.length - 1]);
+            }
+        }
+    </script>
 {% endblock %}
-
-{% block table_body %}
-    {% for v in variables %}
-            <tr>
-            <td><a href="{% url 'perf:plan_edit' %}?id={{ v.plan.id }}">{{ v.plan.name }}</a></td>
-            <td style="text-align: center;"><a href="{% url 'perf:plan_edit_variable' %}?id={{ v.id }}">{{ v.name }}</a></td>
-            <td style="text-align: center;">{{ v.value }}</td>
-            <td>{{ v.comment }}</td>
-            <td style="text-align: center;">{{ v.create_time | date:"Y-m-d H:i:s" }}</td>
-            <td style="text-align: center;">{{ v.update_time | date:"Y-m-d H:i:s" }}</td>
-            <td style="text-align: center;">{{ v.operator }}</td>
-            <td>
-                <a href="{% url 'perf:plan_edit_variable' %}?id={{ v.id }}">Edit</a>
-                <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:plan_variable' %}?id={{ plan_id }}', 'variable', {{ v.id }})">Delete</a>
-            </td>
-        </tr>
-    {% endfor %}
-{% endblock %}
-
