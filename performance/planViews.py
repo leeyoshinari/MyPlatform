@@ -256,7 +256,7 @@ def start_task(request):
                             for sample in samples:
                                 headers = HTTPRequestHeader.objects.get(id=sample.http_header_id)
                                 http_samples_proxy += jmx_writer.generator_samples_and_header(sample, headers)
-                            http_controller += jmx_writer.generator_controller(ctl) + http_samples_proxy
+                            http_controller += jmx_writer.generator_controller(ctl) + '<hashTree>' + http_samples_proxy + '</hashTree>'
 
                         all_threads = thread_group + http_controller + '</hashTree>'
                         test_plan = test_plan + '<hashTree>' + all_threads + '</hashTree>'

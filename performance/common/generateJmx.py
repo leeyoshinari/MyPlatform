@@ -38,8 +38,8 @@ class JMeter:
                             '<stringProp name="ThreadGroup.on_sample_error">continue</stringProp><elementProp name=' \
                             '"ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" ' \
                             'testclass="LoopController" testname="Loop Controller" enabled="true"><boolProp name="' \
-                            'LoopController.continue_forever">false</boolProp><stringProp name="LoopController.loops">' \
-                            '-1</stringProp></elementProp><stringProp name="ThreadGroup.num_threads">${num_threads}</stringProp>' \
+                            'LoopController.continue_forever">false</boolProp><intProp name="LoopController.loops">' \
+                            '-1</intProp></elementProp><stringProp name="ThreadGroup.num_threads">${num_threads}</stringProp>' \
                             '<stringProp name="ThreadGroup.ramp_time">%s</stringProp><boolProp name="' \
                             'ThreadGroup.scheduler">true</boolProp><stringProp name="ThreadGroup.duration">%s</stringProp>' \
                             '<stringProp name="ThreadGroup.delay"></stringProp><boolProp name="ThreadGroup.same' \
@@ -72,15 +72,15 @@ class JMeter:
         csv_data_set = ''
         if csv_file:
             csv_data_file_path = ''
-            recycle = csv_file.recycle
+            recycle = csv_file['recycle']
             stopThread = 'false' if recycle == 'true' else 'true'
             csv_data_set = '<CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV 数据文件设置" ' \
                             'enabled="true"><stringProp name="delimiter">%s</stringProp><stringProp name="fileEncoding"' \
                             '>UTF-8</stringProp><stringProp name="filename">%s</stringProp><boolProp name="ignoreFirstLine"' \
                             '>false</boolProp><boolProp name="quotedData">false</boolProp><boolProp name="recycle">%s</boolProp>' \
                             '<stringProp name="shareMode">%s</stringProp><boolProp name="stopThread">%s</boolProp>' \
-                            '<stringProp name="variableNames">%s</stringProp></CSVDataSet><hashTree/>' %(csv_file.delimiter,
-                            csv_data_file_path, recycle, csv_file.share_mode, stopThread, csv_file.variable_names)
+                            '<stringProp name="variableNames">%s</stringProp></CSVDataSet><hashTree/>' %(csv_file['delimiter'],
+                            csv_data_file_path, recycle, csv_file['share_mode'], stopThread, csv_file['variable_names'])
         return csv_data_set
 
     def generator_controller(self, controllers):
@@ -125,11 +125,11 @@ class JMeter:
                                '</elementProp>' %json.dumps(arguments.get('request_body_json'))
             else:
                 arg_str = ''
-                for k, v in arguments:
+                for k, v in arguments.items():
                     arg_str += '<elementProp name="%s" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_' \
                                'encode">%s</boolProp><stringProp name="Argument.name">%s</stringProp><stringProp name="' \
                                'Argument.value">%s</stringProp><stringProp name="Argument.metadata">=</stringProp>' \
-                               '<boolProp name="HTTPArgument.use_equals">true</boolProp></elementProp>' %(k, v.bool_prop_encode, k, v[k])
+                               '<boolProp name="HTTPArgument.use_equals">true</boolProp></elementProp>' %(k, v['bool_prop_encode'], k, v[k])
                 argument_str = '<elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArguments' \
                                'Panel" testclass="Arguments" enabled="true"><collectionProp name="Arguments.argument' \
                                's">%s</collectionProp></elementProp>' %arg_str
@@ -147,12 +147,14 @@ class JMeter:
         return header
 
     def generator_assert(self, assert_type, assert_value):
-        assert_str = '<ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="响应断言" e' \
-                     'nabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="%s">%s</stringProp>' \
-                     '</collectionProp><stringProp name="Assertion.custom_message"></stringProp><stringProp name=' \
-                     '"Assertion.test_field">Assertion.response_data</stringProp><boolProp name="Assertion.assume' \
-                     '_success">false</boolProp><intProp name="Assertion.test_type">%s</intProp></ResponseAssertion>' \
-                     '<hashTree/>' %(int(time.time()), assert_value, assert_type)
+        assert_str = ''
+        if assert_type and assert_value:
+            assert_str = '<ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="响应断言" e' \
+                         'nabled="true"><collectionProp name="Asserion.test_strings"><stringProp name="%s">%s</stringProp>' \
+                         '</collectionProp><stringProp name="Assertion.custom_message"></stringProp><stringProp name=' \
+                         '"Assertion.test_field">Assertion.response_data</stringProp><boolProp name="Assertion.assume' \
+                         '_success">false</boolProp><intProp name="Assertion.test_type">%s</intProp></ResponseAssertion>' \
+                         '<hashTree/>' %(int(time.time()), assert_value, assert_type)
         return assert_str
 
     def generator_extractor(self, extractors):
@@ -166,7 +168,7 @@ class JMeter:
                          'regex">%s</stringProp><stringProp name="RegexExtractor.template">%s</stringProp>' \
                          '<stringProp name="RegexExtractor.default"></stringProp><stringProp name="RegexExtractor.match' \
                          '_number">%s</stringProp><boolProp name="RegexExtractor.default_empty_value">true</boolProp>' \
-                         '</RegexExtractor><hashTree/>' %(extr.refname, extr.regex, extr.template, extr.match_number)
+                         '</RegexExtractor><hashTree/>' %(extr['refname'], extr['regex'], extr['template'], extr['match_number'])
 
         if extractors.get('json'):
             for extr in extractors.get('json'):
@@ -174,6 +176,6 @@ class JMeter:
                             'name="JSON提取器" enabled="true"><stringProp name="JSONPostProcessor.referenceNames">%s</s' \
                             'tringProp><stringProp name="JSONPostProcessor.jsonPathExprs">%s</stringProp><stringPro' \
                             'p name="JSONPostProcessor.match_numbers">%s</stringProp></JSONPostProcessor>' \
-                            '<hashTree/>' %(extr.referenceNames, extr.jsonPathExprs, extr.match_numbers)
+                            '<hashTree/>' %(extr['referenceNames'], extr['jsonPathExprs'], extr['match_numbers'])
 
         return regex_str + json_str
