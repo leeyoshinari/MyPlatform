@@ -82,34 +82,6 @@ function edit_plan(url, location_url) {
     })
 }
 
-function save_var(url, location_url, plan_id) {
-    let name = document.getElementById('name').value;
-    let value = document.getElementById('value').value;
-    let comment = document.getElementById('comment').value;
-
-    let post_data = {
-        plan_id: plan_id,
-        name: name,
-        value: value,
-        comment: comment
-    }
-
-    $.ajax({
-        type: 'post',
-        url: url,
-        data: post_data,
-        dataType: 'json',
-        success: function (data) {
-            if(data['code'] === 0) {
-                $.Toast(data['msg'], 'success');
-                window.location.href = location_url + '?id=' + plan_id;
-            } else {
-                $.Toast(data['msg'], 'error');
-            }
-        }
-    })
-}
-
 function save_variable(url, location_url, plan_id) {
     let variables = document.getElementsByClassName('row-var');
     if (variables.length < 1) {
@@ -149,35 +121,6 @@ function save_variable(url, location_url, plan_id) {
     })
 }
 
-function edit_var(url, location_url, plan_id) {
-    let var_id = document.getElementById('ID').value;
-    let name = document.getElementById('name').value;
-    let value = document.getElementById('value').value;
-    let comment = document.getElementById('comment').value;
-
-    let post_data = {
-        id: var_id,
-        plan_id: plan_id,
-        name: name,
-        value: value,
-        comment: comment
-    }
-
-    $.ajax({
-        type: 'post',
-        url: url,
-        data: post_data,
-        dataType: 'json',
-        success: function (data) {
-            if(data['code'] === 0) {
-                $.Toast(data['msg'], 'success');
-                window.location.href = location_url + '?id=' + plan_id;
-            } else {
-                $.Toast(data['msg'], 'error');
-            }
-        }
-    })
-}
 
 function upload_file(url) {
     let fileUpload_input = document.getElementById("fileUpload-input");

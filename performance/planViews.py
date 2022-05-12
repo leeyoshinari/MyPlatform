@@ -16,6 +16,7 @@ from .common.generateJmx import JMeter
 
 
 header_type = {'GET': 1, 'POST': 2}
+jmeter_header = '<?xml version="1.0" encoding="UTF-8"?>'
 logger = logging.getLogger('django')
 
 
@@ -238,7 +239,40 @@ def start_task(request):
             plan_id = request.POST.get('plan_id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             plans = TestPlan.objects.get(id=plan_id)
-            jmx_writer.generate_test_plan(plans)
+            if plans.is_valid == 'true':
+                test_plan = jmx_writer.generate_test_plan(plans)
+                logger.info(f'Write Test Plan success, operator: {username}')
+
+                thread_groups = ThreadGroup.objects.filter(plan_id=plans.id, is_valid='true')
+                if thread_groups:
+                    if len(thread_groups) == 1:
+                        thread_group = jmx_writer.generate_thread_group(thread_groups[0])
+                        logger.info(f'Write Thread Group success, , operator: {username}')
+                        controllers = TransactionController.objects.filter(thread_group_id=thread_groups[0].id, is_valid='true').order_by('id')
+                        http_controller = ''
+                        for ctl in controllers:
+                            http_samples_proxy = ''
+                            samples = HTTPSampleProxy.objects.filter(controller_id=ctl.id, is_valid='true').order_by('id')
+                            for sample in samples:
+                                headers = HTTPRequestHeader.objects.get(id=sample.http_header_id)
+                                http_samples_proxy += jmx_writer.generator_samples_and_header(sample, headers)
+                            http_controller += jmx_writer.generator_controller(ctl) + http_samples_proxy
+
+                        all_threads = thread_group + http_controller + '</hashTree>'
+                        test_plan = test_plan + '<hashTree>' + all_threads + '</hashTree>'
+                        jmeter_test_plan = jmeter_header + '<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.3"><hashTree>' + test_plan + '</hashTree></jmeterTestPlan>'
+                        with open('test.jmx', 'w', encoding='utf-8') as f:
+                            f.write(jmeter_test_plan)
+                    else:
+                        logger.error('The Test Plan has many Thread Groups ~')
+                        return result(code=1, msg='The Test Plan has many Thread Groups, Please disabled it ~')
+                else:
+                    logger.error('The Test Plan has no enabled Thread Group ~')
+                    return result(code=1, msg='The Test Plan has no enabled Thread Group, Please enabled it ~')
+            else:
+                logger.error('The Test Plan has been disabled ~')
+                return result(code=1, msg='The Test Plan has been disabled ~')
+
             tasks.status = 1
             tasks.save()
             logger.info(f'Task {task_id} start success, operator: {username}')

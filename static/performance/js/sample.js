@@ -42,17 +42,17 @@ function save_sample(url, location_url, group_id) {
             let values = extractors[i].getElementsByTagName('input');
             if (values[0].value === 'Json') {
                 let json_extr = {
-                    name: values[1].value,
-                    number: values[2].value,
-                    expr: values[3].value
+                    referenceNames: values[1].value,
+                    match_numbers: values[2].value,
+                    jsonPathExprs: values[3].value
                 }
                 json_extrs.push(json_extr);
             } else {
                 let regex_extr = {
-                    name: values[1].value,
-                    number: values[2].value,
+                    refname: values[1].value,
+                    match_number: values[2].value,
                     template: values[3].value,
-                    expr: values[4].value
+                    regex: values[4].value
                 }
                 regex_extrs.push(regex_extr);
             }
@@ -142,17 +142,17 @@ function edit_sample(url, location_url, group_id) {
             let values = extractors[i].getElementsByTagName('input');
             if (values[0].value === 'Json') {
                 let json_extr = {
-                    name: values[1].value,
-                    number: values[2].value,
-                    expr: values[3].value
+                    referenceNames: values[1].value,
+                    match_numbers: values[2].value,
+                    jsonPathExprs: values[3].value
                 }
                 json_extrs.push(json_extr);
             } else {
                 let regex_extr = {
-                    name: values[1].value,
-                    number: values[2].value,
+                    refname: values[1].value,
+                    match_number: values[2].value,
                     template: values[3].value,
-                    expr: values[4].value
+                    regex: values[4].value
                 }
                 regex_extrs.push(regex_extr);
             }

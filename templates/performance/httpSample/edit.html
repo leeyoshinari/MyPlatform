@@ -209,19 +209,19 @@
                         {% for foo in v %}
                             <div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 69%;"><div class="helpstyle" style="float: left;"><span data-tooltip="Regular Expression Extractor, Name: Names of created variables. Expr: Regular Expression. Number: Match No.(0 for Random). Template: Template ($i$ where i is capturing group number).">?</span></div>
                                 <label style="margin-left: 1%;">Type:</label><input type="text" style="width: 6%;" readonly value="Regex">
-                                <label style="margin-left: 1%;">Name:</label><input type="text" style="width: 9%;" value="{{ foo.name }}">
-                                <label style="margin-left: 1%;">Number:</label><input type="text" style="width: 3%;" value="{{ foo.number }}">
+                                <label style="margin-left: 1%;">Name:</label><input type="text" style="width: 9%;" value="{{ foo.refname }}">
+                                <label style="margin-left: 1%;">Number:</label><input type="text" style="width: 3%;" value="{{ foo.match_number }}">
                                 <label style="margin-left: 1%;">Template:</label><input type="text" style="width: 6%;" value="{{ foo.template }}">
-                                <label style="margin-left: 1%;">Expr:</label><input type="text" style="width: 25%;" value="{{ foo.expr }}">
+                                <label style="margin-left: 1%;">Expr:</label><input type="text" style="width: 25%;" value="{{ foo.regex }}">
                             </div>
                         {% endfor %}
                     {% else %}
                         {% for foo in v %}
                              <div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 69%;"><div class="helpstyle" style="float: left;"><span data-tooltip="JSON Extractor, Name: Names of created variables. Expr: JSON Path expressions. Number: Match No.(0 for Random).">?</span></div>
                                  <label style="margin-left: 1%;">Type:</label><input type="text" style="width: 6%;" readonly value="Json">
-                                 <label style="margin-left: 1%;">Name:</label><input type="text" style="width: 13%;" value="{{ foo.name }}"><label style="margin-left: 1%;">Number:</label>
-                                 <input type="text" style="width: 10%;" value="{{ foo.number }}"><label style="margin-left: 1%;">Expr:</label>
-                                 <input type="text" style="width: 28%;" value="{{ foo.expr }}">
+                                 <label style="margin-left: 1%;">Name:</label><input type="text" style="width: 13%;" value="{{ foo.referenceNames }}"><label style="margin-left: 1%;">Number:</label>
+                                 <input type="text" style="width: 10%;" value="{{ foo.match_numbers }}"><label style="margin-left: 1%;">Expr:</label>
+                                 <input type="text" style="width: 28%;" value="{{ foo.jsonPathExprs }}">
                              </div>
                         {% endfor %}
                     {% endif %}
