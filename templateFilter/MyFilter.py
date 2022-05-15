@@ -48,6 +48,10 @@ def get_value_from_list(v1, v2):
             return ['Pending', 'Running', 'Success', 'Stopped', 'Failure'][v1]
         if v2 == 'task_color':
             return ['gray', 'blue', 'green', 'orange', 'red'][v1]
+        if v2 == 'server_color':
+            return ['gray', 'green', 'red'][v1]
+        if v2 == 'server_status':
+            return ['gray', 'Idle', 'Busy'][v1]
     except:
         return None
 

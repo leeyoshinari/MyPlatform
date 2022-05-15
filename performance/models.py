@@ -11,7 +11,7 @@ class TestPlan(models.Model):
     type = models.IntegerField(default=1, verbose_name='run type, 0-Thread, 1-TPS')
     schedule = models.IntegerField(default=0, verbose_name='schedule type, 0-Regular, 1-Crontab')
     init_num = models.IntegerField(default=1, verbose_name='init num')
-    target_num = models.IntegerField(default=1, verbose_name='init num')
+    target_num = models.IntegerField(default=1, verbose_name='target num')
     duration = models.IntegerField(default=600, verbose_name='duration (second)')
     time_setting = models.CharField(null=True, max_length=8, verbose_name='time setting run')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
@@ -105,6 +105,7 @@ class HTTPSampleProxy(models.Model):
 class PerformanceTestTask(models.Model):
     id = models.IntegerField(verbose_name='task id', primary_key=True)
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE, verbose_name='plan id')
+    number_samples = models.IntegerField(default=1, verbose_name='number of http samples')
     ratio = models.FloatField(verbose_name='ratio, target_num * ratio')
     status = models.IntegerField(verbose_name='status, 0-pending run, 1-running, 2-success, 3-stop, 4-failure')
     samples = models.IntegerField(default=0, verbose_name='# Samples')

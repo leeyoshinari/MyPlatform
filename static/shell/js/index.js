@@ -92,6 +92,7 @@ function add_server() {
         let Port = document.getElementById('Port').value;
         let UserName = document.getElementById('UserName').value;
         let p = document.getElementById('Password').value;
+        let isPressure = document.getElementById('isPressure').value;
 
         if (!GroupName) {
             $.Toast('Please select group name ~ ', 'error');
@@ -126,6 +127,7 @@ function add_server() {
             Port: Port,
             UserName: UserName,
             Password: password,
+            isPressure: isPressure,
             time: parseInt(c)
         }
         $.ajax({

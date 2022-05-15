@@ -1,0 +1,43 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+{% load myFilter %}
+
+{% block navigate %}
+    <a href="{% url 'shell:index' %}">Add Server</a>
+{% endblock %}
+
+{% block table_head %}
+    <tr class="table_style">
+        <th width=10%>GroupName</th>
+        <th width=10%>ServerName</th>
+        <th width=10%>IP</th>
+        <th width=10%>Status</th>
+        <th width=10%>System</th>
+        <th width=5%>CPU(core)</th>
+        <th width=5%>Memory</th>
+        <th width=5%>Disk</th>
+        <th width=15%>Action</th>
+    </tr>
+{% endblock %}
+{% block table_body %}
+    {% for host in servers %}
+        <tr>
+            <td>{{ host.group.name }}</td>
+            <td>{{ host.name }}</td>
+            <td style="text-align: center;">{{ host.host }}</td>
+            <td style="text-align: center;"><div class="round" style="background-color: {{ host.is_perf | get_value_from_list:'server_color'}};"></div>{{ host.is_perf | get_value_from_list:'server_status' }}</td>
+            <td style="text-align: center;">{{ host.system }}</td>
+            <td style="text-align: center;">{{ host.cpu }}</td>
+            <td style="text-align: center;">{{ host.mem }}G</td>
+            <td style="text-align: center;">{{ host.disk }}</td>
+            <td>
+                <a target="_blank" href="{% url 'shell:open_shell' %}?ip={{ host.host }}">OpenShell</a>
+                {% if host.is_monitor == 0 %}
+                    <a onclick="deploy('{{ host.host }}')">DeployMonitor</a>
+                {% else %}
+                    <a target="_blank" href="{% url 'monitor:visualize' %}?host={{ host.host }}">ViewMonitor</a>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

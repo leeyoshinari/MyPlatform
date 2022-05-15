@@ -177,6 +177,7 @@ td a {
 	text-decoration: none;
 	margin-left: 3%;
     color: blue;
+    cursor: pointer;
 }
 tr {
     height: 33px;

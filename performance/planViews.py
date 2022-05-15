@@ -8,10 +8,12 @@ import traceback
 from django.shortcuts import render, redirect
 from .models import TestPlan, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
+from shell.models import Servers
+from .common.parseJmx import read_jmeter_from_byte
+from .common.generateJmx import *
 from common.Result import result
 from common.generator import primaryKey
-from .common.parseJmx import read_jmeter_from_byte
-from .common.generateJmx import JMeter
+from common.Request import request
 # Create your views here.
 
 
@@ -233,47 +235,59 @@ def task_home(request):
 def start_task(request):
     if request.method == 'POST':
         try:
-            jmx_writer = JMeter()
             username = request.user.username
             task_id = request.POST.get('task_id')
             plan_id = request.POST.get('plan_id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             plans = TestPlan.objects.get(id=plan_id)
             if plans.is_valid == 'true':
-                test_plan = jmx_writer.generate_test_plan(plans)
+                test_plan, duration = generate_test_plan(plans)
                 logger.info(f'Write Test Plan success, operator: {username}')
 
                 thread_groups = ThreadGroup.objects.filter(plan_id=plans.id, is_valid='true')
-                if thread_groups:
-                    if len(thread_groups) == 1:
-                        thread_group = jmx_writer.generate_thread_group(thread_groups[0])
-                        logger.info(f'Write Thread Group success, , operator: {username}')
-                        controllers = TransactionController.objects.filter(thread_group_id=thread_groups[0].id, is_valid='true').order_by('id')
+                if len(thread_groups) == 1:
+                    num_threads = 200 if plans.type == 1 else plans.init_num
+                    thread_group = generate_thread_group(thread_groups[0], num_threads, duration)
+                    cookie_manager = generate_cookie(thread_groups[0].cookie)
+                    csv_data_set = generator_csv(thread_groups[0].file)
+                    logger.info(f'Write Thread Group success, , operator: {username}')
+                    controllers = TransactionController.objects.filter(thread_group_id=thread_groups[0].id, is_valid='true').order_by('id')
+                    if len(controllers) == 1:
                         http_controller = ''
-                        for ctl in controllers:
-                            http_samples_proxy = ''
-                            samples = HTTPSampleProxy.objects.filter(controller_id=ctl.id, is_valid='true').order_by('id')
+                        http_samples_proxy = ''
+                        samples = HTTPSampleProxy.objects.filter(controller_id=controllers[0].id, is_valid='true').order_by('id')
+                        number_of_samples = len(samples)
+                        throughput = generator_throughput(number_of_samples)
+                        if len(samples) > 0:
                             for sample in samples:
-                                headers = HTTPRequestHeader.objects.get(id=sample.http_header_id)
-                                http_samples_proxy += jmx_writer.generator_samples_and_header(sample, headers)
-                            http_controller += jmx_writer.generator_controller(ctl) + '<hashTree>' + http_samples_proxy + '</hashTree>'
+                                if sample.assert_content:
+                                    headers = HTTPRequestHeader.objects.get(id=sample.http_header_id)
+                                    http_samples_proxy += generator_samples_and_header(sample, headers)
+                                else:
+                                    logger.error(f'HTTP Sample {sample.name} has no assertion ~')
+                                    return result(code=1, msg=f'HTTP Sample {sample.name} has no assertion ~')
+                            http_controller += generator_controller(controllers[0]) + '<hashTree>' + http_samples_proxy + '</hashTree>'
+                        else:
+                            logger.error('The Controller has no HTTP Samples ~')
+                            return result(code=1, msg='The Controller has no HTTP Samples, Please add HTTP Samples ~')
 
-                        all_threads = thread_group + http_controller + '</hashTree>'
+                        all_threads = thread_group + '<hashTree>' + throughput + cookie_manager + csv_data_set + http_controller + '</hashTree>'
                         test_plan = test_plan + '<hashTree>' + all_threads + '</hashTree>'
                         jmeter_test_plan = jmeter_header + '<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.3"><hashTree>' + test_plan + '</hashTree></jmeterTestPlan>'
                         with open('test.jmx', 'w', encoding='utf-8') as f:
                             f.write(jmeter_test_plan)
                     else:
-                        logger.error('The Test Plan has many Thread Groups ~')
-                        return result(code=1, msg='The Test Plan has many Thread Groups, Please disabled it ~')
+                        logger.error('The Thread Group has no Controllers ~')
+                        return result(code=1, msg='The Thread Group has no Controllers, Please add Controller ~')
                 else:
-                    logger.error('The Test Plan has no enabled Thread Group ~')
-                    return result(code=1, msg='The Test Plan has no enabled Thread Group, Please enabled it ~')
+                    logger.error('The Test Plan can only have one enable Thread Group ~')
+                    return result(code=1, msg='The Test Plan can only have one enable Thread Group, Please check it ~')
             else:
                 logger.error('The Test Plan has been disabled ~')
                 return result(code=1, msg='The Test Plan has been disabled ~')
 
             tasks.status = 1
+            tasks.number_samples = number_of_samples
             tasks.save()
             logger.info(f'Task {task_id} start success, operator: {username}')
             return result(msg=f'Start success ~')
@@ -295,3 +309,15 @@ def stop_task(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Stop failure ~')
+
+def get_server(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            groups = request.user.groups.all()
+            servers = Servers.objects.filter(is_perf__gt=0, group__in=groups).order_by('-id')
+            logger.info(f'Get pressure server info success, operator: {username}')
+            return render(request, 'performance/plan/server.html', context={'servers': servers})
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get server info Error ~')

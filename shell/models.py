@@ -20,6 +20,7 @@ class Servers(models.Model):
     mem = models.FloatField(default=0.0, verbose_name='服务器内存（单位G）')
     disk = models.CharField(max_length=8, verbose_name='磁盘大小')
     is_monitor = models.IntegerField(default=0, verbose_name='是否监控服务器使用情况')
+    is_perf = models.IntegerField(default=0, verbose_name='是否是施压机，0-非施压机, 1-施压机，空闲, 2-施压机，繁忙')
     objects = models.Manager()
 
     class Meta:
