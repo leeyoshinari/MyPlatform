@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block detail %}
-    <div class="list-body">
+    <div-- class="list-body">
         <div class="row-cols">
             <div class="label-div">
                 <label>ID:</label>
@@ -31,7 +31,7 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads. Default: True.">?</span></div>
+                <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of main threads. Default: True.">?</span></div>
                 <label>tearDown: </label>
             </div>
             <div class="value-div">
@@ -49,7 +49,7 @@
         <div class="row-cols">
             <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Run Thread Groups consecutively (i.e. one at a time). Default: True.">?</span></div>
-                <label>serialize:</label>
+                <label>Serialize:</label>
             </div>
             <div class="value-div">
                 <select id="serialize">
@@ -99,13 +99,22 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Specify Pressure Servers number. When running, it will select server randomly.">?</span></div>
+                <label>Server Number:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="server_num" placeholder="Please input pressure server number that you need ~" value="{{ plan.server_num }}">
+            </div>
+        </div>
+        <!--div class="row-cols">
+            <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Initial Number, it is used to when thread group just starts running. When 'runType' is 'Thread', it is initial number of thread group. When 'runType' is 'TPS', it is initial number of TPS.">?</span></div>
                 <label>Init Number:</label>
             </div>
             <div class="value-div">
-                <input type="text" id="init_number" placeholder="Please input initial number ~" value="{{ plan.init_num }}">
+                <input type="text" id="init_number" placeholder="Please input initial number ~" value="">
             </div>
-        </div>
+        </div-->
         <div class="row-cols">
             <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Target Number. it is target number of the test. When 'runType' is 'Thread', it is target number of thread group. When 'runType' is 'TPS', it is target number of TPS.">?</span></div>

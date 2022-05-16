@@ -10,7 +10,7 @@ class TestPlan(models.Model):
     serialize = models.CharField(max_length=8, default='true', verbose_name='serialize_threadgroups')
     type = models.IntegerField(default=1, verbose_name='run type, 0-Thread, 1-TPS')
     schedule = models.IntegerField(default=0, verbose_name='schedule type, 0-Regular, 1-Crontab')
-    init_num = models.IntegerField(default=1, verbose_name='init num')
+    server_num = models.IntegerField(default=1, verbose_name='pressure server number')
     target_num = models.IntegerField(default=1, verbose_name='target num')
     duration = models.IntegerField(default=600, verbose_name='duration (second)')
     time_setting = models.CharField(null=True, max_length=8, verbose_name='time setting run')

@@ -20,16 +20,10 @@
             {% if plans.type == 0 %}
                 <label>Fixed Thread Num: </label>
             {% else %}
-                <label>Initial TPS: </label>
-            {% endif %}
-            <span>{{ plans.init_num }}</span>
-        </div>
-        {% if plans.type == 1 %}
-            <div class="plan-detail" style="width: 15%;">
                 <label>Target TPS: </label>
-                <span>{{ plans.target_num }}</span>
-            </div>
-        {% endif %}
+            {% endif %}
+            <span>{{ plans.target_num }}</span>
+        </div>
         <div class="plan-detail" style="width: 12%;">
             <label>Duration: </label>
             <span>{{ plans.duration }} s</span>
@@ -43,9 +37,9 @@
         <th width="15%">Plan Name</th>
         <th width="10%">Status</th>
         {% if plans.type == 0 %}
-            <th width="10%"><div class="helpstyle"><span data-tooltip="Run Thread Groups consecutively (i.e. one at a time).">?</span></div>Current Threads</th>
+            <th width="10%"><div class="helpstyle"><span data-tooltip="Current Thread numbers per server.">?</span></div>Current Threads</th>
         {% else %}
-            <th width="10%"><div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of mian threads.">?</span></div>Current TPS</th>
+            <th width="10%"><div class="helpstyle"><span data-tooltip="Current TPS per server.">?</span></div>Current TPS</th>
         {% endif %}
         <th width="10%">Ratio(%)</th>
         <th width="10%"># Samples</th>
@@ -62,7 +56,7 @@
             <td title="{{ plans.comment }}"><a href="{% url 'perf:plan_edit' %}?id={{ plans.id }}">{{ plans.name }}</a></td>
             <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
             {% if plans.type == 0 %}
-                <td style="text-align: center;">{{ plans.init_num }}</td>
+                <td style="text-align: center;">{{ plans.target_num }}</td>
                 <td style="text-align: center;">-</td>
             {% else %}
                 <td style="text-align: center;">{{ task.ratio | multiple:plans.target_num }}</td>
