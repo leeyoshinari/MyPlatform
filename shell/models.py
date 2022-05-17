@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 
 # Create your models here.
 class Servers(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='主键')
+    id = models.CharField(max_length=16, primary_key=True, verbose_name='主键')
     group = models.ForeignKey(Group, on_delete=models.PROTECT, verbose_name='组名id')
     name = models.CharField(max_length=64, verbose_name='服务器名字')
     host = models.CharField(max_length=20, verbose_name='服务器ip')

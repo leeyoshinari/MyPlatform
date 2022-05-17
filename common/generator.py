@@ -7,7 +7,7 @@ import random
 
 
 def primaryKey():
-    return int(time.time() * 1000)
+    return int(time.time() * 10000)
 
 
 def strfTime():

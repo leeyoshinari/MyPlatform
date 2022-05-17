@@ -6,7 +6,7 @@ from django.db import models
 # Create your models here.
 
 class Mitm(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='主键')
+    id = models.CharField(max_length=16, primary_key=True, verbose_name='主键')
     name = models.CharField(null=True, max_length=50, verbose_name='规则名字')
     domain = models.CharField(null=True, max_length=50, verbose_name='域名或IP:PORT')
     url_path = models.CharField(null=True, max_length=100, verbose_name='url 路径')

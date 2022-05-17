@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 
 class TestPlan(models.Model):
-    id = models.IntegerField(verbose_name='Test Plan ID', primary_key=True)
+    id = models.CharField(max_length=16, verbose_name='Test Plan ID', primary_key=True)
     name = models.CharField(null=True, max_length=100, verbose_name='Plan Name')
     comment = models.CharField(null=True, max_length=200, verbose_name='comment')
     tearDown = models.CharField(max_length=8, default='true', verbose_name='tearDown_on_shutdown')
@@ -26,7 +26,7 @@ class TestPlan(models.Model):
 
 
 class ThreadGroup(models.Model):
-    id = models.IntegerField(verbose_name='thread group id', primary_key=True)
+    id = models.CharField(max_length=16, verbose_name='thread group id', primary_key=True)
     plan = models.ForeignKey(TestPlan, on_delete=models.PROTECT, verbose_name='test plan id')
     name = models.CharField(null=True, max_length=100, verbose_name='thread group name')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
@@ -47,7 +47,7 @@ class ThreadGroup(models.Model):
 
 
 class TransactionController(models.Model):
-    id = models.IntegerField(verbose_name='Controller id', primary_key=True)
+    id = models.CharField(max_length=16, verbose_name='Controller id', primary_key=True)
     thread_group = models.ForeignKey(ThreadGroup, on_delete=models.PROTECT, verbose_name='thread group id')
     name = models.CharField(null=True, max_length=100, verbose_name='Controller name')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
@@ -62,7 +62,7 @@ class TransactionController(models.Model):
 
 
 class HTTPRequestHeader(models.Model):
-    id = models.IntegerField(verbose_name='http header id', primary_key=True)
+    id = models.CharField(max_length=16, verbose_name='http header id', primary_key=True)
     name = models.CharField(null=True, max_length=100, verbose_name='name')
     method = models.CharField(max_length=8, verbose_name='method')
     value = models.JSONField(null=True, verbose_name='value')
@@ -77,7 +77,7 @@ class HTTPRequestHeader(models.Model):
 
 
 class HTTPSampleProxy(models.Model):
-    id = models.IntegerField(verbose_name='http sample id', primary_key=True)
+    id = models.CharField(max_length=16, verbose_name='http sample id', primary_key=True)
     controller = models.ForeignKey(TransactionController, on_delete=models.CASCADE, verbose_name='controller id')
     name = models.CharField(null=True, max_length=100, verbose_name='http sample name')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
@@ -103,7 +103,7 @@ class HTTPSampleProxy(models.Model):
 
 
 class PerformanceTestTask(models.Model):
-    id = models.IntegerField(verbose_name='task id', primary_key=True)
+    id = models.CharField(max_length=16, verbose_name='task id', primary_key=True)
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE, verbose_name='plan id')
     number_samples = models.IntegerField(default=1, verbose_name='number of http samples')
     ratio = models.FloatField(verbose_name='ratio, target_num * ratio')
