@@ -81,7 +81,11 @@ class SSH:
         """
         try:
             while True:
-                data = self.channel.recv(1024).decode('utf-8')
+                try:
+                    data = self.channel.recv(1024).decode('utf-8')
+                except UnicodeDecodeError:
+                    logger.warning(self.channel.recv(1024))
+                    data = self.channel.recv(1024).decode('unicode_escape')
                 self.keepalive_last_time = time.time()
                 if not len(data):
                     break
@@ -90,7 +94,7 @@ class SSH:
             self.websocket.close()
             logger.info('exit ssh and socket success ~ ')
         except:
-            logger.info(self.channel.recv(1024))
+            logger.error(self.channel.recv(1024))
             logger.error(traceback.format_exc())
             self.close()
 
