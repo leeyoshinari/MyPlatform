@@ -52,7 +52,7 @@
             <td>
                 <a href="{% url 'perf:header_edit' %}?id={{ header.id }}">Edit</a>
                 <a href="{% url 'perf:header_copy' %}?id={{ header.id }}">Copy</a>
-                <a href="{% url 'perf:sample_header_home' %}?id={{ header.id }}">HttpSample</a>
+                <a title="View HTTP Samples that use this HTTP request header" href="{% url 'perf:sample_header_home' %}?id={{ header.id }}">HttpSample</a>
                 <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:header_home' %}', 'header', {{ header.id }})">Delete</a>
             </td>
         </tr>

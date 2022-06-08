@@ -67,7 +67,7 @@
                     <a href="#" onclick="set_status('controller', '{{ ctl.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
                 {% endif %}
                 <a href="{% url 'perf:controller_copy' %}?id={{ ctl.id }}">Copy</a>
-                <a href="{% url 'perf:sample_home' %}?id={{ ctl.id }}">HttpSample</a>
+                <a title="View HTTP Samples of the Controller" href="{% url 'perf:sample_home' %}?id={{ ctl.id }}">HttpSample</a>
                 {% if group_id %}
                     <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:controller_home' %}?id={{ group_id }}', 'controller', {{ ctl.id }})">Delete</a>
                 {% else %}
