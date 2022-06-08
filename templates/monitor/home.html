@@ -14,7 +14,7 @@
         </tr>
         {% for data in datas %}
             <tr align="center">
-                <td><a href="http://{{ data.ip }}:{{ data.port }}">{{ data.ip }}</a></td>
+                <td><a href="http://{{ data.host }}:{{ data.port }}">{{ data.host }}</a></td>
                 <td>{{ data.system }}</td>
                 {% if data.cpu_usage < 80 %}
                     <td>{{ data.cpu }} cores/{{ data.cpu_usage|floatformat:2 }}%</td>

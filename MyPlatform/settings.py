@@ -13,6 +13,7 @@ import os
 import configparser
 from pathlib import Path
 
+import redis
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -136,9 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 LANGUAGE_CODE = 'zh-Hans'
-
 TIME_ZONE = 'Asia/Shanghai'
-
 USE_I18N = True
 USE_L10N = True
 USE_TZ = False
@@ -158,58 +157,66 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 EXCLUDE_URL = 'login|admin|Register|changePwd'
 
+# log path
 BASE_LOG_DIR = os.path.join(BASE_DIR, "logs")
 if not os.path.exists(BASE_LOG_DIR):
     os.mkdir(BASE_LOG_DIR)
 
 LOGGING = {
-    'version': 1,  # 保留字
-    'disable_existing_loggers': True,  # 禁用已经存在的logger实例
-    # 日志文件的格式
+    'version': 1,
+    'disable_existing_loggers': True,
     'formatters': {
-        # 详细的日志格式
         'standard': {
             'format': '%(asctime)s - %(levelname)s - [%(threadName)s:%(thread)d] - %(filename)s[line:%(lineno)d] - %(message)s'
         },
     },
-    # 过滤器
     'filters': {
         'require_debug_true': {
             '()': 'django.utils.log.RequireDebugTrue',
         },
     },
-    # 处理器
     'handlers': {
-        # 在终端打印
         'console': {
-            'filters': ['require_debug_true'],  # 只有在Django debug为True时才在屏幕打印日志
-            'class': 'logging.StreamHandler',  #
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
             'formatter': 'standard'
         },
-        # 默认的
         'default': {
-            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
-            'filename': os.path.join(BASE_LOG_DIR, "access.log"),  # 日志文件
-            'maxBytes': 1024 * 1024 * 5,  # 日志大小 10M
-            'backupCount': int(get_config('backupCount')),  # 最多备份几个
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_LOG_DIR, "access.log"),
+            'maxBytes': 1024 * 1024 * 5,
+            'backupCount': int(get_config('backupCount')),
             'formatter': 'standard',
             'encoding': 'utf-8',
         },
     },
     'loggers': {
-       # 默认的logger应用如下配置
         'django': {
-            'handlers': ['default'],  # 上线之后可以把'console'移除
+            'handlers': ['default', 'console'],  # 'console'
             'level': get_config('level'),
-            'propagate': True,  # 向不向更高级别的logger传递
+            'propagate': True,
         }
     },
 }
-# MitmProxy
+
+# monitor
+HEARTBEAT = 12  # heart beat time
+
+# files
+FILE_STORE_TYPE = get_config('storeType')
+FILE_URL = get_config('fileURL')
+if FILE_STORE_TYPE == '0':
+    # files store local path
+    FILE_ROOT_PATH = os.path.join(STATICFILES_DIRS[0], 'files')
+    if not os.path.exists(FILE_ROOT_PATH):
+        os.mkdir(FILE_ROOT_PATH)
+
+# Redis
 REDIS_HOST = get_config('RedisHost')
 REDIS_PORT = int(get_config('RedisPort'))
 REDIS_PWD = get_config('RedisPassword')
 REDIS_DB = int(get_config('RedisDB'))
+REDIS = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PWD, db=REDIS_DB, decode_responses=True)
 
 # influxDB
 INFLUX_HOST = get_config('InfluxHost')

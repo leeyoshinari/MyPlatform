@@ -15,9 +15,6 @@ from common.generator import primaryKey
 
 
 logger = logging.getLogger('django')
-file_path_root = os.path.join(settings.STATICFILES_DIRS[0], 'files')
-if not os.path.exists(file_path_root):
-    os.mkdir(file_path_root)
 share_mode = {'All threads': 'shareMode.all','Current thread group': 'shareMode.group', 'Current thread': 'shareMode.thread'}
 
 

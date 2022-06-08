@@ -5,7 +5,7 @@
     <div align="center">
         Server: <select id="host" style="width: 180px; height: 26px; margin-right: 20px;">
             {% for foo in ip %}
-                <option value="{{ foo }}">{{ foo }}</option>
+                <option value="{{ foo.host }}">{{ foo.host }}</option>
             {% endfor %}
         </select>
         Port: <input type="text" name="port" id="port" placeholder="Please input the port" style="margin-right: 20px;">

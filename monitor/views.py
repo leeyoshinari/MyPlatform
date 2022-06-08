@@ -31,22 +31,11 @@ def home(request):
         try:
             groups = request.user.groups.all()
             servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
+            agents = monitor_server.get_all_keys()
             datas = []
             for i in range(len(servers)):
-                ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
-                if ind == -1:
-                    continue
-                else:
-                    datas.append({'ip': monitor_server.agents['ip'][ind],
-                                  'port': monitor_server.agents['port'][ind],
-                                  'system': monitor_server.agents['system'][ind],
-                                  'cpu': monitor_server.agents['cpu'][ind],
-                                  'mem': monitor_server.agents['mem'][ind],
-                                  'disk': monitor_server.agents['disk_size'][ind],
-                                  'net': monitor_server.agents['network_speed'][ind],
-                                  'cpu_usage': monitor_server.agents['cpu_usage'][ind],
-                                  'mem_usage': monitor_server.agents['mem_usage'][ind] * 100,
-                                  'disk_usage': monitor_server.agents['disk_usage'][ind] * 100})
+                if 'server_' + servers[i]['host'] in agents:
+                    datas.append(monitor_server.get_value_by_host('server_' + servers[i]['host']))
             return render(request, 'monitor/home.html', context={'datas': datas})
         except:
             logger.error(traceback.format_exc())
@@ -63,13 +52,11 @@ def start_monitor(request):
         try:
             groups = request.user.groups.all()
             servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
+            keys = monitor_server.get_all_keys()
             datas = []
             for i in range(len(servers)):
-                ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
-                if ind == -1:
-                    continue
-                else:
-                    datas.append(monitor_server.agents['ip'][ind])
+                if 'server_' + servers[i]['host'] in keys:
+                    datas.append(monitor_server.get_value_by_host('server_' + servers[i]['host']))
             monitor_list = monitor_server.get_monitor(hosts=datas)
             return render(request, 'monitor/runMonitor.html', context={'ip': datas, 'foos': monitor_list})
         except:
@@ -87,7 +74,7 @@ def get_monitor(request):
         ip = request.GET.get('host')
         monitor_list = []
         try:
-            port = monitor_server.agents['port'][monitor_server.agents['ip'].index(ip)]
+            port = monitor_server.get_value_by_host('server_' + ip, 'port')
             post_data = {
                 'host': ip,
             }
@@ -128,22 +115,18 @@ def visualize(request):
             endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             groups = request.user.groups.all()
             servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
+            keys = settings.REDIS.keys()
             hosts = []
-            disks = []
             for i in range(len(servers)):
-                ind = monitor_server.agents['ip'].index(servers[i]['host']) if servers[i]['host'] in monitor_server.agents['ip'] else -1
-                if ind == -1:
-                    continue
-                else:
-                    hosts.append(monitor_server.agents['ip'][ind])
-                    disks = monitor_server.agents['disk'][ind]
+                if 'server_' + servers[i]['host'] in keys:
+                    hosts.append(json.loads(monitor_server.get_value_by_host('server_' + servers[i]['host'])))
 
             if hosts:
                 monitor_list = monitor_server.get_monitor(hosts=hosts[0])
                 ports = [mon['port'] for mon in monitor_list]
             else:
                 ports = []
-            return render(request, 'monitor/visualize.html', context={'disks': disks, 'ip': hosts, 'port': ports, 'starttime': starttime,
+            return render(request, 'monitor/visualize.html', context={'ip': hosts, 'port': ports, 'starttime': starttime,
                 'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec': spec_host})
         except:
             logger.error(traceback.format_exc())
@@ -164,9 +147,8 @@ def registers(request):
     register
     """
     if request.method == 'POST':
-        data = json.loads(request.body)
-        logger.debug(f'The request parameters are {data}')
-        monitor_server.agents = data
+        logger.debug(f'The request parameters are {request.body}')
+        monitor_server.agents_setter(request.body)
         return result(msg='registered successfully!')
 
 
@@ -185,8 +167,8 @@ def run_monitor(request):
                 'port': port,
                 'isRun': str(is_run)
             }
-            ind = monitor_server.agents['ip'].index(host)
-            res = http.request('post', host, monitor_server.agents['port'][ind], 'runMonitor', json=post_data)
+            port = monitor_server.get_value_by_host('server_' + host, 'port')
+            res = http.request('post', host, port, 'runMonitor', json=post_data)
 
             if res.status_code == 200:
                 return HttpResponse(content=res.content.decode())
@@ -210,14 +192,14 @@ def plot_monitor(request):
         type_ = data.get('type')
         port_pid = data.get('port')
         disk = data.get('disk')
-        if host in monitor_server.agents['ip']:
+        server_info = monitor_server.get_value_by_host('server_' + host)
+        if server_info:
             try:
                 if type_ == 'port':
                     res = draw_data_from_db(host=host, port=port_pid, startTime=start_time, endTime=end_time, disk=disk)
                     if res['code'] == 0:
                         raise Exception(res['message'])
-                    res.update({'gc': monitor_server.get_gc(host, monitor_server.agents['port'][monitor_server.agents['ip'].index(host)],
-                                                    f'getGC/{port_pid}')})
+                    res.update({'gc': monitor_server.get_gc(host, server_info['port'], f'getGC/{port_pid}')})
                     if res['gc'][0] == -1 and res['gc'][2] == -1:
                         res['flag'] = 0
                     return JsonResponse(res)
@@ -243,10 +225,11 @@ def get_port_disk(request):
     """
     if request.method == 'GET':
         host = request.GET.get('host')
-        if host in monitor_server.agents['ip']:
+        server_info = monitor_server.get_value_by_host('server_' + host)
+        if server_info:
             try:
-                disks = monitor_server.agents['disk'][monitor_server.agents['ip'].index(host)]
-                monitor_list = [p['port'] for p in monitor_server.get_monitor(hosts=[host])]
+                disks = server_info['disk']
+                monitor_list = [p['port'] for p in monitor_server.get_monitor(hosts=[server_info])]
                 return result(msg='Successful!', data={'disk': disks, 'port': monitor_list})
             except:
                 logger.error(traceback.format_exc())

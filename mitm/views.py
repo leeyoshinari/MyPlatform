@@ -14,10 +14,6 @@ from common.generator import primaryKey, strfTime
 
 # Create your views here.
 logger = logging.getLogger('django')
-if settings.IS_MITMPROXY == 1:
-    import redis
-    r  = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, password=settings.REDIS_PWD,
-                     db=settings.REDIS_DB, decode_responses=True)
 
 
 def home(request):
@@ -137,9 +133,9 @@ def reload(request):
     try:
         username = request.user.username
         mitm = Mitm.objects.filter(is_valid=1).order_by('-update_time')
-        if r.get('mitmproxy'):
+        if settings.REDIS.get('mitmproxy'):
             return result(code=1, msg='The last active is invalid ~')
-        r.set('mitmproxy', serializers.serialize('json', mitm), nx=True)
+        settings.REDIS.set('mitmproxy', serializers.serialize('json', mitm), nx=True)
         logger.info(f'All rule are actived success, operator: {username}')
         return result(msg='All rule are actived success ~')
     except:
