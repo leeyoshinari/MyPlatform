@@ -203,11 +203,11 @@ LOGGING = {
 HEARTBEAT = 12  # heart beat time
 
 # files
+# files store local path
+FILE_ROOT_PATH = os.path.join(STATICFILES_DIRS[0], 'files')
 FILE_STORE_TYPE = get_config('storeType')
 FILE_URL = get_config('fileURL')
 if FILE_STORE_TYPE == '0':
-    # files store local path
-    FILE_ROOT_PATH = os.path.join(STATICFILES_DIRS[0], 'files')
     if not os.path.exists(FILE_ROOT_PATH):
         os.mkdir(FILE_ROOT_PATH)
 

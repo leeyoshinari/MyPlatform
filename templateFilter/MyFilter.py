@@ -62,3 +62,8 @@ def multiple(v1, v2):
         return int(v1 * v2 / 100)
     except:
         return 0
+
+
+@register.filter
+def parse_url_name(v1):
+    return v1.split('/')[-1]

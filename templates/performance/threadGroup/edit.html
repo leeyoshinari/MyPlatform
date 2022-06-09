@@ -1,5 +1,6 @@
 {% extends 'performance/home.html' %}
 {% load static %}
+{% load myFilter %}
 
 {% block add_js %}
     <script src="{% static 'performance/js/group.js' %}"></script>
@@ -89,9 +90,9 @@
             {% if groups.file %}
                 <div class="value-div">
                     <button onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 12%;">Upload File</button>
-                    <button id="download_file" onclick="download_file('{% static 'files/' %}')" style="width: 12%;">Download File</button>
+                    <button id="download_file" onclick="download_file()" style="width: 12%;">Download File</button>
                     <input type="file" id="fileUpload-input" accept=".xls,.xlsx,.csv,.txt" style="display: none;">
-                    <input type="text" id="file_path" value="{{ groups.file.file_path }}" readonly style="width: 30%; margin-left: 2%; border: none; background-color: white;" disabled>
+                    <input type="text" id="file_path" name="{{ groups.file.file_path }}" value="{{ groups.file.file_path | parse_url_name }}" readonly style="width: 22%; margin-left: 2%; border: none; background-color: white;" disabled>
                 </div>
                 <div class="small-div">
                     <div class="label">

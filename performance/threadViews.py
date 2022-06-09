@@ -137,13 +137,14 @@ def upload_file(request):
         file_name = form.name
         plan_id = request.POST.get('plan_id')
         try:
-            file_folder = os.path.join(file_path_root, plan_id)
-            if not os.path.exists(file_folder):
-                os.mkdir(file_folder)
-            file_path = os.path.join(file_folder, file_name)
-            with open(file_path, 'wb') as f:
-                f.write(form.file.read())
-            return result(msg=f'{file_name} Upload Success ~', data=f'{plan_id}/{file_name}')
+            if settings.FILE_STORE_TYPE == '0':
+                file_folder = os.path.join(settings.FILE_ROOT_PATH, plan_id)
+                if not os.path.exists(file_folder):
+                    os.mkdir(file_folder)
+                file_path = os.path.join(file_folder, file_name)
+                with open(file_path, 'wb') as f:
+                    f.write(form.file.read())
+            return result(msg=f'{file_name} Upload Success ~', data=f'{settings.FILE_URL}{settings.STATIC_URL}files/{plan_id}/{file_name}')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg=f'{file_name} Upload Failure ~', data=file_name)

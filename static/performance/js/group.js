@@ -6,7 +6,7 @@ function save_group(url, location_url, plan_id) {
     let scheduler = document.getElementById('scheduler').value;
     let duration = document.getElementById('duration').value;
     let comment = document.getElementById('comment').value;
-    let file_path = document.getElementById('file_path').value;
+    let file_path = document.getElementById('file_path').name;
     let variable_names = document.getElementById('variable_names').value;
     let delimiter = document.getElementById('delimiter').value;
     let recycle = document.getElementById('recycle').value;
@@ -52,7 +52,7 @@ function edit_group(url, location_url, plan_id) {
     let scheduler = document.getElementById('scheduler').value;
     let duration = document.getElementById('duration').value;
     let comment = document.getElementById('comment').value;
-    let file_path = document.getElementById('file_path').value;
+    let file_path = document.getElementById('file_path').name;
     let variable_names = document.getElementById('variable_names').value;
     let delimiter = document.getElementById('delimiter').value;
     let recycle = document.getElementById('recycle').value;
@@ -175,7 +175,9 @@ function upload_file(url) {
                         if (res['code'] === 0) {
                             $.Toast(res['msg'], 'success');
                             document.getElementById('download_file').style.display = '';
-                            document.getElementById('file_path').value = res['data'];
+                            let s = res['data'].split('/');
+                            document.getElementById('file_path').value = s[s.length-1];
+                            document.getElementById('file_path').name = res['data'];
                             let small_div = document.getElementsByClassName('small-div');
                             for(let i=0; i<small_div.length; i++) {
                                 small_div[i].style.display = '';
@@ -195,6 +197,6 @@ function upload_file(url) {
     }
 }
 
-function download_file(url) {
-    window.open(url + document.getElementById('file_path').value);
+function download_file() {
+    window.open(document.getElementById('file_path').name);
 }
