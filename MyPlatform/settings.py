@@ -205,6 +205,7 @@ HEARTBEAT = 12  # heart beat time
 # files
 # files store local path
 FILE_ROOT_PATH = os.path.join(STATICFILES_DIRS[0], 'files')
+TEMP_PATH = os.path.join(STATICFILES_DIRS[0], 'temp')
 FILE_STORE_TYPE = get_config('storeType')
 FILE_URL = get_config('fileURL')
 if FILE_STORE_TYPE == '0':

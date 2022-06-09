@@ -14,7 +14,7 @@ from .common.parseJmx import read_jmeter_from_byte
 from .common.generateJmx import *
 from common.Result import result
 from common.generator import primaryKey
-from .common.fileController import download_file_to_path
+from .common.fileController import upload_file_by_path, download_file_to_path, zip_file
 from common.Request import request
 # Create your views here.
 
@@ -291,6 +291,16 @@ def start_task(request):
                             csv_file_path_url = thread_groups[0].file['file_path']
                             csv_file_path = os.path.join(test_jmeter_path, csv_file_path_url.split('/')[-1])
                             download_file_to_path(csv_file_path_url, csv_file_path)
+                        logger.info(f'jmx file and csv file are written successfully, operator: {username}')
+                        # write zip file to temp path
+                        zip_file_path = os.path.join(settings.TEMP_PATH, task_id, task_id + '.zip')
+                        zip_file(test_jmeter_path, zip_file_path)
+                        if settings.FILE_STORE_TYPE == '0':
+                            zip_file_url = f'temp/{task_id}/{task_id}.zip'
+                        else:
+                            zip_file_url = upload_file_by_path(zip_file_path)
+                        logger.info(f'zip file is written successfully, operator: {username}')
+                        tasks.path = f'{settings.FILE_URL}/{zip_file_url}'
                     else:
                         logger.error('The Thread Group has no Controllers ~')
                         return result(code=1, msg='The Thread Group has no Controllers, Please add Controller ~')
