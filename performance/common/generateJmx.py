@@ -66,7 +66,7 @@ def generate_cookie(cookies):
 def generator_csv(csv_file):
     csv_data_set = ''
     if csv_file:
-        csv_data_file_path = ''
+        csv_data_file_path = csv_file['file_path'].split('/')[-1]
         recycle = csv_file['recycle']
         stopThread = 'false' if recycle == 'true' else 'true'
         csv_data_set = '<CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV 数据文件设置" ' \

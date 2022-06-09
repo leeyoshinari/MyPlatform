@@ -6,6 +6,7 @@ import json
 import logging
 import traceback
 from django.shortcuts import render, redirect
+from django.conf import settings
 from .models import TestPlan, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from shell.models import Servers
@@ -13,6 +14,7 @@ from .common.parseJmx import read_jmeter_from_byte
 from .common.generateJmx import *
 from common.Result import result
 from common.generator import primaryKey
+from .common.fileController import download_file_to_path
 from common.Request import request
 # Create your views here.
 
@@ -209,7 +211,7 @@ def add_to_task(request):
         try:
             username = request.user.username
             plan_id = request.GET.get('id')
-            plans = TestPlan.objects.get(id=plan_id)
+            # plans = TestPlan.objects.get(id=plan_id)
             task = PerformanceTestTask.objects.filter(plan_id=plan_id, status__lte=1)
             if not task:
                 task = PerformanceTestTask.objects.create(id=primaryKey(), plan_id=plan_id, ratio=1, status=0,
@@ -277,8 +279,18 @@ def start_task(request):
                         all_threads = thread_group + '<hashTree>' + throughput + cookie_manager + csv_data_set + http_controller + '</hashTree>'
                         test_plan = test_plan + '<hashTree>' + all_threads + '</hashTree>'
                         jmeter_test_plan = jmeter_header + '<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.3"><hashTree>' + test_plan + '</hashTree></jmeterTestPlan>'
-                        with open('test.jmx', 'w', encoding='utf-8') as f:
+                        test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
+                        if not os.path.exists(test_jmeter_path):
+                            os.mkdir(test_jmeter_path)
+                        # write jmeter file to path
+                        jmeter_file_path = os.path.join(test_jmeter_path, 'test.jmx')
+                        with open(jmeter_file_path, 'w', encoding='utf-8') as f:
                             f.write(jmeter_test_plan)
+                        # write csv file to path
+                        if thread_groups[0].file:
+                            csv_file_path_url = thread_groups[0].file['file_path']
+                            csv_file_path = os.path.join(test_jmeter_path, csv_file_path_url.split('/')[-1])
+                            download_file_to_path(csv_file_path_url, csv_file_path)
                     else:
                         logger.error('The Thread Group has no Controllers ~')
                         return result(code=1, msg='The Thread Group has no Controllers, Please add Controller ~')
