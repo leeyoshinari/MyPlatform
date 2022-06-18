@@ -28,10 +28,10 @@ def home(request):
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word:
                 total_page = HTTPRequestHeader.objects.filter(name__contains=key_word).count()
-                headers = HTTPRequestHeader.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                headers = HTTPRequestHeader.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
                 total_page = HTTPRequestHeader.objects.all().count()
-                headers = HTTPRequestHeader.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
+                headers = HTTPRequestHeader.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get controller success, operator: {username}')
             return render(request, 'performance/header/home.html', context={'headers': headers, 'page': page, 'page_size': page_size,

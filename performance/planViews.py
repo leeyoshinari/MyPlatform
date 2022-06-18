@@ -36,10 +36,10 @@ def home(request):
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word:
                 total_page = TestPlan.objects.filter(name__contains=key_word).count()
-                plans = TestPlan.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                plans = TestPlan.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
                 total_page = TestPlan.objects.all().count()
-                plans = TestPlan.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
+                plans = TestPlan.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get test plan success, operator: {username}')
             return render(request, 'performance/plan/home.html', context={'plans': plans, 'page': page, 'page_size': page_size,
@@ -219,8 +219,7 @@ def add_to_task(request):
             # plans = TestPlan.objects.get(id=plan_id)
             task = PerformanceTestTask.objects.filter(plan_id=plan_id, status__lte=1)
             if not task:
-                task = PerformanceTestTask.objects.create(id=primaryKey(), plan_id=plan_id, ratio=1, status=0,
-                                                        operator=username)
+                task = PerformanceTestTask.objects.create(id=primaryKey(), plan_id=plan_id, ratio=1, status=0, operator=username)
                 logger.info(f'Create task {task.id} success, operator: {username}')
             return result(msg='Add task success ~')
         except:
@@ -234,7 +233,7 @@ def task_home(request):
             username = request.user.username
             plan_id = request.GET.get('id')
             plans = TestPlan.objects.get(id=plan_id)
-            tasks = PerformanceTestTask.objects.filter(plan_id=plan_id).order_by('-update_time')
+            tasks = PerformanceTestTask.objects.filter(plan_id=plan_id).order_by('-create_time')
             logger.info(f'Get task success, operator: {username}')
             return render(request, 'performance/plan/task.html', context={'plans': plans, 'tasks': tasks})
         except:

@@ -33,16 +33,16 @@ def home(request):
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word and ctl_id:
                 total_page = HTTPSampleProxy.objects.filter(controller_id=ctl_id, name__contains=key_word).count()
-                samples = HTTPSampleProxy.objects.filter(controller_id=ctl_id, name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                samples = HTTPSampleProxy.objects.filter(controller_id=ctl_id, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif ctl_id and not key_word:
                 total_page = HTTPSampleProxy.objects.filter(controller_id=ctl_id).count()
-                samples = HTTPSampleProxy.objects.filter(controller_id=ctl_id).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                samples = HTTPSampleProxy.objects.filter(controller_id=ctl_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif key_word and not ctl_id:
                 total_page = HTTPSampleProxy.objects.filter(name__contains=key_word).count()
-                samples = HTTPSampleProxy.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                samples = HTTPSampleProxy.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
                 total_page = HTTPSampleProxy.objects.all().count()
-                samples = HTTPSampleProxy.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
+                samples = HTTPSampleProxy.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get http samples success, operator: {username}')
             return render(request, 'performance/httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
@@ -64,13 +64,13 @@ def get_from_header(request):
             page_size = int(page_size) if page_size else 15
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word and header_id:
-                samples = HTTPSampleProxy.objects.filter(http_header_id=header_id, name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                samples = HTTPSampleProxy.objects.filter(http_header_id=header_id, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif header_id and not key_word:
-                samples = HTTPSampleProxy.objects.filter(http_header_id=header_id).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                samples = HTTPSampleProxy.objects.filter(http_header_id=header_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif key_word and not header_id:
-                samples = HTTPSampleProxy.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                samples = HTTPSampleProxy.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
-                samples = HTTPSampleProxy.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
+                samples = HTTPSampleProxy.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get http samples success, operator: {username}')
             return render(request, 'performance/httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
@@ -111,8 +111,8 @@ def add_sample(request):
     else:
         ctl_id = request.GET.get('id')
         ctl_id = int(ctl_id) if ctl_id else ctl_id
-        controllers = TransactionController.objects.all().order_by('-update_time')
-        http_headers = HTTPRequestHeader.objects.all().order_by('-update_time')
+        controllers = TransactionController.objects.all().order_by('-create_time')
+        http_headers = HTTPRequestHeader.objects.all().order_by('-create_time')
         return render(request, 'performance/httpSample/add.html', context={
             'controller_id': ctl_id, 'controllers': controllers, 'protocols': protocols, 'http_headers': http_headers,
             'methods': methods, 'assertion_types': assertion_types, 'contentEncodings': contentEncodings, 'data_types': data_types
@@ -163,8 +163,8 @@ def edit_sample(request):
     else:
         sample_id = request.GET.get('id')
         samples = HTTPSampleProxy.objects.get(id=sample_id)
-        controllers = TransactionController.objects.all().order_by('-update_time')
-        http_headers = HTTPRequestHeader.objects.all().order_by('-update_time')
+        controllers = TransactionController.objects.all().order_by('-create_time')
+        http_headers = HTTPRequestHeader.objects.all().order_by('-create_time')
         return render(request, 'performance/httpSample/edit.html', context={
             'controllers': controllers, 'samples': samples, 'protocols': protocols, 'methods': methods, 'http_headers': http_headers,
             'assertion_types': assertion_types, 'contentEncodings': contentEncodings, 'data_types': data_types})

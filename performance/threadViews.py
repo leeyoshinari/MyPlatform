@@ -32,16 +32,16 @@ def home(request):
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word and plan_id:
                 total_page = ThreadGroup.objects.filter(plan_id=plan_id, name__contains=key_word).count()
-                groups = ThreadGroup.objects.filter(plan_id=plan_id, name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                groups = ThreadGroup.objects.filter(plan_id=plan_id, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif plan_id and not key_word:
                 total_page = ThreadGroup.objects.filter(plan_id=plan_id).count()
-                groups = ThreadGroup.objects.filter(plan_id=plan_id).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                groups = ThreadGroup.objects.filter(plan_id=plan_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif key_word and not plan_id:
                 total_page = ThreadGroup.objects.filter(name__contains=key_word).count()
-                groups = ThreadGroup.objects.filter(name__contains=key_word).order_by('-update_time')[page_size * (page - 1): page_size * page]
+                groups = ThreadGroup.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
                 total_page = ThreadGroup.objects.all().count()
-                groups = ThreadGroup.objects.all().order_by('-update_time')[page_size * (page - 1): page_size * page]
+                groups = ThreadGroup.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get thread group success, operator: {username}')
             return render(request, 'performance/threadGroup/home.html', context={'groups': groups, 'page': page, 'page_size': page_size,
@@ -84,7 +84,7 @@ def add_group(request):
     else:
         plan_id = request.GET.get('id')
         plan_id = int(plan_id) if plan_id else plan_id
-        plans = TestPlan.objects.all().order_by('-update_time')
+        plans = TestPlan.objects.all().order_by('-create_time')
         return render(request, 'performance/threadGroup/add.html', context={'plan_id': plan_id, 'plans': plans, 'share_mode': share_mode})
 
 
@@ -128,7 +128,7 @@ def edit_group(request):
     else:
         group_id = request.GET.get('id')
         groups = ThreadGroup.objects.get(id=group_id)
-        plans = TestPlan.objects.all().order_by('-update_time')
+        plans = TestPlan.objects.all().order_by('-create_time')
         return render(request, 'performance/threadGroup/edit.html', context={'groups': groups, 'plans': plans, 'share_mode': share_mode})
 
 
