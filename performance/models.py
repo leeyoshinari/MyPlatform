@@ -48,7 +48,7 @@ class ThreadGroup(models.Model):
 
 class TransactionController(models.Model):
     id = models.CharField(max_length=16, verbose_name='Controller id', primary_key=True)
-    thread_group = models.ForeignKey(ThreadGroup, on_delete=models.PROTECT, verbose_name='thread group id')
+    thread_group = models.ForeignKey(ThreadGroup, on_delete=models.CASCADE, verbose_name='thread group id')
     name = models.CharField(null=True, max_length=100, verbose_name='Controller name')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
     comment = models.CharField(null=True, max_length=200, verbose_name='comment')

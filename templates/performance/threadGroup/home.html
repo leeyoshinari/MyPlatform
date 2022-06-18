@@ -49,26 +49,26 @@
 {% block table_body %}
     {% for group in groups %}
         {% if group.is_valid == 'false' %}
-            <tr style="background-color: #ffd5d5">
+            <tr style="background-color: white">
         {% else %}
             <tr>
         {% endif %}
-            <td title="{{ group.plan.name }}"><a href="{% url 'perf:plan_edit' %}?id={{ group.plan.id }}">{{ group.plan.name }}</a></td>
-            <td style="text-align: center;" title="{{ group.name }}"><a href="{% url 'perf:group_edit' %}?id={{ group.id }}">{{ group.name }}</a></td>
+            <td title="{{ group.plan.name }}"><a href="{% url 'perf:plan_home' %}?keyWord={{ group.plan.name }}">{{ group.plan.name }}</a></td>
+            <td style="text-align: center;" title="{{ group.name }}"><a href="{% url 'perf:group_home' %}?id={{ group.plan.id }}">{{ group.name }}</a></td>
             <td title="{{ group.comment }}">{{ group.comment }}</td>
             <td style="text-align: center;">{{ group.create_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ group.update_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ group.operator }}</td>
             <td>
-                <a href="{% url 'perf:group_edit' %}?id={{ group.id }}">Edit</a>
                 {% if group.is_valid == 'true' %}
+                    <a href="{% url 'perf:group_edit' %}?id={{ group.id }}">Edit</a>
                     <a href="#" onclick="set_status('group', '{{ group.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                    <a href="{% url 'perf:group_copy' %}?id={{ group.id }}&plan_id={{ group.plan.id }}">Copy</a>
+                    <a title="Set cookies of the ThreadGroup, It is optional" href="{% url 'perf:group_cookie' %}?id={{ group.id }}">Set Cookie</a>
+                    <a title="View Controllers of the ThreadGroup" href="{% url 'perf:controller_home' %}?id={{ group.id }}">Controller</a>
                 {% else %}
                     <a href="#" onclick="set_status('group', '{{ group.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
                 {% endif %}
-                <a href="{% url 'perf:group_copy' %}?id={{ group.id }}">Copy</a>
-                <a title="Set cookies of the ThreadGroup, It is optional" href="{% url 'perf:group_cookie' %}?id={{ group.id }}">Set Cookie</a>
-                <a title="View Controllers of the ThreadGroup" href="{% url 'perf:controller_home' %}?id={{ group.id }}">Controller</a>
                 {% if plan_id %}
                     <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:group_home' %}?id={{ plan_id }}', 'group', {{ group.id }})">Delete</a>
                 {% else %}

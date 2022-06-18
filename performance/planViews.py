@@ -5,7 +5,7 @@
 import json
 import logging
 import traceback
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, resolve_url
 from django.conf import settings
 from .models import TestPlan, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
@@ -15,7 +15,7 @@ from .common.generateJmx import *
 from common.Result import result
 from common.generator import primaryKey
 from .common.fileController import upload_file_by_path, download_file_to_path, zip_file
-from common.Request import request
+import common.Request as Request
 # Create your views here.
 
 
@@ -195,12 +195,17 @@ def copy_plan(request):
             username = request.user.username
             plan_id = request.GET.get('id')
             plans = TestPlan.objects.get(id=plan_id)
+            keyWord = plans.name
             plans.id = primaryKey()
             plans.name = plans.name + ' - Copy'
             plans.operator = username
             plans.save()
+            thread_groups = ThreadGroup.objects.filter(plan_id=plan_id)
+            for thread_group in thread_groups:
+                res = Request.get(request.headers.get('Host'), f'{resolve_url("perf:group_copy")}?plan_id={plans.id}&id={thread_group.id}', cookies=request.headers.get('cookie'))
+                logger.info(res)
             logger.info(f'Copy plan {plan_id} success, target plan is {plans.id}, operator: {username}')
-            return redirect('perf:plan_home')
+            return redirect(resolve_url('perf:plan_home') + '?keyWord=' + keyWord)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Copy Plan Failure ~')

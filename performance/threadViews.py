@@ -6,11 +6,12 @@ import os
 import json
 import logging
 import traceback
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, resolve_url
 from django.conf import settings
-from .models import TestPlan, ThreadGroup
+from .models import TestPlan, ThreadGroup, TransactionController
 from common.Result import result
 from common.generator import primaryKey
+import common.Request as Request
 # Create your views here.
 
 
@@ -183,13 +184,18 @@ def copy_group(request):
         try:
             username = request.user.username
             group_id = request.GET.get('id')
+            plan_id = request.GET.get('plan_id')
             groups = ThreadGroup.objects.get(id=group_id)
             groups.id = primaryKey()
             groups.name = groups.name + ' - Copy'
+            if plan_id: groups.plan_id = plan_id
             groups.operator = username
             groups.save()
+            controllers = TransactionController.objects.filter(thread_group_id=group_id)
+            for controller in controllers:
+                res = Request.get(request.headers.get('Host'), f'{resolve_url("perf:controller_copy")}?id={controller.id}&group_id={groups.id}', cookies=request.headers.get('cookie'))
             logger.info(f'Copy thread group {group_id} success, target thread group is {groups.id}, operator: {username}')
-            return redirect('perf:group_home')
+            return redirect(resolve_url('perf:group_home') + '?id=' + plan_id)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Copy thread group Failure ~')

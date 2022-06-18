@@ -53,20 +53,20 @@
         {% else %}
             <tr>
         {% endif %}
-            <td title="{{ sample.controller.name }}"><a href="{% url 'perf:controller_edit' %}?id={{ sample.controller.id }}">{{ sample.controller.name }}</a></td>
-            <td title="{{ sample.name }} -> {{ sample.comment }}"><a href="{% url 'perf:sample_edit' %}?id={{ sample.id }}">{{ sample.name }}</a></td>
+            <td title="{{ sample.controller.name }}"><a href="{% url 'perf:controller_home' %}?id={{ sample.controller.thread_group.id }}">{{ sample.controller.name }}</a></td>
+            <td title="{{ sample.name }} -> {{ sample.comment }}"><a href="{% url 'perf:sample_home' %}?id={{ sample.controller.id }}">{{ sample.name }}</a></td>
             <td title="{{ sample.path }}">{{ sample.path }}</td>
             <td style="text-align: center;">{{ sample.create_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ sample.update_time | date:"Y-m-d H:i:s" }}</td>
             <td style="text-align: center;">{{ sample.operator }}</td>
             <td>
-                <a href="{% url 'perf:sample_edit' %}?id={{ sample.id }}">Edit</a>
                 {% if sample.is_valid == 'true' %}
+                    <a href="{% url 'perf:sample_edit' %}?id={{ sample.id }}">Edit</a>
                     <a href="#" onclick="set_status('sample', '{{ sample.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                    <a href="{% url 'perf:sample_copy' %}?id={{ sample.id }}&controller_id={{ sample.controller.id }}">Copy</a>
                 {% else %}
                     <a href="#" onclick="set_status('sample', '{{ sample.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
                 {% endif %}
-                <a href="{% url 'perf:sample_copy' %}?id={{ sample.id }}">Copy</a>
                 {% if controller_id %}
                     <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:sample_home' %}?id={{ controller_id }}', 'sample', {{ sample.id }})">Delete</a>
                 {% else %}

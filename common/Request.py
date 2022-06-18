@@ -5,34 +5,30 @@
 import requests
 
 
-def get(ip, port, interface, timeout):
+def get(host, interface, cookies=None, timeout=None):
     """get"""
-    url = 'http://{}:{}/{}'.format(ip, port, interface)
-    res = requests.get(url=url, timeout=timeout)
+    if timeout is None:
+        timeout = 60
+
+    headers = {
+        'cookie': cookies
+    }
+    url = 'http://{}{}'.format(host, interface)
+    res = requests.get(url=url, headers=headers, timeout=timeout)
     return res
 
-def post(ip, port, interface, json, headers, timeout):
+def post(host, interface, json, cookies=None, timeout=None):
     """post"""
-    if headers is None:
-        headers = {
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Encoding": "gzip, deflate",
-            "Content-Type": "application/json; charset=UTF-8"}
+    if timeout is None:
+        timeout = 60
 
-    url = 'http://{}:{}/{}'.format(ip, port, interface)
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Encoding": "gzip, deflate",
+        "Content-Type": "application/json; charset=UTF-8",
+        "Cookie": cookies
+    }
+
+    url = 'http://{}{}'.format(host, interface)
     res = requests.post(url=url, json=json, headers=headers, timeout=timeout)
     return res
-
-def request(method, ip, port, interface, json=None, headers=None, timeout=None):
-    if timeout is None:
-        timeout = 3
-
-    if method == 'get':
-        res = get(ip, port, interface, timeout)
-    elif method == 'post':
-        res = post(ip, port, interface, json, headers, timeout)
-    else:
-        raise Exception('Other request methods are not supported!')
-
-    return res
-

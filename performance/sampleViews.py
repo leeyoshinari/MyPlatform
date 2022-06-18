@@ -5,7 +5,7 @@
 import json
 import logging
 import traceback
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, resolve_url
 from .models import HTTPRequestHeader, HTTPSampleProxy, TransactionController
 from common.Result import result
 from common.generator import primaryKey
@@ -175,13 +175,15 @@ def copy_sample(request):
         try:
             username = request.user.username
             sample_id = request.GET.get('id')
+            controller_id = request.GET.get('controller_id')
             samples = HTTPSampleProxy.objects.get(id=sample_id)
             samples.id = primaryKey()
             samples.name = samples.name + ' - Copy'
+            if controller_id: samples.controller_id = controller_id
             samples.operator = username
             samples.save()
             logger.info(f'Copy HTTP Sample {sample_id} success, target HTTP Sample is {samples.id}, operator: {username}')
-            return redirect('perf:sample_home')
+            return redirect(resolve_url('perf:sample_home') + '?id=' + controller_id)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Copy HTTP Sample Failure ~')
