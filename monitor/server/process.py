@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author: leeyoshinari
-import time
 import json
 import logging
 import traceback
-import threading
 import influxdb
 from .request import Request
 from django.conf import settings
@@ -21,10 +19,10 @@ class Process(object):
         #                 'network_speed': [], 'disk_size': [], 'mem_usage': [], 'cpu_usage': [], 'disk_usage': []}
 
         # data expiration time
-        # conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
-        #                                settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
-        # conn.query(f'alter retention policy "autogen" on "{settings.INFLUX_DATABASE}" duration '
-        #            f'{settings.INFLUX_EXPIRY_TIME}d REPLICATION 1 SHARD DURATION {settings.INFLUX_SHARD_DURATION} default;')
+        conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
+                                       settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
+        conn.query(f'alter retention policy "autogen" on "{settings.INFLUX_DATABASE}" duration '
+                   f'{settings.INFLUX_EXPIRY_TIME}d REPLICATION 1 SHARD DURATION {settings.INFLUX_SHARD_DURATION} default;')
         logger.info(f'InfuxDb data expiration time is {settings.INFLUX_EXPIRY_TIME} days')
 
     def agents_setter(self, value):
@@ -72,10 +70,10 @@ class Process(object):
                     post_data = {
                         'host': host['host'],
                     }
-                    res = self.request.request('post', host, host['port'], 'getMonitor', json=post_data)
+                    res = self.request.request('post', host['host'], host['port'], 'getMonitor', json=post_data)
                     if res.status_code == 200:
                         response = json.loads(res.content.decode())
-                        logger.debug(f'The return value of server {host} of getting monitoring list is {response}.')
+                        logger.debug(f'The return value of server {host["host"]} of getting monitoring list is {response}.')
                         if response['code'] == 0:
                             for i in range(len(response['data']['port'])):
                                 monitor_list.append({
@@ -85,7 +83,7 @@ class Process(object):
                                     'isRun': ['stopped', 'monitoring', 'queuing'][response['data']['isRun'][i]],
                                     'startTime': response['data']['startTime'][i]})
             else:
-                keys = settings.REDIS.keys('server_*')
+                keys = self.get_all_keys()
                 for key in keys:  # Traverse all clients IP addresses
                     ip = key.split('_')[-1]
                     post_data = {

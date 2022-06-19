@@ -93,8 +93,7 @@ def get_monitor(request):
 
                     return result(msg='Successful!', data=monitor_list)
                 else:   # If an exception is returned, skip
-                    logger.warning(f'It returns an exception from server {ip} when getting monitoring list. '
-                                   f'Exception is {response["msg"]}')
+                    logger.warning(f'It returns an exception from server {ip} when getting monitoring list. Exception is {response["msg"]}')
                     return result(code=1, msg=response["msg"])
             else:   # If an exception is returned, skip
                 logger.warning(f'The monitoring list from server {ip} is abnormal, the response status code is {res.status_code}.')
@@ -115,14 +114,14 @@ def visualize(request):
             endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             groups = request.user.groups.all()
             servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
-            keys = settings.REDIS.keys()
+            keys = monitor_server.get_all_keys()
             hosts = []
             for i in range(len(servers)):
                 if 'server_' + servers[i]['host'] in keys:
-                    hosts.append(json.loads(monitor_server.get_value_by_host('server_' + servers[i]['host'])))
+                    hosts.append(monitor_server.get_value_by_host('server_' + servers[i]['host']))
 
             if hosts:
-                monitor_list = monitor_server.get_monitor(hosts=hosts[0])
+                monitor_list = monitor_server.get_monitor(hosts=[hosts[0]])
                 ports = [mon['port'] for mon in monitor_list]
             else:
                 ports = []
