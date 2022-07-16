@@ -12,15 +12,14 @@ from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from shell.models import Servers
 from .common.parseJmx import read_jmeter_from_byte
 from .common.generateJmx import *
+from .common.getRedis import *
 from common.Result import result
 from common.generator import primaryKey
-from .common.fileController import upload_file_by_path, download_file_to_path, zip_file
 import common.Request as Request
 # Create your views here.
 
 
 header_type = {'GET': 1, 'POST': 2}
-jmeter_header = '<?xml version="1.0" encoding="UTF-8"?>'
 logger = logging.getLogger('django')
 
 
@@ -226,127 +225,19 @@ def add_to_task(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Add task Failure ~')
 
-
-def task_home(request):
-    if request.method == 'GET':
-        try:
-            username = request.user.username
-            plan_id = request.GET.get('id')
-            plans = TestPlan.objects.get(id=plan_id)
-            tasks = PerformanceTestTask.objects.filter(plan_id=plan_id).order_by('-create_time')
-            logger.info(f'Get task success, operator: {username}')
-            return render(request, 'performance/plan/task.html', context={'plans': plans, 'tasks': tasks})
-        except:
-            logger.error(traceback.format_exc())
-            return result(code=1, msg='Get task Failure ~')
-
-
-def start_task(request):
-    if request.method == 'POST':
-        try:
-            username = request.user.username
-            task_id = request.POST.get('task_id')
-            plan_id = request.POST.get('plan_id')
-            tasks = PerformanceTestTask.objects.get(id=task_id)
-            plans = TestPlan.objects.get(id=plan_id)
-            if plans.is_valid == 'true':
-                test_plan, duration = generate_test_plan(plans)
-                logger.info(f'Write Test Plan success, operator: {username}')
-
-                thread_groups = ThreadGroup.objects.filter(plan_id=plans.id, is_valid='true')
-                if len(thread_groups) == 1:
-                    num_threads = 200 if plans.type == 1 else plans.init_num
-                    thread_group = generate_thread_group(thread_groups[0], num_threads, duration)
-                    cookie_manager = generate_cookie(thread_groups[0].cookie)
-                    csv_data_set = generator_csv(thread_groups[0].file)
-                    logger.info(f'Write Thread Group success, , operator: {username}')
-                    controllers = TransactionController.objects.filter(thread_group_id=thread_groups[0].id, is_valid='true').order_by('id')
-                    if len(controllers) == 1:
-                        http_controller = ''
-                        http_samples_proxy = ''
-                        samples = HTTPSampleProxy.objects.filter(controller_id=controllers[0].id, is_valid='true').order_by('id')
-                        number_of_samples = len(samples)
-                        throughput = generator_throughput(number_of_samples)
-                        if len(samples) > 0:
-                            for sample in samples:
-                                if sample.assert_content:
-                                    headers = HTTPRequestHeader.objects.get(id=sample.http_header_id)
-                                    http_samples_proxy += generator_samples_and_header(sample, headers)
-                                else:
-                                    logger.error(f'HTTP Sample {sample.name} has no assertion ~')
-                                    return result(code=1, msg=f'HTTP Sample {sample.name} has no assertion ~')
-                            http_controller += generator_controller(controllers[0]) + '<hashTree>' + http_samples_proxy + '</hashTree>'
-                        else:
-                            logger.error('The Controller has no HTTP Samples ~')
-                            return result(code=1, msg='The Controller has no HTTP Samples, Please add HTTP Samples ~')
-
-                        all_threads = thread_group + '<hashTree>' + throughput + cookie_manager + csv_data_set + http_controller + '</hashTree>'
-                        test_plan = test_plan + '<hashTree>' + all_threads + '</hashTree>'
-                        jmeter_test_plan = jmeter_header + '<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.3"><hashTree>' + test_plan + '</hashTree></jmeterTestPlan>'
-                        test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
-                        if not os.path.exists(test_jmeter_path):
-                            os.mkdir(test_jmeter_path)
-                        # write jmeter file to path
-                        jmeter_file_path = os.path.join(test_jmeter_path, 'test.jmx')
-                        with open(jmeter_file_path, 'w', encoding='utf-8') as f:
-                            f.write(jmeter_test_plan)
-                        # write csv file to path
-                        if thread_groups[0].file:
-                            csv_file_path_url = thread_groups[0].file['file_path']
-                            csv_file_path = os.path.join(test_jmeter_path, csv_file_path_url.split('/')[-1])
-                            download_file_to_path(csv_file_path_url, csv_file_path)
-                        logger.info(f'jmx file and csv file are written successfully, operator: {username}')
-                        # write zip file to temp path
-                        zip_file_path = os.path.join(settings.TEMP_PATH, task_id, task_id + '.zip')
-                        zip_file(test_jmeter_path, zip_file_path)
-                        if settings.FILE_STORE_TYPE == '0':
-                            zip_file_url = f'temp/{task_id}/{task_id}.zip'
-                        else:
-                            zip_file_url = upload_file_by_path(zip_file_path)
-                        logger.info(f'zip file is written successfully, operator: {username}')
-                        tasks.path = f'{settings.FILE_URL}/{zip_file_url}'
-                    else:
-                        logger.error('The Thread Group has no Controllers ~')
-                        return result(code=1, msg='The Thread Group has no Controllers, Please add Controller ~')
-                else:
-                    logger.error('The Test Plan can only have one enable Thread Group ~')
-                    return result(code=1, msg='The Test Plan can only have one enable Thread Group, Please check it ~')
-            else:
-                logger.error('The Test Plan has been disabled ~')
-                return result(code=1, msg='The Test Plan has been disabled ~')
-
-            tasks.status = 1
-            tasks.number_samples = number_of_samples
-            tasks.save()
-            logger.info(f'Task {task_id} start success, operator: {username}')
-            return result(msg=f'Start success ~')
-        except:
-            logger.error(traceback.format_exc())
-            return result(code=1, msg='Start failure ~')
-
-
-def stop_task(request):
-    if request.method == 'GET':
-        try:
-            username = request.user.username
-            task_id = request.GET.get('id')
-            tasks = PerformanceTestTask.objects.get(id=task_id)
-            tasks.status = 3
-            tasks.save()
-            logger.info(f'Task {task_id} stop success, operator: {username}')
-            return result(msg=f'Stop success ~')
-        except:
-            logger.error(traceback.format_exc())
-            return result(code=1, msg='Stop failure ~')
-
 def get_server(request):
     if request.method == 'GET':
         try:
             username = request.user.username
             groups = request.user.groups.all()
-            servers = Servers.objects.filter(is_perf__gt=0, group__in=groups).order_by('-id')
+            servers = Servers.objects.filter(group__in=groups).order_by('-id')
+            all_keys = get_all_keys()
+            datas = []
+            for server in servers:
+                if 'jmeterServer_' + server['host'] in all_keys:
+                    datas.append(server)
             logger.info(f'Get pressure server info success, operator: {username}')
-            return render(request, 'performance/plan/server.html', context={'servers': servers})
+            return render(request, 'performance/plan/server.html', context={'servers': datas})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get server info Error ~')

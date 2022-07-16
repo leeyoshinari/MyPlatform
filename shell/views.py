@@ -57,7 +57,6 @@ def add_server(request):
             sshname = request.POST.get('UserName')
             password = request.POST.get('Password')
             current_time = request.POST.get('time')
-            is_perf = request.POST.get('isPressure')
             username = request.user.username
             system = ''
             cpu = 0
@@ -78,7 +77,7 @@ def add_server(request):
 
             server = Servers.objects.create(id = current_time, group_id = group_id, name=server_name,
                                    host=server_ip, port = int(port), user = sshname, pwd = password, system = system,
-                                   cpu = cpu, arch=arch, mem = mem, disk = disk, is_monitor=0, is_perf=is_perf)
+                                   cpu = cpu, arch=arch, mem = mem, disk = disk, is_monitor=0)
             logger.info(f'Add server success. ip: {server.host}, operator: {username}, time: {server.id}')
             return result(code=0, msg='Add server success ~ ')
         except Exception as err:

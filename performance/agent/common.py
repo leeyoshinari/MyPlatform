@@ -8,7 +8,7 @@ import logging.handlers
 
 
 cfg = configparser.ConfigParser()
-cfg.read('config.ini', encoding='utf-8')
+cfg.read('config.conf', encoding='utf-8')
 
 
 def get_config(key):
@@ -35,10 +35,10 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(threadName)s - %(
 logger.setLevel(level=log_level.get(LEVEL))
 
 file_handler = logging.handlers.TimedRotatingFileHandler(
-    os.path.join(log_path, 'monitor.log'), when='midnight', interval=1, backupCount=backupcount)
+    os.path.join(log_path, 'agent.log'), when='midnight', interval=1, backupCount=backupcount)
 file_handler.suffix = '%Y-%m-%d.log'
 
-# file_handler = logging.StreamHandler()
+file_handler = logging.StreamHandler()
 
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)

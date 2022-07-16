@@ -147,9 +147,9 @@ def registers(request):
     """
     if request.method == 'POST':
         logger.debug(f'The request parameters are {request.body}')
-        monitor_server.agents_setter(request.body)
-        return result(msg='registered successfully!')
-
+        monitor_server.agent_setter(request.body)
+        return result(msg='registered successfully!', data={'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
+                      'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE})
 
 def run_monitor(request):
     """

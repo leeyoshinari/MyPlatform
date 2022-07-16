@@ -64,7 +64,7 @@
                     <a href="{% url 'perf:group_edit' %}?id={{ group.id }}">Edit</a>
                     <a href="#" onclick="set_status('group', '{{ group.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
                     <a href="{% url 'perf:group_copy' %}?id={{ group.id }}&plan_id={{ group.plan.id }}">Copy</a>
-                    <a title="Set cookies of the ThreadGroup, It is optional" href="{% url 'perf:group_cookie' %}?id={{ group.id }}">Set Cookie</a>
+                    <a title="Set cookies of the ThreadGroup, It is optional" href="{% url 'perf:group_cookie' %}?id={{ group.id }}">Cookies</a>
                     <a title="View Controllers of the ThreadGroup" href="{% url 'perf:controller_home' %}?id={{ group.id }}">Controller</a>
                 {% else %}
                     <a href="#" onclick="set_status('group', '{{ group.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>

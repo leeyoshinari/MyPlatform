@@ -16,6 +16,7 @@ from django.urls import path
 from django.conf import settings
 from . import views
 from . import planViews
+from . import taskViews
 from . import threadViews
 from . import controllerViews
 from . import sampleViews
@@ -35,10 +36,14 @@ urlpatterns = [
     path('plan/file/upload', planViews.upload_file, name='plan_upload_file'),
     path('plan/variable', planViews.edit_variable, name='plan_variable'),
 
-    path('task', planViews.task_home, name='task_home'),
+    path('task', taskViews.home, name='task_home'),
+    path('task/register', taskViews.register, name='agent_register'),
     path('task/add', planViews.add_to_task, name='task_add'),
-    path('task/start', planViews.start_task, name='task_start'),
-    path('task/stop', planViews.stop_task, name='task_stop'),
+    path('task/start', taskViews.start_task, name='task_start'),
+    path('task/stop', taskViews.stop_task, name='task_stop'),
+    path('task/download', taskViews.download_file, name='task_download'),
+    path('task/change', taskViews.change_tps, name='change_tps'),
+    path('task/setStatus', taskViews.set_status, name='task_set_status'),
 
     path('group', threadViews.home, name='group_home'),
     path('group/add', threadViews.add_group, name='group_add'),

@@ -25,7 +25,7 @@ class Process(object):
                    f'{settings.INFLUX_EXPIRY_TIME}d REPLICATION 1 SHARD DURATION {settings.INFLUX_SHARD_DURATION} default;')
         logger.info(f'InfuxDb data expiration time is {settings.INFLUX_EXPIRY_TIME} days')
 
-    def agents_setter(self, value):
+    def agent_setter(self, value):
         logger.debug(f'The client registration data is {value}')
         key = 'server_' + value['host']
         value['disks'] = value['disks'].split(',')
