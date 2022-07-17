@@ -175,6 +175,7 @@ function upload_file(url) {
                         if (res['code'] === 0) {
                             $.Toast(res['msg'], 'success');
                             document.getElementById('download_file').style.display = '';
+                            document.getElementById('delete_file').style.display = '';
                             let s = res['data'].split('/');
                             document.getElementById('file_path').value = s[s.length-1];
                             document.getElementById('file_path').name = res['data'];
@@ -199,4 +200,15 @@ function upload_file(url) {
 
 function download_file() {
     window.open(document.getElementById('file_path').name);
+}
+
+function delete_file() {
+    document.getElementById('download_file').style.display = 'none';
+    document.getElementById('delete_file').style.display = 'none';
+    document.getElementById('file_path').name = '';
+    document.getElementById('file_path').value = '';
+    let small_div = document.getElementsByClassName('small-div');
+    for(let i=0; i<small_div.length; i++) {
+        small_div[i].style.display = 'none';
+    }
 }

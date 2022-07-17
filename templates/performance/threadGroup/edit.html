@@ -89,10 +89,11 @@
             </div>
             {% if groups.file %}
                 <div class="value-div">
-                    <button onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 12%;">Upload File</button>
-                    <button id="download_file" onclick="download_file()" style="width: 12%;">Download File</button>
+                    <button onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 10%;">Upload File</button>
+                    <button id="download_file" onclick="download_file()" style="width: 11%;">Download File</button>
+                    <button id="delete_file" onclick="delete_file()" style="width: 10%;">Delete File</button>
                     <input type="file" id="fileUpload-input" accept=".xls,.xlsx,.csv,.txt" style="display: none;">
-                    <input type="text" id="file_path" name="{{ groups.file.file_path }}" value="{{ groups.file.file_path | parse_url_name }}" readonly style="width: 22%; margin-left: 2%; border: none; background-color: white;" disabled>
+                    <input type="text" id="file_path" name="{{ groups.file.file_path }}" value="{{ groups.file.file_path | parse_url_name }}" readonly style="width: 16%; margin-left: 2%; border: none; background-color: white;" disabled>
                 </div>
                 <div class="small-div">
                     <div class="label">
@@ -140,10 +141,11 @@
                 </div>
             {% else %}
                 <div class="value-div">
-                    <button onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 12%;">Upload File</button>
-                    <button id="download_file" onclick="download_file('{% static 'files/' %}')" style="width: 12%; display: none;">Download File</button>
+                    <button onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 10%;">Upload File</button>
+                    <button id="download_file" onclick="download_file('{% static 'files/' %}')" style="width: 11%; display: none;">Download File</button>
+                    <button id="delete_file" onclick="delete_file()" style="width: 10%; display: none;">Delete File</button>
                     <input type="file" id="fileUpload-input" accept=".xls,.xlsx,.csv,.txt" style="display: none;">
-                    <input type="text" id="file_path" value="" readonly style="width: 30%; margin-left: 2%; border: none; background-color: white;" disabled>
+                    <input type="text" id="file_path" value="" readonly style="width: 16%; margin-left: 2%; border: none; background-color: white;" disabled>
                 </div>
                 <div class="small-div" style="display:none;">
                     <div class="label">

@@ -59,10 +59,12 @@ def add_to_task(request):
     if request.method == 'POST':
         try:
             username = request.user.username
-            task_id = request.POST.get('task_id')
+            # task_id = request.POST.get('task_id')
             plan_id = request.POST.get('plan_id')
-            tasks = PerformanceTestTask.objects.get(id=task_id)
+            # tasks = PerformanceTestTask.objects.get(id=task_id)
             plans = TestPlan.objects.get(id=plan_id)
+            task_id = str(primaryKey())
+
             if plans.is_valid == 'true':
                 test_plan, duration = generate_test_plan(plans)
                 logger.info(f'Write Test Plan success, operator: {username}')
@@ -97,6 +99,8 @@ def add_to_task(request):
                         all_threads = thread_group + '<hashTree>' + throughput + cookie_manager + csv_data_set + http_controller + '</hashTree>'
                         test_plan = test_plan + '<hashTree>' + all_threads + '</hashTree>'
                         jmeter_test_plan = jmeter_header + '<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.3"><hashTree>' + test_plan + '</hashTree></jmeterTestPlan>'
+
+                        # write file to local
                         test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
                         if not os.path.exists(test_jmeter_path):
                             os.mkdir(test_jmeter_path)
@@ -111,17 +115,25 @@ def add_to_task(request):
                             download_file_to_path(csv_file_path_url, csv_file_path)
                         logger.info(f'jmx file and csv file are written successfully, operator: {username}')
                         # write zip file to temp path
-                        zip_file_path = os.path.join(settings.TEMP_PATH, task_id, task_id + '.zip')
+                        temp_file_path = os.path.join(settings.TEMP_PATH, task_id)
+                        if not os.path.exists(temp_file_path):
+                            os.mkdir(temp_file_path)
+                        zip_file_path = os.path.join(temp_file_path, task_id + '.zip')
                         zip_file(test_jmeter_path, zip_file_path)
+                        # upload file
                         if settings.FILE_STORE_TYPE == '0':
-                            zip_file_url = f'temp/{task_id}/{task_id}.zip'
+                            zip_file_url = f'{settings.STATIC_URL}temp/{task_id}/{task_id}.zip'
                         else:
                             zip_file_url = upload_file_by_path(zip_file_path)
                         logger.info(f'zip file is written successfully, operator: {username}')
-                        tasks.path = f'{settings.FILE_URL}/{zip_file_url}'
+                        task_path = f'{settings.FILE_URL}{zip_file_url}'
                     else:
-                        logger.error('The Thread Group has no Controllers ~')
-                        return result(code=1, msg='The Thread Group has no Controllers, Please add Controller ~')
+                        logger.error(f'The Thread Group has no or many Controllers, current controller No is {len(controllers)} ~')
+                        if len(controllers) < 1:
+                            msg = 'The Thread Group has no Controllers, Please add Controller ~'
+                        else:
+                            msg = 'The Thread Group has too much Controllers, Please disabled Controller ~'
+                        return result(code=1, msg=msg)
                 else:
                     logger.error('The Test Plan can only have one enable Thread Group ~')
                     return result(code=1, msg='The Test Plan can only have one enable Thread Group, Please check it ~')
@@ -129,14 +141,26 @@ def add_to_task(request):
                 logger.error('The Test Plan has been disabled ~')
                 return result(code=1, msg='The Test Plan has been disabled ~')
 
-            tasks.status = 0
-            tasks.number_samples = number_of_samples
-            tasks.save()
-            logger.info(f'Task {task_id} generate success, operator: {username}')
+            tasks = PerformanceTestTask.objects.create(id=task_id, plan_id=plan_id, ratio=1, status=0, number_samples=number_of_samples,
+                                                       path=task_path, server_num=plans.server_num, operator=username)
+            logger.info(f'Task {tasks.id} generate success, operator: {username}')
             return result(msg=f'Start success ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Start failure ~')
+
+
+def delete_task(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            task_id = request.GET.get('id')
+            task = PerformanceTestTask.objects.get(id=task_id).delete()
+            logger.info(f'Delete task {task.id} success, operator: {username}')
+            return result(msg='Delete task success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Delete task Failure ~')
 
 
 def start_task(request):
@@ -251,7 +275,7 @@ def change_tps(request):
             return result(code=1, msg='Change TPS failure ~')
 
 
-def set_status(request):
+def set_message(request):
     if request.method == 'POST':
         try:
             datas = json.loads(request.body.decode())

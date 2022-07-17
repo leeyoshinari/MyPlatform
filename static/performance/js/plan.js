@@ -184,10 +184,19 @@ function upload_file(url) {
 }
 
 function add_task(url, location_url, plan_id) {
+    $('.modal_cover').css("display", "block");
+    $('.modal_gif').css("display", "block");
+    let post_data = {
+        plan_id: plan_id,
+    }
     $.ajax({
-        type: 'get',
-        url: url + '?id=' + plan_id,
+        type: 'post',
+        url: url,
+        data: post_data,
+        dataType: 'json',
         success: function (data) {
+            $('.modal_cover').css("display", "none");
+            $('.modal_gif').css("display", "none");
             if(data['code'] === 0) {
                 $.Toast(data['msg'], 'success');
                 window.location.href = location_url + '?id=' + plan_id;

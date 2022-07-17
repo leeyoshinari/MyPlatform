@@ -208,9 +208,10 @@ FILE_ROOT_PATH = os.path.join(STATICFILES_DIRS[0], 'files')
 TEMP_PATH = os.path.join(STATICFILES_DIRS[0], 'temp')
 FILE_STORE_TYPE = get_config('storeType')
 FILE_URL = get_config('fileURL')
-if FILE_STORE_TYPE == '0':
-    if not os.path.exists(FILE_ROOT_PATH):
-        os.mkdir(FILE_ROOT_PATH)
+if not os.path.exists(TEMP_PATH):
+    os.mkdir(TEMP_PATH)
+if not os.path.exists(FILE_ROOT_PATH):
+    os.mkdir(FILE_ROOT_PATH)
 
 # Redis
 REDIS_HOST = get_config('RedisHost')

@@ -210,21 +210,6 @@ def copy_plan(request):
             return result(code=1, msg='Copy Plan Failure ~')
 
 
-def add_to_task(request):
-    if request.method == 'GET':
-        try:
-            username = request.user.username
-            plan_id = request.GET.get('id')
-            # plans = TestPlan.objects.get(id=plan_id)
-            task = PerformanceTestTask.objects.filter(plan_id=plan_id, status__lte=1)
-            if not task:
-                task = PerformanceTestTask.objects.create(id=primaryKey(), plan_id=plan_id, ratio=1, status=0, operator=username)
-                logger.info(f'Create task {task.id} success, operator: {username}')
-            return result(msg='Add task success ~')
-        except:
-            logger.error(traceback.format_exc())
-            return result(code=1, msg='Add task Failure ~')
-
 def get_server(request):
     if request.method == 'GET':
         try:
@@ -233,11 +218,13 @@ def get_server(request):
             servers = Servers.objects.filter(group__in=groups).order_by('-id')
             all_keys = get_all_keys()
             datas = []
+            status = [0]
             for server in servers:
-                if 'jmeterServer_' + server['host'] in all_keys:
+                if 'jmeterServer_' + server.host in all_keys:
                     datas.append(server)
+                    status.append(get_value_by_host('jmeterServer_' + server.host, 'status'))
             logger.info(f'Get pressure server info success, operator: {username}')
-            return render(request, 'performance/plan/server.html', context={'servers': datas})
+            return render(request, 'performance/plan/server.html', context={'servers': datas, 'status': status})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get server info Error ~')

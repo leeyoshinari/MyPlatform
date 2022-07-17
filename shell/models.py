@@ -19,7 +19,7 @@ class Servers(models.Model):
     arch= models.CharField(max_length=10, verbose_name='系统架构')
     mem = models.FloatField(default=0.0, verbose_name='服务器内存（单位G）')
     disk = models.CharField(max_length=8, verbose_name='磁盘大小')
-    is_monitor = models.IntegerField(default=0, verbose_name='是否监控服务器使用情况')
+    is_monitor = models.IntegerField(default=0, verbose_name='是否监控服务器使用情况, 0-未监控，1-已监控')
     objects = models.Manager()
 
     class Meta:

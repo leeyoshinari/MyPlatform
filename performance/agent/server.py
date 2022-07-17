@@ -33,9 +33,8 @@ async def run_task(request):
         # plan_id = data.get('planId')
         agent_num = data.get('agentNum')
         file_path = data.get('filePath')
-        res = task.run_task(task_id, file_path, agent_num)
-        res.update({'data': {'taskId': task_id}})
-        return web.json_response(res)
+        task.start_thread(task.run_task, (task_id, file_path, agent_num,))
+        return web.json_response({'code': 0, 'msg': '', 'data': None})
     except Exception as err:
         logger.error(traceback.format_exc())
         return web.json_response({'code': 1, 'msg': str(err), 'data': None})

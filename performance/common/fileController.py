@@ -23,6 +23,10 @@ def download_file_to_bytes(url):
     return res.content
 
 
+def delete_remote_file(url):
+    pass
+
+
 def zip_file(file_path, zip_file_path):
     file_list = os.listdir(file_path)
     archive = zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED)

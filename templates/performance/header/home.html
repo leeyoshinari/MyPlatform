@@ -37,11 +37,7 @@
 
 {% block table_body %}
     {% for header in headers %}
-        {% if forloop.counter|divisibleby:2 %}
-            <tr style="background-color: lightcyan">
-        {% else %}
             <tr>
-        {% endif %}
             <td><a href="{% url 'perf:header_edit' %}?id={{ header.id }}">{{ header.id }}</a></td>
             <td title="{{ header.name }}"><a href="{% url 'perf:header_edit' %}?id={{ header.id }}">{{ header.name }}</a></td>
             <td style="text-align: center;">{{ header.method }}</td>

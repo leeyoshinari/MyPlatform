@@ -4,6 +4,7 @@
 import os
 import time
 import json
+import threading
 import traceback
 import requests
 import redis
@@ -37,6 +38,10 @@ class Task(object):
         self.redis_client = None
 
         self.get_configure_from_server()
+
+    def start_thread(self, func, data):
+        t = threading.Thread(target=func, args=data)
+        t.start()
 
     def check_env(self):
         if not os.path.exists(self.jmeter_path):
@@ -117,25 +122,31 @@ class Task(object):
         self.redis_client = redis.Redis(host=self.redis_host, port=self.redis_port, password=self.redis_password,
                                         db=self.redis_db, decode_responses=True)
 
-    def check_status(self):
+    def check_status(self, is_run=True):
         try:
             if self.status == -1:
                 res = os.popen('ps -ef|grep jmeter').read()
-                if res:
-                    _ = os.popen('kill -9 ').read()
+                if res and is_run:  # 是否启动成功
+                    return True
+                elif not res and not is_run:    # 是否停止成功
+                    return True
                 else:
-                    self.status = 0
+                    return False
         except:
             logger.error(traceback.format_exc())
 
-    def set_status(self, task_status):
-        url = f'http://{get_config("address")}/performance/task/setStatus'
-        post_data = {
-            'taskId': self.task_id,
-            'status': task_status
-        }
-        res = self.request_post(url, post_data)
-        logger.info("Set task status successful ~")
+    def send_message(self, task_type, post_data):
+        try:
+            url = f'http://{get_config("address")}/performance/task/register/getMessage'
+            post_data = {
+                'taskId': self.task_id,
+                'type': task_type,
+                'data': post_data
+            }
+            res = self.request_post(url, post_data)
+            logger.info("Send message successful ~")
+        except:
+            logger.error("Send message failure ~")
 
     def write_data_to_influx(self):
         line = [{'measurement': self.IP,
@@ -148,7 +159,31 @@ class Task(object):
                  }}]
         self.influx_client.write_points(line)  # write to database
 
-    def parse_log(self):
+    def parse_log(self, log_path):
+        while not os.path.exists(log_path):
+            time.sleep(0.5)
+
+        position = 0
+        with open('access.log', mode='r', encoding='utf8') as f1:
+            while True:
+                line = f1.readline().strip()
+                if 'summary' in line:
+                    logger.info(f'JMeter run log - {self.task_id} - {line}')
+                    datas = self.parse_str(line)
+
+                cur_position = f1.tell()  # 记录上次读取文件的位置
+                if cur_position == position:
+                    time.sleep(0.1)
+                    continue
+                else:
+                    position = cur_position
+                    time.sleep(0.1)
+
+    def parse_str(self, line):
+        data = {'samples': 0, 'rt': 0, 'error': 0, 'tps': 0, 'total_samples': 0}
+        return data
+
+    def write_to_redis(self, data):
         pass
 
     def save_file(self, files):
@@ -174,7 +209,10 @@ class Task(object):
         f.close()
 
     def run_task(self, task_id, file_path, agent_num):
+        flag = 0    # 0-run task fail, 1-run task success
         try:
+            self.connect_redis()
+            self.connect_influx()
             local_file_path = os.path.join(self.jmeter_file_path, task_id + '.zip')
             target_file_path = os.path.join(self.jmeter_file_path, task_id)
             self.download_file_to_path(file_path, local_file_path)
@@ -191,25 +229,34 @@ class Task(object):
             html_file_path = os.path.join(target_file_path, 'html')
             jtl_file_path = os.path.join(target_file_path, 'jtl')
             res = os.popen(f'{self.jmeter_executor} -n -t {jmx_file_path} -l test_report1.csv -e -o {html_file_path}').read()
-            self.status = 1
-            self.task_id = task_id
-            self.agent_num = agent_num
-            logger.info(f'{jmx_file_path} run successful, task id: {task_id}')
-            return {'code': 0, 'msg': 'Run task successful ~'}
+            time.sleep(1)
+            if self.check_status(is_run=True):
+                self.status = 1
+                self.task_id = task_id
+                self.agent_num = agent_num
+                flag = 1
+                logger.info(f'{jmx_file_path} run successful, task id: {task_id}')
+            else:
+                flag = 0
+                logger.error(f'{jmx_file_path} run failure, task id: {task_id}')
         except:
+            flag = 0
             logger.error(traceback.format_exc())
-            return {'code': 1, 'msg': 'Run task failure ~'}
+        self.send_message('run_task', flag)
 
     def stop_task(self, task_id):
         try:
             res = os.popen(f'ps -ef|grep jmete').read()
-            self.status = -1
-            self.task_id = None
-            logger.info(f'task {task_id} stop successful ~')
-            return {'code': 0, 'msg': 'Stop task successful ~'}
+            time.sleep(1)
+            if self.check_status(is_run=False):
+                self.status = 0
+                self.task_id = None
+                del self.redis_client, self.influx_client
+                logger.info(f'task {task_id} stop successful ~')
+            else:
+                logger.error(f'task {task_id} stop failure ~')
         except:
             logger.error(traceback.format_exc())
-            return {'code': 1, 'msg': 'Stop task failure ~'}
 
 
     def change_TPS(self, TPS):

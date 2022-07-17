@@ -38,12 +38,13 @@ urlpatterns = [
 
     path('task', taskViews.home, name='task_home'),
     path('task/register', taskViews.register, name='agent_register'),
-    path('task/add', planViews.add_to_task, name='task_add'),
+    path('task/add', taskViews.add_to_task, name='task_add'),
+    path('task/delete', taskViews.delete_task, name='task_delete'),
     path('task/start', taskViews.start_task, name='task_start'),
     path('task/stop', taskViews.stop_task, name='task_stop'),
     path('task/download', taskViews.download_file, name='task_download'),
     path('task/change', taskViews.change_tps, name='change_tps'),
-    path('task/setStatus', taskViews.set_status, name='task_set_status'),
+    path('task/register/getMessage', taskViews.set_message, name='task_set_message'),
 
     path('group', threadViews.home, name='group_home'),
     path('group/add', threadViews.add_group, name='group_add'),

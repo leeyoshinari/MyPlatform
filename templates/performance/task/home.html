@@ -44,24 +44,24 @@
             {% else %}
                 <th width="10%"><div class="helpstyle"><span data-tooltip="Current TPS per server.">?</span></div>Current TPS</th>
             {% endif %}
-            <th width="10%">Ratio(%)</th>
+            <th width="9%">Ratio(%)</th>
             <th width="10%"># Samples</th>
             <th width="10%">Average(RT)</th>
-            <th width="10%">TPS(/s)</th>
-            <th width="10%">Error(%)</th>
-            <th width="15%">Actions</th>
+            <th width="9%">TPS(/s)</th>
+            <th width="9%">Error(%)</th>
+            <th width="18%">Actions</th>
         </tr>
     {% else %}
         <tr class="table_style">
             <th width="15%">Plan Name</th>
             <th width="10%">Status</th>
             <th width="10%"><div class="helpstyle"><span data-tooltip="Run Type: Fixed threads or TPS">?</span></div>Type</th>
-            <th width="10%">Ratio(%)</th>
+            <th width="9%">Ratio(%)</th>
             <th width="10%"># Samples</th>
             <th width="10%">Average(RT)</th>
-            <th width="10%">TPS(/s)</th>
-            <th width="10%">Error(%)</th>
-            <th width="15%">Actions</th>
+            <th width="9%">TPS(/s)</th>
+            <th width="9%">Error(%)</th>
+            <th width="18%">Actions</th>
         </tr>
     {% endif %}
 {% endblock %}
@@ -84,6 +84,7 @@
                 <td style="text-align: center;">{{ task.tps }}</td>
                 <td style="text-align: center;">{{ task.error }} %</td>
                 <td>
+                    <a target="_blank" href="{{ task.path }}">DownloadFile</a>
                     {% if task.status == 0 %}
                         <a href="#" onclick="start_task('{% url 'perf:task_start' %}', {{ task.id }}, {{ task.plan.id }})">Start</a>
                     {% else %}
