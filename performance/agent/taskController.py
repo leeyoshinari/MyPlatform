@@ -124,14 +124,13 @@ class Task(object):
 
     def check_status(self, is_run=True):
         try:
-            if self.status == -1:
-                res = os.popen('ps -ef|grep jmeter').read()
-                if res and is_run:  # 是否启动成功
-                    return True
-                elif not res and not is_run:    # 是否停止成功
-                    return True
-                else:
-                    return False
+            res = os.popen('ps -ef|grep jmeter').read()
+            if res and is_run:  # 是否启动成功
+                return True
+            elif not res and not is_run:    # 是否停止成功
+                return True
+            else:
+                return False
         except:
             logger.error(traceback.format_exc())
 
@@ -209,7 +208,10 @@ class Task(object):
         f.close()
 
     def run_task(self, task_id, file_path, agent_num):
-        flag = 0    # 0-run task fail, 1-run task success
+        if self.check_status(is_run=True):
+            self.kill_process()
+
+        #flag = 0    # 0-run task fail, 1-run task success
         try:
             self.connect_redis()
             self.connect_influx()
@@ -245,19 +247,31 @@ class Task(object):
         self.send_message('run_task', flag)
 
     def stop_task(self, task_id):
+        flag = 1  # 0-stop task fail, 1-stop task success
+        if self.check_status(is_run=True):
+            try:
+                self.kill_process()
+                time.sleep(1)
+                if self.check_status(is_run=False):
+                    self.status = 0
+                    self.task_id = None
+                    flag = 1
+                    del self.redis_client, self.influx_client
+                    logger.info(f'task {task_id} stop successful ~')
+                else:
+                    flag = 0
+                    logger.error(f'task {task_id} stop failure ~')
+            except:
+                flag = 0
+                logger.error(traceback.format_exc())
+        self.send_message('stop_task', flag)
+
+
+    def kill_process(self):
         try:
             res = os.popen(f'ps -ef|grep jmete').read()
-            time.sleep(1)
-            if self.check_status(is_run=False):
-                self.status = 0
-                self.task_id = None
-                del self.redis_client, self.influx_client
-                logger.info(f'task {task_id} stop successful ~')
-            else:
-                logger.error(f'task {task_id} stop failure ~')
         except:
             logger.error(traceback.format_exc())
-
 
     def change_TPS(self, TPS):
         try:

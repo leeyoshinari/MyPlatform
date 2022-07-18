@@ -193,7 +193,9 @@ def start_task(request):
                 logger.error(f'{server_num - len(hosts)} agent run task failure, operator: {username}')
                 return result(code=1, msg=f'{server_num - len(hosts)} agent run task failure ~')
             tasks.servers = ','.join(hosts)
-            tasks.status = 1
+            tasks.status = 0
+            tasks.running_num = 0
+            tasks.stopping_num = 0
             tasks.start_time = strfTime()
             tasks.save()
             logger.info(f'Task {task_id} run task success, operator: {username}')
@@ -214,23 +216,25 @@ def stop_task(request):
             for h in hosts:
                 res = http_request('get', h, get_value_by_host('jmeterServer_'+h, 'port'), 'stopTask/'+task_id)
                 response_data = json.loads(res.content.decode())
-                if response_data['code'] != 0:
+                if response_data['code'] == 0:
                     stop_host.append(h)
-            if stop_host:
-                tasks.servers = ','.join(stop_host)
-                tasks.save()
-                logger.error(f'{len(stop_host)} agent stop failure, operator: {username}')
-                return result(code=1, msg=f'{len(stop_host)} agent stop failure ~')
-            else:
-                tasks.status = 3
-                tasks.end_time = strfTime()
-                # tasks.samples =
-                # tasks.tps =
-                # tasks.average_rt =
-                # tasks.error =
-                tasks.save()
-                logger.info(f'Task {task_id} stop success, operator: {username}')
-                return result(msg=f'Stop success ~')
+            # if stop_host:
+            #     tasks.servers = ','.join(stop_host)
+            #     tasks.save()
+            #     logger.error(f'{len(stop_host)} agent stop failure, operator: {username}')
+            #     return result(code=1, msg=f'{len(stop_host)} agent stop failure ~')
+            # else:
+            tasks.status = 1
+            tasks.running_num = 0
+            tasks.stopping_num = 0
+            # tasks.end_time = strfTime()
+            # tasks.samples =
+            # tasks.tps =
+            # tasks.average_rt =
+            # tasks.error =
+            tasks.save()
+            logger.info(f'Task {task_id} stop success, operator: {username}')
+            return result(msg=f'Stop success ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Stop failure ~')
@@ -280,13 +284,30 @@ def set_message(request):
         try:
             datas = json.loads(request.body.decode())
             task_id = datas.get('taskId')
-            status = datas.get('status')
+            task_type = datas.get('type')
+            data = datas.get('data')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            tasks.status = status
+            if task_type == 'run_task':
+                if data == 1:
+                    tasks.running_num = tasks.running_num + 1
+                else:
+                    tasks.stopping_num = tasks.stopping_num + 1
+                if tasks.running_num == tasks.server_num:
+                    tasks.status = 1
+                    tasks.start_time = strfTime()
+
+            if task_type == 'stop_task':
+                if data == 0:
+                    tasks.running_num = tasks.running_num + 1
+                else:
+                    tasks.stopping_num = tasks.stopping_num + 1
+                if tasks.stopping_num == tasks.server_num:
+                    tasks.status = 2
+                    tasks.end_time = strfTime()
             tasks.save()
-            logger.info(f'Set task {task_id} status to {status}')
-            return result(msg='Set task status success ~')
+            logger.info(f'Set message success, type:{task_type}, task ID: {task_id}, data is {data}')
+            return result(msg='Set message success ~')
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Set task status failure ~')
+            return result(code=1, msg='Set message failure ~')
 
