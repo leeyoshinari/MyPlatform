@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 import os
+import re
 import time
 import json
 import threading
@@ -19,11 +20,7 @@ class Task(object):
         self.task_id = None
         self.plan_id = None
         self.agent_num = 1
-        self.jmeter_path = get_config('jmeterPath')
-        self.jmeter_executor = os.path.join(self.jmeter_path, 'bin', 'jmeter')
-        self.jmeter_file_path = os.path.join(self.jmeter_path, 'results')
-        self.setprop_path = os.path.join(self.jmeter_path, 'setprop.bsh')
-
+        self.pattern = 'summary\+(\d+)in.*=(\d+.\d+)/sAvg:(\d+)Min:(\d+)Max:(\d+)Err:(\d+)\(.*Active:(\d+)Started'
         self.influx_host = '127.0.0.1'
         self.influx_port = 8086
         self.influx_username = 'root'
@@ -33,11 +30,19 @@ class Task(object):
         self.redis_port = 6379
         self.redis_password = '123456'
         self.redis_db = 0
+        self.get_configure_from_server()
+
+        self.jmeter_path = get_config('jmeterPath')
+        self.jmeter_executor = os.path.join(self.jmeter_path, 'bin', 'jmeter')
+        self.jmeter_file_path = os.path.join(self.jmeter_path, 'results')
+        self.setprop_path = os.path.join(self.jmeter_path, 'setprop.bsh')
 
         self.influx_client = None
         self.redis_client = None
 
-        self.get_configure_from_server()
+        self.check_env()
+        self.write_setprop()
+        self.modify_properties()
 
     def start_thread(self, func, data):
         t = threading.Thread(target=func, args=data)
@@ -64,6 +69,7 @@ class Task(object):
                 with open(self.setprop_path, 'w', encoding='utf-8') as f:
                     f.write('import org.apache.jmeter.util.JMeterUtils;\ngetprop(p){\n    return JMeterUtils.getPropDefault(p,"");\n}\n'
                             'setprop(p,v){\n    JMeterUtils.getJMeterProperties().setProperty(p, v);\n}\nsetprop(args[0], args[1]);')
+                    logger.info('setprop.bsh is written success ~')
             else:
                 logger.info('setprop.bsh has been exist ~')
         except:
@@ -71,6 +77,15 @@ class Task(object):
 
     def modify_properties(self):
         properties_path = os.path.join(self.jmeter_path, 'bin', 'jmeter.properties')
+        _ = os.popen(f"sed -i 's|.*summariser.interval.*|summariser.interval=6|g' {properties_path}")
+        _ = os.popen(f"sed -i 's|.*beanshell.server.port.*|beanshell.server.port=9000|g' {properties_path}")
+        _ = os.popen(f"sed -i 's|.*beanshell.server.file.*|beanshell.server.file=../extras/startup.bsh|g' {properties_path}")
+        _ = os.popen(f"sed -i 's|.*jmeter.save.saveservice.samplerData.*|jmeter.save.saveservice.samplerData=true|g' {properties_path}")
+        _ = os.popen(f"sed -i 's|.*jmeter.save.saveservice.response_data.*|jmeter.save.saveservice.response_data=true|g' {properties_path}")
+        _ = os.popen(f"sed -i 's|.*jmeter.save.saveservice.response_data.on_error.*|jmeter.save.saveservice.response_data.on_error=true|g' {properties_path}")
+        _ = os.popen(f"sed -i 's|.*summariser.ignore_transaction_controller_sample_result.*|summariser.ignore_transaction_controller_sample_result=true|g' {properties_path}")
+        _ = os.popen(f"sed -e 's/^M//g' {properties_path}")
+
 
     def get_configure_from_server(self):
         url = f'http://{get_config("address")}/performance/task/register'
@@ -124,7 +139,7 @@ class Task(object):
 
     def check_status(self, is_run=True):
         try:
-            res = os.popen('ps -ef|grep jmeter').read()
+            res = os.popen('ps -ef|grep jmeter |grep -v grep').read()
             if res and is_run:  # 是否启动成功
                 return True
             elif not res and not is_run:    # 是否停止成功
@@ -147,15 +162,13 @@ class Task(object):
         except:
             logger.error("Send message failure ~")
 
-    def write_data_to_influx(self):
+    def write_to_influx(self, datas):
+        d = [json.loads(r) for r in datas]
+        data = [sum(r) for r in zip(*d)]
         line = [{'measurement': self.IP,
                  'tags': {'type': str(self.task_id)},
-                 'fields': {
-                     'samples': 0.0,
-                     'rt': 0.0,
-                     'error': 0.0,
-                     'tps': 0.0,
-                 }}]
+                 'fields': {'samples': data[0], 'tps': data[1], 'rt': data[2], 'min': data[3],
+                            'max': data[4], 'err': data[5], 'active': data[6]}}]
         self.influx_client.write_points(line)  # write to database
 
     def parse_log(self, log_path):
@@ -163,27 +176,34 @@ class Task(object):
             time.sleep(0.5)
 
         position = 0
-        with open('access.log', mode='r', encoding='utf8') as f1:
+        with open(log_path, mode='r', encoding='utf-8') as f1:
             while True:
                 line = f1.readline().strip()
                 if 'summary' in line:
                     logger.info(f'JMeter run log - {self.task_id} - {line}')
-                    datas = self.parse_str(line)
+                    # data = {'samples': 0, 'tps': 0, 'rt': 0, 'min': 0, 'max': 0, 'err': 0, 'active': 0}
+                    # data = [0, 0, 0, 0, 0, 0, 0]
+                    res = re.findall(self.pattern, line.replace(' ', ''))[0]
+                    data = list(map(float, res))
+                    self.write_to_redis(data)
 
                 cur_position = f1.tell()  # 记录上次读取文件的位置
                 if cur_position == position:
-                    time.sleep(0.1)
+                    time.sleep(0.2)
                     continue
                 else:
                     position = cur_position
-                    time.sleep(0.1)
+                    time.sleep(0.2)
 
-    def parse_str(self, line):
-        data = {'samples': 0, 'rt': 0, 'error': 0, 'tps': 0, 'total_samples': 0}
-        return data
+                if self.status == 0:
+                    break
 
     def write_to_redis(self, data):
-        pass
+        if self.redis_client.llen(f'task_{self.task_id}') == self.agent_num:
+            res = self.redis_client.lrange(f'task_{self.task_id}', 0, self.agent_num)
+            self.redis_client.ltrim(f'task_{self.task_id}', self.agent_num, self.agent_num)
+            self.write_to_influx(res)
+        _ = self.redis_client.lpush(f'task_{self.task_id}', str(data))
 
     def save_file(self, files):
         pass
@@ -193,6 +213,20 @@ class Task(object):
 
     def upload_file_by_bytes(self, file_bytes):
         pass
+
+    def download_log(self, task_id):
+        jtl_path = os.path.join(self.jmeter_file_path, task_id, task_id + '.jtl')
+        jmeter_log_path = os.path.join(self.jmeter_file_path, task_id, task_id + '.log')
+        zip_file_path = os.path.join(self.jmeter_file_path, task_id, task_id + '.zip')
+        archive = zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED)
+        if os.path.exists(jtl_path):
+            archive.write(jtl_path, task_id + '.jtl')
+        archive.write(jmeter_log_path, task_id + '.log')
+        archive.close()
+        with open(zip_file_path, 'rb', encoding='utf-8') as f:
+            res = f.read()
+        os.remove(zip_file_path)
+        return res
 
     def download_file_to_path(self, url, file_path):
         with open(file_path, 'wb') as f:
@@ -207,7 +241,7 @@ class Task(object):
         f.extractall(target_path)
         f.close()
 
-    def run_task(self, task_id, file_path, agent_num):
+    def run_task(self, task_id, file_path, agent_num, is_debug):
         if self.check_status(is_run=True):
             self.kill_process()
 
@@ -228,9 +262,12 @@ class Task(object):
                 logger.error('Not Found jmx file ~')
                 return {'code': 1, 'msg': 'Not Found jmx file, please zip file again ~'}
             jmx_file_path = os.path.join(target_file_path, jmx_files[0])
-            html_file_path = os.path.join(target_file_path, 'html')
-            jtl_file_path = os.path.join(target_file_path, 'jtl')
-            res = os.popen(f'{self.jmeter_executor} -n -t {jmx_file_path} -l test_report1.csv -e -o {html_file_path}').read()
+            log_path = os.path.join(target_file_path, task_id + '.log')
+            jtl_file_path = os.path.join(target_file_path, task_id + '.jtl')
+            if is_debug:
+                res = os.popen(f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -l {jtl_file_path} -j {log_path} &').read()
+            else:
+                res = os.popen(f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -j {log_path} &').read()
             time.sleep(1)
             if self.check_status(is_run=True):
                 self.status = 1
@@ -238,6 +275,7 @@ class Task(object):
                 self.agent_num = agent_num
                 flag = 1
                 logger.info(f'{jmx_file_path} run successful, task id: {task_id}')
+                self.start_thread(self.parse_log, (os.path.join(self.jmeter_file_path, task_id, task_id + '.log'),))
             else:
                 flag = 0
                 logger.error(f'{jmx_file_path} run failure, task id: {task_id}')
@@ -269,7 +307,7 @@ class Task(object):
 
     def kill_process(self):
         try:
-            res = os.popen(f'ps -ef|grep jmete').read()
+            res = os.popen("ps -ef|grep jmeter |grep -v grep |awk '{print $2}' |xargs kill -9").read()
         except:
             logger.error(traceback.format_exc())
 
@@ -292,5 +330,13 @@ class Task(object):
         return res
 
 if __name__ == '__main__':
-    t = Task()
-    t.download_file_to_bytes('http://127.0.0.1:8000/tencent/static/files/1651999794686/工作簿1.csv')
+    # t = Task()
+    RedisHost = '101.200.52.208'
+    RedisPort = 6369
+    RedisPassword = 'leeyoshi'
+    RedisDB = 1
+    r = redis.Redis(host=RedisHost, port=RedisPort, password=RedisPassword, db=RedisDB, decode_responses=True)
+    a = r.lpush('task_1', str([8.0, 1.3, 389.0, 348.0, 453.0, 1.0, 200.0]))
+    print(a)
+    rr = r.lrange('task_1', 1, 2)
+    print(rr)

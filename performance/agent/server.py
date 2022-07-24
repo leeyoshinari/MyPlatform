@@ -33,7 +33,8 @@ async def run_task(request):
         # plan_id = data.get('planId')
         agent_num = data.get('agentNum')
         file_path = data.get('filePath')
-        task.start_thread(task.run_task, (task_id, file_path, agent_num,))
+        is_debug = data.get('isDebug')
+        task.start_thread(task.run_task, (task_id, file_path, agent_num, is_debug,))
         return web.json_response({'code': 0, 'msg': '', 'data': None})
     except Exception as err:
         logger.error(traceback.format_exc())
@@ -47,6 +48,10 @@ async def download_file(request):
     :return:
     """
     task_id = request.match_info['task_id']
+    res = task.download_log(task_id)
+    return web.Response(content_type='application/octet-stream',
+                        headers={'Content-Disposition': f'attachment;filename={task_id}.zip'},
+                        body=res)
 
 
 async def change_tps(request):

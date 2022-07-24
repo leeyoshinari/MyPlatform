@@ -182,6 +182,7 @@ def start_task(request):
                 'planId': tasks.plan.id,
                 'agentNum': server_num,
                 'filePath': tasks.path,
+                'isDebug': True
             }
             for h in all_servers:
                 res = http_request('post', h['host'], h['port'], 'runTask', json=post_data)
@@ -254,6 +255,19 @@ def download_file(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='test plan file download failure.')
+
+
+def download_log(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            task_id = request.GET.get('id')
+            host = request.GET.get('host')
+            logger.info(f'{task_id}.zip download successful, operator: {username}')
+            return http_request('get', host, get_value_by_host('jmeterServer_'+host, 'port'), f'download/{task_id}')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='log file download failure.')
 
 
 def change_tps(request):

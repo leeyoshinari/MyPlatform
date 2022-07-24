@@ -43,6 +43,7 @@ urlpatterns = [
     path('task/start', taskViews.start_task, name='task_start'),
     path('task/stop', taskViews.stop_task, name='task_stop'),
     path('task/download', taskViews.download_file, name='task_download'),
+    path('task/download/log', taskViews.download_log, name='taask_download_log'),
     path('task/change', taskViews.change_tps, name='change_tps'),
     path('task/register/getMessage', taskViews.set_message, name='task_set_message'),
 
