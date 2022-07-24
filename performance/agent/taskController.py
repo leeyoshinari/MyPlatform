@@ -126,8 +126,10 @@ class Task(object):
             'port': get_config('port'),
             'status': self.status
         }
-        res = self.request_post(url, post_data)
-        logger.info("Agent register successful ~")
+        while True:
+            res = self.request_post(url, post_data)
+            logger.info("Agent register successful ~")
+            time.sleep(9)
 
     def connect_influx(self):
         self.influx_client = influxdb.InfluxDBClient(self.influx_host, self.influx_port, self.influx_username,
