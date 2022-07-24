@@ -406,3 +406,7 @@ class UploadAndDownloadFile(object):
     def __del__(self):
         self.sftp.close()
         self.t.close()
+
+
+if __name__ == '__main__':
+    print(parse_pwd('1649577', 'Isw}`uGh'))

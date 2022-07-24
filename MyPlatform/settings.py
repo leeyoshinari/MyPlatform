@@ -218,7 +218,7 @@ REDIS_HOST = get_config('RedisHost')
 REDIS_PORT = int(get_config('RedisPort'))
 REDIS_PWD = get_config('RedisPassword')
 REDIS_DB = int(get_config('RedisDB'))
-REDIS = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PWD, db=REDIS_DB, decode_responses=True)
+REDIS = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PWD, db=REDIS_DB, username='default', decode_responses=True)
 
 # influxDB
 INFLUX_HOST = get_config('InfluxHost')

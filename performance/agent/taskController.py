@@ -137,7 +137,7 @@ class Task(object):
 
     def connect_redis(self):
         self.redis_client = redis.Redis(host=self.redis_host, port=self.redis_port, password=self.redis_password,
-                                        db=self.redis_db, decode_responses=True)
+                                        db=self.redis_db, username='default', decode_responses=True)
 
     def check_status(self, is_run=True):
         try:
@@ -332,13 +332,4 @@ class Task(object):
         return res
 
 if __name__ == '__main__':
-    # t = Task()
-    RedisHost = '101.200.52.208'
-    RedisPort = 6369
-    RedisPassword = 'leeyoshi'
-    RedisDB = 1
-    r = redis.Redis(host=RedisHost, port=RedisPort, password=RedisPassword, db=RedisDB, decode_responses=True)
-    a = r.lpush('task_1', str([8.0, 1.3, 389.0, 348.0, 453.0, 1.0, 200.0]))
-    print(a)
-    rr = r.lrange('task_1', 1, 2)
-    print(rr)
+    t = Task()
