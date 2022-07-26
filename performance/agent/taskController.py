@@ -137,7 +137,7 @@ class Task(object):
 
     def connect_redis(self):
         self.redis_client = redis.Redis(host=self.redis_host, port=self.redis_port, password=self.redis_password,
-                                        db=self.redis_db, username='default', decode_responses=True)
+                                        db=self.redis_db, decode_responses=True)
 
     def check_status(self, is_run=True):
         try:
