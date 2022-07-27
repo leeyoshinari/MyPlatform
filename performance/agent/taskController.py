@@ -43,6 +43,7 @@ class Task(object):
         self.check_env()
         self.write_setprop()
         self.modify_properties()
+        self.start_thread(self.register, ())
 
     def start_thread(self, func, data):
         t = threading.Thread(target=func, args=data)
@@ -56,8 +57,8 @@ class Task(object):
         if 'Copyright' not in res:
             logger.error(f'Not Found JMeter ~')
 
-        res = os.popen('java -version').read()
-        if 'version' not in res:
+        res = os.popen('whereis java').read()
+        if len(res) < 10:
             logger.error('Not Found Java ~')
 
         if not os.path.exists(self.jmeter_file_path):
@@ -85,6 +86,7 @@ class Task(object):
         _ = os.popen(f"sed -i 's|.*jmeter.save.saveservice.response_data.on_error.*|jmeter.save.saveservice.response_data.on_error=true|g' {properties_path}")
         _ = os.popen(f"sed -i 's|.*summariser.ignore_transaction_controller_sample_result.*|summariser.ignore_transaction_controller_sample_result=true|g' {properties_path}")
         _ = os.popen(f"sed -e 's/^M//g' {properties_path}")
+        logger.info(f'Modify {properties_path} success ~')
 
 
     def get_configure_from_server(self):
