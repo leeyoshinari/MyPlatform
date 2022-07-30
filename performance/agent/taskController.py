@@ -130,7 +130,7 @@ class Task(object):
         }
         while True:
             res = self.request_post(url, post_data)
-            logger.info("Agent register successful ~")
+            logger.info(f"Agent register successful, status code is {res.status_code}")
             time.sleep(9)
 
     def connect_influx(self):
@@ -143,7 +143,7 @@ class Task(object):
 
     def check_status(self, is_run=True):
         try:
-            res = os.popen('ps -ef|grep jmeter |grep -v grep').read()
+            res = os.popen('ps -ef|grep jmeter |grep -v grep').readlines()
             if res and is_run:  # 是否启动成功
                 return True
             elif not res and not is_run:    # 是否停止成功
@@ -162,7 +162,7 @@ class Task(object):
                 'data': post_data
             }
             res = self.request_post(url, post_data)
-            logger.info("Send message successful ~")
+            logger.info(f"Send message successful, data: {post_data}, response: {res.content.decode()}")
         except:
             logger.error("Send message failure ~")
 
@@ -272,6 +272,7 @@ class Task(object):
                 res = os.popen(f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -l {jtl_file_path} -j {log_path} &').read()
             else:
                 res = os.popen(f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -j {log_path} &').read()
+            logger.info(res)
             time.sleep(1)
             if self.check_status(is_run=True):
                 self.status = 1
@@ -330,7 +331,7 @@ class Task(object):
             "Accept-Encoding": "gzip, deflate",
             "Content-Type": "application/json; charset=UTF-8"}
         res = requests.post(url=url, json=post_data, headers=header)
-        logger.info(url)
+        logger.debug(url)
         return res
 
 if __name__ == '__main__':
