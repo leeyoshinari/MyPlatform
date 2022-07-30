@@ -164,10 +164,10 @@ def delete_task(request):
 
 
 def start_task(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         try:
             username = request.user.username
-            task_id = request.GET.get('id')
+            task_id = request.POST.get('task_id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             all_servers = get_all_host()
             idle_servers = [s for s in all_servers if s['status'] == 0]

@@ -192,7 +192,7 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['default'],  # 'console'
+            'handlers': ['default'],  # default, console
             'level': get_config('level'),
             'propagate': True,
         }
