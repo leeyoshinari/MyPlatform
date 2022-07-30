@@ -48,11 +48,7 @@
 
 {% block table_body %}
     {% for sample in samples %}
-        {% if sample.is_valid == 'false' %}
-            <tr style="background-color: #ffd5d5">
-        {% else %}
             <tr>
-        {% endif %}
             <td title="{{ sample.controller.name }}"><a href="{% url 'perf:controller_home' %}?id={{ sample.controller.thread_group.id }}">{{ sample.controller.name }}</a></td>
             <td title="{{ sample.name }} -> {{ sample.comment }}"><a href="{% url 'perf:sample_home' %}?id={{ sample.controller.id }}">{{ sample.name }}</a></td>
             <td title="{{ sample.path }}">{{ sample.path }}</td>

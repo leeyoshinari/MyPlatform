@@ -125,7 +125,7 @@ def add_to_task(request):
                             zip_file_url = f'{settings.STATIC_URL}temp/{task_id}/{task_id}.zip'
                         else:
                             zip_file_url = upload_file_by_path(zip_file_path)
-                        logger.info(f'zip file is written successfully, operator: {username}')
+                        logger.info(f'zip file is written successfully, operator: {username}, zip file: {zip_file_url}')
                         task_path = f'{settings.FILE_URL}{zip_file_url}'
                     else:
                         logger.error(f'The Thread Group has no or many Controllers, current controller No is {len(controllers)} ~')

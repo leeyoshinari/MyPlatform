@@ -27,8 +27,6 @@ def delete(request):
             delete_id = request.POST.get('id')
             if delete_type == 'plan':
                 TestPlan.objects.get(id=delete_id).delete()
-            if delete_type == 'variable':
-                GlobalVariable.objects.get(id=delete_id).delete()
             if delete_type == 'group':
                 ThreadGroup.objects.get(id=delete_id).delete()
             if delete_type == 'controller':
@@ -83,9 +81,6 @@ def parse_jmx(request):
                                         tearDown=plan.get('tearDown_on_shutdown'), serialize=plan.get('serialize_threadgroups'),
                                         is_valid=plan.get('enabled'), create_time=strfTime(), update_time=strfTime(),
                                         operator=username)
-                for k, v in plan['arguments'].items():
-                    global_variable = GlobalVariable.objects.create(id=primaryKey(), plan_id=testPlan.id, name=k, value=v,
-                                                                    create_time=strfTime(), update_time=strfTime(), operator=username)
                 for tg in plan['thread_group']:
                     thread = ThreadGroup.objects.create(id=primaryKey(), plan_id=testPlan.id, name=tg.get('testname'),
                                         is_valid=tg.get('enabled'), num_threads=tg.get('num_threads'), ramp_time=tg.get('ramp_time'),

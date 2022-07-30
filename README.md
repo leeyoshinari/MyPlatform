@@ -53,9 +53,14 @@ python3 manage.py migrate
 python3 manage.py createsuperuser
 ```
 
-5、修改`startup.sh`中的端口号；
+5、数据初始化，不初始化会导致上次jmeter文件报错；
+```shell script
+python3 manage.py loaddata initdata.json
+```
 
-6、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`tencent`是url上下文，即url前缀，可根据自己需要修改)<br>
+6、修改`startup.sh`中的端口号；
+
+7、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`tencent`是url上下文，即url前缀，可根据自己需要修改)<br>
 （1）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
 ```shell script
 location /tencent/static {
@@ -80,12 +85,12 @@ location /shell {  # 必须是shell
 }
 ```
 
-7、启动
+8、启动
 ```
 sh startup.sh
 ```
 
-8、访问页面，url是 `http://ip:port/上下文`
+9、访问页面，url是 `http://ip:port/上下文`
 
-9、访问权限控制页面，url是 `http://ip:port/上下文/admin`
+10、访问权限控制页面，url是 `http://ip:port/上下文/admin`
 
