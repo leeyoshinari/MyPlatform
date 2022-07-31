@@ -84,7 +84,7 @@ class Task(object):
         _ = os.popen(f"sed -i 's|.*jmeter.save.saveservice.samplerData.*|jmeter.save.saveservice.samplerData=true|g' {properties_path}")
         _ = os.popen(f"sed -i 's|.*jmeter.save.saveservice.response_data.*|jmeter.save.saveservice.response_data=true|g' {properties_path}")
         _ = os.popen(f"sed -i 's|.*jmeter.save.saveservice.response_data.on_error.*|jmeter.save.saveservice.response_data.on_error=true|g' {properties_path}")
-        _ = os.popen(f"sed -i 's|.*summariser.ignore_transaction_controller_sample_result.*|summariser.ignore_transaction_controller_sample_result=true|g' {properties_path}")
+        _ = os.popen(f"sed -i 's|.*summariser.ignore_transaction_controller_sample_result.*|summariser.ignore_transaction_controller_sample_result=false|g' {properties_path}")
         _ = os.popen(f"sed -e 's/^M//g' {properties_path}")
         logger.info(f'Modify {properties_path} success ~')
 
@@ -183,7 +183,7 @@ class Task(object):
         with open(log_path, mode='r', encoding='utf-8') as f1:
             while True:
                 line = f1.readline().strip()
-                if 'summary' in line:
+                if 'Summariser: summary +' in line:
                     logger.info(f'JMeter run log - {self.task_id} - {line}')
                     # data = {'samples': 0, 'tps': 0, 'rt': 0, 'min': 0, 'max': 0, 'err': 0, 'active': 0}
                     # data = [0, 0, 0, 0, 0, 0, 0]
@@ -276,7 +276,7 @@ class Task(object):
                 cmd = f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -j {log_path} >/dev/null 2>&1 &'
             res = os.popen(cmd).read()
             logger.info(f'Run JMeter success, shell: {cmd}')
-            time.sleep(1)
+            time.sleep(3)
             if self.check_status(is_run=True):
                 self.status = 1
                 self.task_id = task_id
