@@ -1,0 +1,89 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+    <script src="{% static 'performance/js/task.js' %}"></script>
+    <script src="{% static 'performance/js/echarts.common.js' %}"></script>
+    <script src="{% static 'performance/js/visualize.js' %}"></script>
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:plan_home' %}">Test Plan</a>
+{% endblock %}
+
+{% block detail_action %}
+    <div style="height: 50px;">
+        <div>
+            <h3>Test Plan Name:
+                <span><a href="{% url 'perf:plan_home' %}?keyWord={{ tasks.plan.name }}">{{ tasks.plan.name }}</a></span>
+            </h3>
+        </div>
+    </div>
+    <div style="height: 50px; margin-left: 3%;">
+        <div class="plan-detail" style="width: 12%;">
+            {% if tasks.plan.type == 0 %}
+                <label>Fixed Thread Num: </label>
+            {% else %}
+                <label>Target TPS: </label>
+            {% endif %}
+            <span>{{ tasks.plan.target_num }}/s</span>
+        </div>
+        <div class="plan-detail" style="width: 12%;">
+            <label>Current TPS: </label>
+            <span>{{ tasks.plan.duration }}/s</span>
+        </div>
+        <div class="plan-detail" style="width: 260px;">
+            <label>StartTime: </label>
+            <span>{{ tasks.start_time | date:"Y-m-d H:i:s" }}</span>
+        </div>
+        <div class="plan-detail" style="width: 260px;">
+            <label>EndTime: </label>
+            <span>{{ tasks.end_time | date:"Y-m-d H:i:s" }}</span>
+        </div>
+    </div>
+    <div style="height: 50px; margin-left: 3%;">
+        <div class="plan-detail" style="width: 180px;">
+            <label>Samples: </label>
+            <span>{{ tasks.samples }}</span>
+        </div>
+        <div class="plan-detail" style="width: 210px;">
+            <label>Average TPS: </label>
+            <span>{{ tasks.tps }}/s</span>
+        </div>
+        <div class="plan-detail" style="width: 200px;">
+            <label>RT(avg): </label>
+            <span>{{ tasks.average_rt }} ms</span>
+        </div>
+        <div class="plan-detail" style="width: 190px;">
+            <label>RT(min): </label>
+            <span>{{ tasks.min_rt }} ms</span>
+        </div>
+        <div class="plan-detail" style="width: 210px;">
+            <label>RT(max): </label>
+            <span>{{ tasks.max_rt }} ms</span>
+        </div>
+        <div class="plan-detail" style="width: 170px;">
+            <label>Error(%): </label>
+            <span>{{ tasks.error }}%</span>
+        </div>
+    </div>
+{% endblock %}
+{% block other_content %}
+    <div id="figure" style="width: 95%;height:540px;margin: 0 auto;"></div>
+{% endblock %}
+{% block table_head %}
+    <tr class="table_style">
+        <th width="15%">Server</th>
+        <th width="10%">CPU</th>
+        <th width="10%">Memory</th>
+        <th width="10%">Disks</th>
+        <th width="9%">Network</th>
+        <th width="18%">Actions</th>
+    </tr>
+{% endblock %}
+{% block table_body %}
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+    </script>
+{% endblock %}

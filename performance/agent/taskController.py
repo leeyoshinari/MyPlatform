@@ -123,12 +123,12 @@ class Task(object):
 
     def register(self):
         url = f'http://{get_config("address")}/performance/task/register'
-        post_data = {
-            'host': self.IP,
-            'port': get_config('port'),
-            'status': self.status
-        }
         while True:
+            post_data = {
+                'host': self.IP,
+                'port': get_config('port'),
+                'status': self.status
+            }
             res = self.request_post(url, post_data)
             logger.info(f"Agent register successful, status code is {res.status_code}")
             time.sleep(9)
@@ -169,10 +169,10 @@ class Task(object):
     def write_to_influx(self, datas):
         d = [json.loads(r) for r in datas]
         data = [sum(r) for r in zip(*d)]
-        line = [{'measurement': self.IP,
+        line = [{'measurement': 'performance_jmeter_task',
                  'tags': {'type': str(self.task_id)},
-                 'fields': {'samples': data[0], 'tps': data[1], 'rt': data[2], 'min': data[3],
-                            'max': data[4], 'err': data[5], 'active': data[6]}}]
+                 'fields': {'samples': data[0], 'tps': data[1], 'avg_rt': data[2], 'min_rt': data[3],
+                            'max_rt': data[4], 'err': data[5], 'active': data[6]}}]
         self.influx_client.write_points(line)  # write to database
 
     def parse_log(self, log_path):
@@ -297,7 +297,7 @@ class Task(object):
         if self.check_status(is_run=True):
             try:
                 self.kill_process()
-                time.sleep(1)
+                time.sleep(2)
                 if self.check_status(is_run=False):
                     self.status = 0
                     self.task_id = None

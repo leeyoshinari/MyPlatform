@@ -130,9 +130,7 @@ body{
 }
 .detail-action .plan-detail {
     float: left;
-    width: 20%;
-    margin-top: 1%;
-    margin-bottom: 2%;
+    width: 10%;
 }
 .detail-action .plan-detail a{
     text-decoration: none;

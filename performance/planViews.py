@@ -218,7 +218,7 @@ def get_server(request):
             servers = Servers.objects.filter(group__in=groups).order_by('-id')
             all_keys = get_all_keys()
             datas = []
-            status = [0]
+            status = []
             for server in servers:
                 if 'jmeterServer_' + server.host in all_keys:
                     datas.append(server)

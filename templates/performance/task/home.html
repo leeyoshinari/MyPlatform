@@ -35,87 +35,40 @@
 {% block searchBlock %}
 {% endblock %}
 {% block table_head %}
-    {% if plans %}
-        <tr class="table_style">
-            <th width="15%">Plan Name</th>
-            <th width="10%">Status</th>
-            {% if plans.type == 0 %}
-                <th width="10%"><div class="helpstyle"><span data-tooltip="Current Thread numbers per server.">?</span></div>Current Threads</th>
-            {% else %}
-                <th width="10%"><div class="helpstyle"><span data-tooltip="Current TPS per server.">?</span></div>Current TPS</th>
-            {% endif %}
-            <th width="9%">Ratio(%)</th>
-            <th width="10%"># Samples</th>
-            <th width="10%">Average(RT)</th>
-            <th width="9%">TPS(/s)</th>
-            <th width="9%">Error(%)</th>
-            <th width="18%">Actions</th>
-        </tr>
-    {% else %}
-        <tr class="table_style">
-            <th width="15%">Plan Name</th>
-            <th width="10%">Status</th>
-            <th width="10%"><div class="helpstyle"><span data-tooltip="Run Type: Fixed threads or TPS">?</span></div>Type</th>
-            <th width="9%">Ratio(%)</th>
-            <th width="10%"># Samples</th>
-            <th width="10%">Average(RT)</th>
-            <th width="9%">TPS(/s)</th>
-            <th width="9%">Error(%)</th>
-            <th width="18%">Actions</th>
-        </tr>
-    {% endif %}
+    <tr class="table_style">
+        <th width="15%">Plan Name</th>
+        <th width="10%">Status</th>
+        <th width="10%"># Samples</th>
+        <th width="10%">Average(RT)</th>
+        <th width="9%">TPS(/s)</th>
+        <th width="9%">Error(%)</th>
+        <th width="18%">Actions</th>
+    </tr>
 {% endblock %}
 
 {% block table_body %}
-    {% if plans %}
-        {% for task in tasks %}
-            <tr>
-                <td title="{{ task.plan.comment }}"><a href="{% url 'perf:plan_home' %}?keyWord={{ task.plan.name }}">{{ task.plan.name }}</a></td>
-                <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
-                {% if plans.type == 0 %}
-                    <td style="text-align: center;">{{ task.plan.target_num }}</td>
-                    <td style="text-align: center;">-</td>
+    {% for task in tasks %}
+        <tr>
+            <td title="{{ task.plan.comment }}"><a href="{% url 'perf:plan_home' %}?keyWord={{ task.plan.name }}">{{ task.plan.name }}</a></td>
+            <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
+            <td style="text-align: center;">{{ task.samples }}</td>
+            <td style="text-align: center;">{{ task.average_rt }}</td>
+            <td style="text-align: center;">{{ task.tps }}</td>
+            <td style="text-align: center;">{{ task.error }} %</td>
+            <td>
+                <a target="_blank" href="{{ task.path }}">DownloadFile</a>
+                {% if task.status == 0 %}
+                    <a href="#" onclick="start_task('{% url 'perf:task_start' %}', {{ task.id }}, {{ task.plan.id }})">Start</a>
                 {% else %}
-                    <td style="text-align: center;">{{ task.ratio | multiple:task.plan.target_num }}</td>
-                    <td style="text-align: center;">{{ task.ratio }}</td>
-                {% endif %}
-                <td style="text-align: center;">{{ task.samples }}</td>
-                <td style="text-align: center;">{{ task.average_rt }}</td>
-                <td style="text-align: center;">{{ task.tps }}</td>
-                <td style="text-align: center;">{{ task.error }} %</td>
-                <td>
-                    <a target="_blank" href="{{ task.path }}">DownloadFile</a>
-                    {% if task.status == 0 %}
-                        <a href="#" onclick="start_task('{% url 'perf:task_start' %}', {{ task.id }}, {{ task.plan.id }})">Start</a>
-                    {% else %}
-                        <a href="{% url 'perf:group_home' %}?id={{ task.id }}">View</a>
-                        {% if task.status == 1 %}
-                            <a href="#" onclick="stop_task('{% url 'perf:task_stop' %}?id={{ task.id }}')">Stop</a>
-                        {% endif %}
+                    <a href="{% url 'perf:task_detail' %}?id={{ task.id }}">View</a>
+                    {% if task.status == 1 %}
+                        <a href="#" onclick="stop_task('{% url 'perf:task_stop' %}?id={{ task.id }}')">Stop</a>
                     {% endif %}
-                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:task_home' %}?id={{ task.plan.id }}', 'task', {{ task.id }})">Delete</a>
-                </td>
-            </tr>
-        {% endfor %}
-    {% else %}
-        {% for task in tasks %}
-            <tr>
-                <td title="{{ task.plan.comment }}"><a href="{% url 'perf:task_home' %}?id={{ task.plan.id }}">{{ task.plan.name }}</a></td>
-                <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
-                <td style="text-align: center;">{{ task.plan.type | get_value_from_list:'plan_type' }}</td>
-                <td style="text-align: center;">{{ task.ratio }}</td>
-                <td style="text-align: center;">{{ task.samples }}</td>
-                <td style="text-align: center;">{{ task.average_rt }}</td>
-                <td style="text-align: center;">{{ task.tps }}</td>
-                <td style="text-align: center;">{{ task.error }} %</td>
-                <td>
-                    <a href="{% url 'perf:task_home' %}?id={{ task.plan.id }}">View</a>
-                    <a href="{% url 'perf:task_download' %}?id={{ task.id }}">DownloadFile</a>
-                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:task_home' %}?id={{ task.plan.id }}', 'task', {{ task.id }})">Delete</a>
-                </td>
-            </tr>
-        {% endfor %}
-    {% endif %}
+                {% endif %}
+                <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:task_home' %}?id={{ task.plan.id }}', 'task', {{ task.id }})">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
 {% endblock %}
 {% block define_js %}
     <script type="text/javascript">

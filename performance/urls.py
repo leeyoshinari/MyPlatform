@@ -46,6 +46,8 @@ urlpatterns = [
     path('task/download/log', taskViews.download_log, name='taask_download_log'),
     path('task/change', taskViews.change_tps, name='change_tps'),
     path('task/register/getMessage', taskViews.set_message, name='task_set_message'),
+    path('task/query', taskViews.query_data, name='task_query'),
+    path('task/detail', taskViews.view_task_detail, name='task_detail'),
 
     path('group', threadViews.home, name='group_home'),
     path('group/add', threadViews.add_group, name='group_add'),

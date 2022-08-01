@@ -111,6 +111,8 @@ class PerformanceTestTask(models.Model):
     samples = models.IntegerField(default=0, verbose_name='# Samples')
     average_rt = models.FloatField(default=0, verbose_name='Average Response Time (ms)')
     tps = models.FloatField(default=0, verbose_name='TPS (/s)')
+    min_rt = models.FloatField(default=0, verbose_name='min Response Time (ms)')
+    max_rt = models.FloatField(default=0, verbose_name='max Response Time (ms)')
     error = models.FloatField(default=0, verbose_name='error(%)')
     path = models.CharField(null=True, max_length=128, verbose_name='all files used to test, *.zip')
     servers = models.CharField(null=True, max_length=255, verbose_name='pressure server IPs')

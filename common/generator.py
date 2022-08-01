@@ -3,7 +3,6 @@
 # Author: leeyoshinari
 
 import time
-import random
 
 
 def primaryKey():
@@ -12,3 +11,11 @@ def primaryKey():
 
 def strfTime():
     return time.strftime('%Y-%m-%d %H:%M:%S')
+
+
+def strfDeltaTime(delta = 0):
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() - delta))
+
+
+def toTimeStamp(strf_time):
+    return time.mktime(time.strptime(strf_time, '%Y-%m-%d %H:%M:%S'))

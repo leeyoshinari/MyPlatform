@@ -13,10 +13,11 @@ from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from .common.generateJmx import *
 from .common.getRedis import *
 from .common.request import http_request
-from common.Result import result
-from common.generator import primaryKey, strfTime
+from common.Result import result, json_result
+from common.generator import primaryKey, strfTime, strfDeltaTime, toTimeStamp
 from .common.fileController import upload_file_by_path, download_file_to_path, zip_file, download_file_to_bytes
 import common.Request as Request
+import influxdb
 # Create your views here.
 
 
@@ -318,6 +319,17 @@ def set_message(request):
                 if tasks.stopping_num == tasks.server_num:
                     tasks.status = 2
                     tasks.end_time = strfTime()
+                    durations = time.time() - toTimeStamp(tasks.start_time)
+                    datas = get_data_from_influx(task_id, tasks.start_time, strfTime())
+                    if datas['code'] == 0:
+                        total_samples = sum(datas['data']['samples'])
+                        avg_rt = [s * t / total_samples for s, t in zip(datas['data']['samples'], datas['data']['avg_rt'])]
+                        tasks.samples = total_samples
+                        tasks.tps = round(total_samples / durations, 2)
+                        tasks.average_rt = round(sum(avg_rt), 2)
+                        tasks.min_rt = min(datas['data']['min_rt'])
+                        tasks.max_rt = max(datas['data']['max_rt'])
+                        tasks.error = round(sum(datas['data']['err']) / total_samples * 100, 4)
             tasks.save()
             logger.info(f'Set message success, type:{task_type}, task ID: {task_id}, data is {data}')
             return result(msg='Set message success ~')
@@ -325,3 +337,70 @@ def set_message(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Set message failure ~')
 
+
+def view_task_detail(request):
+    if request.method == 'GET':
+        try:
+            task_id = request.GET.get('id')
+            tasks = PerformanceTestTask.objects.get(id=task_id)
+            return render(request, 'performance/task/detail.html', context={'tasks': tasks})
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get task detail error ~')
+
+
+def query_data(request):
+    if request.method == 'POST':
+        try:
+            task_id = request.POST.get('id')
+            tasks = PerformanceTestTask.objects.get(id=task_id)
+            start_time = tasks.start_time
+            end_time = strfTime()
+            if tasks.end_time:
+                end_time = tasks.end_time
+            return json_result(get_data_from_influx(task_id, start_time, end_time))
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Query data error ~')
+
+
+def get_data_from_influx(task_id, start_time=None, end_time=None):
+    query_data = {'time': [], 'samples': [], 'tps': [], 'avg_rt': [], 'min_rt': [], 'max_rt': [], 'err': [], 'active': []}
+    res = {'code': 0, 'data': None, 'message': 'Query InfluxDB Successful!'}
+    try:
+        conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
+                                       settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
+        if start_time and end_time:     # If there is a start time and an end time
+            pass
+        elif start_time is None and end_time is None:  # If the start time and end time do not exist, use the default time.
+            start_time = strfDeltaTime(1800)
+            end_time = strfTime()
+        else:   # If the end time does not exist, the current time is used
+            end_time = strfTime()
+
+        sql = f'select samples, tps, avg_rt, min_rt, max_rt, err, active from "performance_jmeter_task" where type="{task_id}" and ' \
+              f'time>"{start_time}" and time<"{end_time}" tz("Asia/Shanghai")'
+        logger.info(f'Execute SQL: {sql}')
+        datas = conn.query(sql)
+        if datas:
+            for data in datas.get_points():
+                query_data['time'].append(data['time'][:19].replace('T', ' '))
+                query_data['samples'].append(data['samples'])
+                query_data['tps'].append(data['tps'])
+                query_data['avg_rt'].append(data['avg_rt'])
+                query_data['min_rt'].append(data['min_rt'])
+                query_data['max_rt'].append(data['max_rt'])
+                query_data['err'].append(data['err'])
+                query_data['active'].append(data['active'])
+        else:
+            res['message'] = 'No data is found, please check or wait a minute.'
+            res['code'] = 1
+            logger.error('No data is found, please check or wait a minute.')
+        res['data'] = query_data
+        del conn, query_data
+        logger.info('Query data success ~')
+    except:
+        logger.error(traceback.format_exc())
+        res['message'] = 'System Error ~'
+        res['code'] = 1
+    return res
