@@ -1,24 +1,32 @@
 function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, max_rt, error) {
-    let samples_sorted = [...samples];
-    let tps_sorted = [...tps];
-    let avg_rt_sorted = [...avg_rt];
+    // let samples_sorted = [...samples];
+    // let tps_sorted = [...tps];
+    // let avg_rt_sorted = [...avg_rt];
     let min_rt_sorted = [...min_rt];
     let max_rt_sorted = [...max_rt];
-    let error_sorted = [...error];
+    // let error_sorted = [...error];
 
-    samples_sorted.sort(function (a, b) {return a - b});
-    tps_sorted.sort(function (a, b) {return a - b});
-    avg_rt_sorted.sort(function (a, b) {return a - b});
+    // samples_sorted.sort(function (a, b) {return a - b});
+    // tps_sorted.sort(function (a, b) {return a - b});
+    // avg_rt_sorted.sort(function (a, b) {return a - b});
     min_rt_sorted.sort(function (a, b) {return a - b});
     max_rt_sorted.sort(function (a, b) {return a - b});
-    error_sorted.sort(function (a, b) {return a - b});
+    // error_sorted.sort(function (a, b) {return a - b});
+
+    let duration = Date.parse(new Date(x_label.slice(-1)[0])) - Date.parse(new Date(x_label[0]));
+    let total_sample = sum(samples);
+    details[1].getElementsByTagName("span")[0].innerText = tps.slice(-1)[0] + "/s";
+    details[4].getElementsByTagName("span")[0].innerText = total_sample;
+    details[5].getElementsByTagName("span")[0].innerText = (total_sample / duration).toFixed(2) + "/s";
+    details[6].getElementsByTagName("span")[0].innerText = twoArrSumOfProduct(samples, avg_rt, total_sample) + " ms";
+    details[7].getElementsByTagName("span")[0].innerText = min_rt_sorted.slice[0] + " ms";
+    details[8].getElementsByTagName("span")[0].innerText = max_rt_sorted.slice(-1)[0] + " ms";
+    details[9].getElementsByTagName("span")[0].innerText = (sum(error) / total_sample * 100).toFixed(4) + "%";
 
     option = {
         title: [
             {
                 text: 'CPU(%)',
-                x: 'center',
-                y: 5,
                 textStyle: {
                     fontSize: 13
                 }
@@ -46,7 +54,6 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
             {
                 data: ['Samples', 'TPS', 'RT(Average)', 'RT(Min)', 'RT(Max)', 'ERROR'],
                 x: 'center',
-                y: 25,
                 icon: 'line'
             }
         ],
@@ -85,16 +92,12 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
 
         yAxis: [
             {
-                gridIndex: 0,
                 name: 'Speed(MB/s)',
-                type: 'value',
-                max: Math.max(disk_r_sorted.slice(-1)[0], disk_w_sorted.slice(-1)[0]).toFixed(2)
+                type: 'value'
             },
             {
-                gridIndex: 0,
                 name: 'IO(%)',
-                type: 'value',
-                max: IO_sorted.slice(-1)[0].toFixed(2)
+                type: 'value'
             }
         ],
         series: [
@@ -176,11 +179,6 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
     myChart.clear();
     myChart.setOption(option);
 
-    // tables1.rows[1].cells[1].innerHTML = cpu_sorted[parseInt(0.75 * cpu_sorted.length)].toFixed(2);
-    // tables1.rows[2].cells[1].innerHTML = cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2);
-    // tables1.rows[3].cells[1].innerHTML = cpu_sorted[parseInt(0.95 * cpu_sorted.length)].toFixed(2);
-    // tables1.rows[4].cells[1].innerHTML = cpu_sorted[parseInt(0.99 * cpu_sorted.length)].toFixed(2);
-
     myChart.on('dataZoom', function (param) {
         let start_index = myChart.getOption().dataZoom[0].startValue;
         let end_index = myChart.getOption().dataZoom[0].endValue;
@@ -192,33 +190,26 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
         let min_rt_sorted = min_rt.slice(start_index, end_index);
         let max_rt_sorted = max_rt.slice(start_index, end_index);
         let error_sorted = error.slice(start_index, end_index);
-        samples_sorted.sort(function (a, b) {return a - b});
-        tps_sorted.sort(function (a, b) {return a - b});
-        avg_rt_sorted.sort(function (a, b) {return a - b});
+
+        let duration = Date.parse(new Date(x_label[end_index])) - Date.parse(new Date(x_label[start_index]));
+        let total_sample = sum(samples_sorted);
+        details[4].getElementsByTagName("span")[0].innerText = total_sample;
+        details[5].getElementsByTagName("span")[0].innerText = (total_sample / duration).toFixed(2) + "/s";
+        details[6].getElementsByTagName("span")[0].innerText = twoArrSumOfProduct(samples_sorted, avg_rt_sorted, total_sample) + " ms";
+        details[9].getElementsByTagName("span")[0].innerText = (sum(error_sorted) / total_sample * 100).toFixed(4) + "%";
+
+        // samples_sorted.sort(function (a, b) {return a - b});
+        // tps_sorted.sort(function (a, b) {return a - b});
+        // avg_rt_sorted.sort(function (a, b) {return a - b});
         min_rt_sorted.sort(function (a, b) {return a - b});
         max_rt_sorted.sort(function (a, b) {return a - b});
-        error_sorted.sort(function (a, b) {return a - b});
+        // error_sorted.sort(function (a, b) {return a - b});
+
+        details[7].getElementsByTagName("span")[0].innerText = min_rt_sorted.slice[0] + " ms";
+        details[8].getElementsByTagName("span")[0].innerText = max_rt_sorted.slice(-1)[0] + " ms";
 
         myChart.setOption({
-            yAxis: [
-            {
-                gridIndex: 0,
-                name: 'Speed(MB/s)',
-                type: 'value',
-                max: Math.max(samples_sorted.slice(-1)[0], tps_sorted.slice(-1)[0], error_sorted.slice(-1)[0]).toFixed(2)
-            },
-            {
-                gridIndex: 0,
-                name: 'IO(%)',
-                type: 'value',
-                max: Math.max(avg_rt_sorted.slice(-1)[0], min_rt_sorted.slice(-1)[0], max_rt_sorted.slice(-1)[0]).toFixed(2)
-            }
-        ],});
-
-        // tables1.rows[1].cells[1].innerHTML = cpu_sorted[parseInt(0.75 * cpu_sorted.length)].toFixed(2);
-        // tables1.rows[2].cells[1].innerHTML = cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2);
-        // tables1.rows[3].cells[1].innerHTML = cpu_sorted[parseInt(0.95 * cpu_sorted.length)].toFixed(2);
-        // tables1.rows[4].cells[1].innerHTML = cpu_sorted[parseInt(0.99 * cpu_sorted.length)].toFixed(2);
+        });
     });
 }
 
@@ -244,6 +235,12 @@ function findMin(arr) {
     return min;
 }
 
+function sum(arr){
+    return arr.reduce(function(prev,cur){
+        return prev + cur;
+    },0);
+}
+
 function average(arr) {
     let Sum = 0;
     let total = arr.length;
@@ -251,6 +248,14 @@ function average(arr) {
         Sum = Sum + arr[i];
     }
     return Sum / total;
+}
+
+function twoArrSumOfProduct(arr1, arr2, baseValue) {
+    let sumOfProduct = 0;
+    for(let i=0; i<arr1.length; i++) {
+        sumOfProduct += arr1[i] * arr2[i] / baseValue;
+    }
+    return sumOfProduct.toFixed(2);
 }
 
 function quickSort(arr){

@@ -17,12 +17,11 @@ function plot(task_id, url) {
 
             $('#figure').removeAttr("_echarts_instance_").empty();
             let figure = document.getElementById('figure');
-            let details = document.getElementsByClassName("plan-detail")
+            let details = document.getElementsByClassName("plan-detail");
 
             let myChart = echarts.init(figure);
             plot_figure(myChart, details, data['data']['time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
             data['data']['min_rt'], data['data']['max_rt'], data['data']['err']);
-
         }
     });
 }

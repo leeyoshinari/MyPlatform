@@ -170,7 +170,7 @@ class Task(object):
         d = [json.loads(r) for r in datas]
         data = [sum(r) for r in zip(*d)]
         line = [{'measurement': 'performance_jmeter_task',
-                 'tags': {'type': str(self.task_id)},
+                 'tags': {'task': str(self.task_id), 'host': self.IP},
                  'fields': {'samples': data[0], 'tps': data[1], 'avg_rt': data[2], 'min_rt': data[3],
                             'max_rt': data[4], 'err': data[5], 'active': data[6]}}]
         self.influx_client.write_points(line)  # write to database

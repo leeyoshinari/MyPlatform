@@ -28,10 +28,14 @@
             {% endif %}
             <span>{{ tasks.plan.target_num }}/s</span>
         </div>
-        <div class="plan-detail" style="width: 12%;">
-            <label>Current TPS: </label>
-            <span>{{ tasks.plan.duration }}/s</span>
-        </div>
+        {% if tasks.status == 1 %}
+            <div class="plan-detail" style="width: 12%;">
+        {% else %}
+            <div class="plan-detail" style="display: none;">
+        {% endif %}
+                <label>Current TPS: </label>
+                <span>{{ tasks.plan.duration }}/s</span>
+            </div>
         <div class="plan-detail" style="width: 260px;">
             <label>StartTime: </label>
             <span>{{ tasks.start_time | date:"Y-m-d H:i:s" }}</span>

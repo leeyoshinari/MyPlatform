@@ -169,15 +169,9 @@ def start_task(request):
         try:
             username = request.user.username
             task_id = request.POST.get('task_id')
+            host = request.POST.get('host')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            all_servers = get_all_host()
-            idle_servers = [s for s in all_servers if s['status'] == 0]
-            server_num = tasks.plan.server_num
-            if server_num > len(idle_servers):
-                logger.warning(f'There is not enough servers to run performance test, operator: {username}')
-                return result(code=1, msg='There is not enough servers to run performance test ~')
-            all_servers = idle_servers[0: server_num]
-            hosts = []
+            server_num = tasks.server_num
             post_data = {
                 'taskId': task_id,
                 'planId': tasks.plan.id,
@@ -185,23 +179,33 @@ def start_task(request):
                 'filePath': tasks.path,
                 'isDebug': True
             }
-            for h in all_servers:
-                res = http_request('post', h['host'], h['port'], 'runTask', json=post_data)
-                response_data = json.loads(res.content.decode())
-                if response_data['code'] == 0:
-                    hosts.append(h['host'])
+            if host:
+                pass
+            else:
+                all_servers = get_all_host()
+                idle_servers = [s for s in all_servers if s['status'] == 0]
+                if server_num > len(idle_servers):
+                    logger.warning(f'There is not enough servers to run performance test, operator: {username}')
+                    return result(code=1, msg='There is not enough servers to run performance test ~')
+                all_servers = idle_servers[0: server_num]
+                hosts = []
+                for h in all_servers:
+                    res = http_request('post', h['host'], h['port'], 'runTask', json=post_data)
+                    response_data = json.loads(res.content.decode())
+                    if response_data['code'] == 0:
+                        hosts.append(h['host'])
 
-            if not hosts:
-                logger.error(f'{server_num - len(hosts)} agent run task failure, operator: {username}')
-                return result(code=1, msg=f'{server_num - len(hosts)} agent run task failure ~')
-            tasks.servers = ','.join(hosts)
-            tasks.status = 0
-            tasks.running_num = 0
-            tasks.stopping_num = 0
-            tasks.start_time = strfTime()
-            tasks.save()
-            logger.info(f'Task {task_id} run task success, operator: {username}')
-            return result(msg=f'{len(hosts)} agent run task success ~')
+                if not hosts:
+                    logger.error(f'{server_num - len(hosts)} agent run task failure, operator: {username}')
+                    return result(code=1, msg=f'{server_num - len(hosts)} agent run task failure ~')
+                tasks.servers = ','.join(hosts)
+                tasks.status = 0
+                tasks.running_num = 0
+                tasks.stopping_num = 0
+                tasks.start_time = strfTime()
+                tasks.save()
+                logger.info(f'Task {task_id} run task success, operator: {username}')
+                return result(msg=f'{len(hosts)} agent run task success ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Run task failure ~')
@@ -277,17 +281,27 @@ def change_tps(request):
             username = request.user.username
             task_id = request.POST.get('taskId')
             tps = request.POST.get('TPS')
+            host = request.POST.get('host')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            hosts = tasks.servers.split(',')
-            current_tps = int(tasks.plan.target_num * tps / len(hosts))
-            post_data = {'taskId': task_id, 'tps': current_tps}
-            for h in hosts:
-                res = http_request('post', h, get_value_by_host('jmeterServer_'+h, 'port'), 'change', json=post_data)
+            if host:
+                post_data = {'taskId': task_id, 'tps': int(tasks.plan.target_num * tps)}
+                res = http_request('post', host, get_value_by_host('jmeterServer_' + host, 'port'), 'change', json=post_data)
                 response_data = json.loads(res.content.decode())
                 if response_data['code'] != 0:
-                    logger.error(f'Change TPS failure, host: {h}, operator: {username}')
+                    logger.error(f'Change TPS failure, host: {host}, operator: {username}')
                     return result(code=1, msg='Change TPS failure ~')
-            logger.info(f'Change TPS success, current tps is {current_tps}, operator: {username}')
+                logger.info(f'Change TPS success, {host}: current tps is {tasks.plan.target_num * tps}, operator: {username}')
+            else:
+                hosts = tasks.servers.split(',')
+                current_tps = int(tasks.plan.target_num * tps / len(hosts))
+                post_data = {'taskId': task_id, 'tps': current_tps}
+                for h in hosts:
+                    res = http_request('post', h, get_value_by_host('jmeterServer_'+h, 'port'), 'change', json=post_data)
+                    response_data = json.loads(res.content.decode())
+                    if response_data['code'] != 0:
+                        logger.error(f'Change TPS failure, host: {h}, operator: {username}')
+                        return result(code=1, msg='Change TPS failure ~')
+                logger.info(f'Change TPS success, current tps is {current_tps}, operator: {username}')
             return result(msg='Change TPS success ~')
         except:
             logger.error(traceback.format_exc())
@@ -320,7 +334,7 @@ def set_message(request):
                     tasks.status = 2
                     tasks.end_time = strfTime()
                     durations = time.time() - toTimeStamp(tasks.start_time)
-                    datas = get_data_from_influx(task_id, tasks.start_time, strfTime())
+                    datas = get_data_from_influx(task_id, host=None, start_time=tasks.start_time, end_time=strfTime())
                     if datas['code'] == 0:
                         total_samples = sum(datas['data']['samples'])
                         avg_rt = [s * t / total_samples for s, t in zip(datas['data']['samples'], datas['data']['avg_rt'])]
@@ -353,18 +367,19 @@ def query_data(request):
     if request.method == 'POST':
         try:
             task_id = request.POST.get('id')
+            host = request.POST.get('host')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             start_time = tasks.start_time
             end_time = strfTime()
             if tasks.end_time:
                 end_time = tasks.end_time
-            return json_result(get_data_from_influx(task_id, start_time, end_time))
+            return json_result(get_data_from_influx(task_id, host=host, start_time=start_time, end_time=end_time))
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Query data error ~')
 
 
-def get_data_from_influx(task_id, start_time=None, end_time=None):
+def get_data_from_influx(task_id, host=None, start_time=None, end_time=None):
     query_data = {'time': [], 'samples': [], 'tps': [], 'avg_rt': [], 'min_rt': [], 'max_rt': [], 'err': [], 'active': []}
     res = {'code': 0, 'data': None, 'message': 'Query InfluxDB Successful!'}
     try:
@@ -378,8 +393,12 @@ def get_data_from_influx(task_id, start_time=None, end_time=None):
         else:   # If the end time does not exist, the current time is used
             end_time = strfTime()
 
-        sql = f'select samples, tps, avg_rt, min_rt, max_rt, err, active from "performance_jmeter_task" where type="{task_id}" and ' \
-              f'time>"{start_time}" and time<"{end_time}" tz("Asia/Shanghai")'
+        if host:
+            sql = f'select samples, tps, avg_rt, min_rt, max_rt, err, active from "performance_jmeter_task" where task="{task_id}" and ' \
+                  f'host="{host}" and time>"{start_time}" and time<"{end_time}" tz("Asia/Shanghai")'
+        else:
+            sql = f'select samples, tps, avg_rt, min_rt, max_rt, err, active from "performance_jmeter_task" where task="{task_id}" and ' \
+                  f'time>"{start_time}" and time<"{end_time}" tz("Asia/Shanghai")'
         logger.info(f'Execute SQL: {sql}')
         datas = conn.query(sql)
         if datas:
