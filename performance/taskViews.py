@@ -53,7 +53,7 @@ def register(request):
         return result(msg='Agent registers successfully ~',data={'influx': {'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
                       'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE},
                       'redis': {'host': settings.REDIS_HOST, 'port': settings.REDIS_PORT, 'password': settings.REDIS_PWD,
-                                'db': settings.REDIS_DB}})
+                       'db': settings.REDIS_DB}, 'key_expire': settings.PERFORMANCE_EXPIRE})
 
 
 def add_to_task(request):
@@ -180,7 +180,23 @@ def start_task(request):
                 'isDebug': True
             }
             if host:
-                pass
+                host_info = get_value_by_host('jmeterServer_'+host)
+                if host_info:
+                    res = http_request('post', host, host_info['port'], 'runTask', json=post_data)
+                    response_data = json.loads(res.content.decode())
+                    if response_data['code'] == 0:
+                        tasks.servers = tasks.servers + ',' + host
+                        tasks.status = 0
+                        tasks.server_num = server_num + 1
+                        tasks.save()
+                        logger.info(f'Task {task_id} run task success, host: {host}, operator: {username}')
+                        return result(msg='Agent run task success ~')
+                    else:
+                        logger.error(f'Task {task_id} run task failure, host: {host}, operator: {username}')
+                        return result(code=1, msg='Agent run task failure ~')
+                else:
+                    logger.error(f'Agent {host} is not registered ~')
+                    return result(code=1, msg='Agent is not registered ~')
             else:
                 all_servers = get_all_host()
                 idle_servers = [s for s in all_servers if s['status'] == 0]
@@ -216,8 +232,12 @@ def stop_task(request):
         try:
             username = request.user.username
             task_id = request.GET.get('id')
+            host = request.GET.get('host')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            hosts = tasks.servers.split(',')
+            if host:
+                hosts = [host]
+            else:
+                hosts = tasks.servers.split(',')
             stop_host = []
             for h in hosts:
                 res = http_request('get', h, get_value_by_host('jmeterServer_'+h, 'port'), 'stopTask/'+task_id)

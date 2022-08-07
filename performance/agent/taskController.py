@@ -30,6 +30,7 @@ class Task(object):
         self.redis_port = 6379
         self.redis_password = '123456'
         self.redis_db = 0
+        self.key_expire = 604800
         self.get_configure_from_server()
 
         self.jmeter_path = get_config('jmeterPath')
@@ -113,6 +114,7 @@ class Task(object):
                         self.redis_port = response_data['data']['redis']['port']
                         self.redis_password = response_data['data']['redis']['password']
                         self.redis_db = response_data['data']['redis']['db']
+                        self.key_expire =response_data['data']['key_expire']
                         break
 
                 time.sleep(1)
@@ -180,6 +182,8 @@ class Task(object):
             time.sleep(0.5)
 
         position = 0
+        index = 0
+        flag = True
         with open(log_path, mode='r', encoding='utf-8') as f1:
             while True:
                 line = f1.readline().strip()
@@ -187,9 +191,15 @@ class Task(object):
                     logger.info(f'JMeter run log - {self.task_id} - {line}')
                     # data = {'samples': 0, 'tps': 0, 'rt': 0, 'min': 0, 'max': 0, 'err': 0, 'active': 0}
                     # data = [0, 0, 0, 0, 0, 0, 0]
-                    res = re.findall(self.pattern, line.replace(' ', ''))[0]
-                    data = list(map(float, res))
-                    self.write_to_redis(data)
+                    if index > 1:   # 前两次结果不写入，等待summary输出频率稳定
+                        if flag:
+                            self.redis_client.set(self.task_id, self.agent_num, ex=self.key_expire)
+                            flag = False
+                        res = re.findall(self.pattern, line.replace(' ', ''))[0]
+                        data = list(map(float, res))
+                        self.write_to_redis(data)
+                    else:
+                        index += 1
 
                 cur_position = f1.tell()  # 记录上次读取文件的位置
                 if cur_position == position:
@@ -203,9 +213,10 @@ class Task(object):
                     break
 
     def write_to_redis(self, data):
-        if self.redis_client.llen(f'task_{self.task_id}') == self.agent_num:
-            res = self.redis_client.lrange(f'task_{self.task_id}', 0, self.agent_num)
-            self.redis_client.ltrim(f'task_{self.task_id}', self.agent_num, self.agent_num)
+        total_num = int(self.redis_client.get(self.task_id))
+        if self.redis_client.llen(f'task_{self.task_id}') == total_num:
+            res = self.redis_client.lrange(f'task_{self.task_id}', 0, total_num - 1)
+            self.redis_client.ltrim(f'task_{self.task_id}', total_num + 1, total_num + 1)  # remove all
             self.write_to_influx(res)
         _ = self.redis_client.lpush(f'task_{self.task_id}', str(data))
 
@@ -255,6 +266,10 @@ class Task(object):
         try:
             self.connect_redis()
             self.connect_influx()
+            if self.redis_client.get(task_id):
+                self.agent_num = int(self.redis_client.get(task_id)) + 1
+            else:
+                self.agent_num = agent_num
             local_file_path = os.path.join(self.file_path, task_id + '.zip')
             target_file_path = os.path.join(self.file_path, task_id)
             self.download_file_to_path(file_path, local_file_path)
@@ -280,7 +295,6 @@ class Task(object):
             if self.check_status(is_run=True):
                 self.status = 1
                 self.task_id = task_id
-                self.agent_num = agent_num
                 flag = 1
                 logger.info(f'{jmx_file_path} run successful, task id: {task_id}')
                 self.start_thread(self.parse_log, (os.path.join(self.file_path, task_id, task_id + '.log'),))
@@ -338,4 +352,17 @@ class Task(object):
         return res
 
 if __name__ == '__main__':
-    t = Task()
+    RedisHost = '101.200.52.208'
+    RedisPort = 6369
+    RedisPassword = 'leeyoshi'
+    RedisDB = 1
+    # t = Task()
+    r = redis.Redis(host=RedisHost, port=RedisPort, password=RedisPassword, db=RedisDB, decode_responses=True)
+    # r.lpush('123', '[1,2,3]')
+    # r.ltrim('123', 3, 3)
+    # r.expire('123', 5)
+    # r.lpush('123', '[1,2,3]')
+    # print(r.lrange('123', 0, 4))
+    # print(r.llen('123'))
+    print(r.get('123'))
+

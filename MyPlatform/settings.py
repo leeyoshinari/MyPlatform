@@ -201,6 +201,7 @@ LOGGING = {
 
 # monitor or jmeter agent
 HEARTBEAT = 12  # heart beat time, unit: second(s)
+PERFORMANCE_EXPIRE = 604800  # performance test redis keys expire time, 7D
 
 # files
 # files store local path
