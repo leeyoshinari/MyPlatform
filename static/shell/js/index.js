@@ -87,6 +87,7 @@ function add_server() {
 
     submit_a.onclick = function() {
         let GroupName = document.getElementById("GroupName").value;
+        let ServerRoom = document.getElementById("ServerRoom").value;
         let ServerName = document.getElementById('ServerName').value;
         let ServerIP = document.getElementById('ServerIP').value;
         let Port = document.getElementById('Port').value;
@@ -95,6 +96,10 @@ function add_server() {
 
         if (!GroupName) {
             $.Toast('Please select group name ~ ', 'error');
+            return;
+        }
+        if (!ServerRoom) {
+            $.Toast('Please select server room ~ ', 'error');
             return;
         }
         if (!ServerName) {
@@ -122,6 +127,7 @@ function add_server() {
         let post_data = {
             GroupName: GroupName,
             ServerName: ServerName,
+            ServerRoom: ServerRoom,
             ServerIP: ServerIP,
             Port: Port,
             UserName: UserName,
@@ -155,6 +161,7 @@ function add_server() {
 
 function clear_input() {
     document.getElementById('ServerName').value = '';
+    document.getElementById('ServerRoom').value = '';
     document.getElementById('ServerIP').value = '';
     document.getElementById('Port').value = '22';
     document.getElementById('UserName').value = 'root';

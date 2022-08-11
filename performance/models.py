@@ -10,12 +10,12 @@ class TestPlan(models.Model):
     serialize = models.CharField(max_length=8, default='true', verbose_name='serialize_threadgroups')
     type = models.IntegerField(default=1, verbose_name='run type, 0-Thread, 1-TPS')
     schedule = models.IntegerField(default=0, verbose_name='schedule type, 0-Regular, 1-Crontab')
-    server_num = models.IntegerField(default=1, verbose_name='pressure server number')
     target_num = models.IntegerField(default=1, verbose_name='target num')
     duration = models.IntegerField(default=600, verbose_name='duration (second)')
     time_setting = models.CharField(null=True, max_length=8, verbose_name='time setting run')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
     variables = models.JSONField(null=True, verbose_name='variables')
+    server_room = models.CharField(max_length=16, verbose_name='servers room')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
     update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
     operator = models.CharField(max_length=50, verbose_name='operator')
@@ -116,7 +116,6 @@ class PerformanceTestTask(models.Model):
     error = models.FloatField(default=0, verbose_name='error(%)')
     path = models.CharField(null=True, max_length=128, verbose_name='all files used to test, *.zip')
     servers = models.CharField(null=True, max_length=255, verbose_name='pressure server IPs')
-    server_num = models.IntegerField(default=1, verbose_name='pressure server number')
     running_num = models.IntegerField(default=0, verbose_name='pressure server running number')
     stopping_num = models.IntegerField(default=0, verbose_name='pressure server stopped number')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
@@ -128,3 +127,16 @@ class PerformanceTestTask(models.Model):
 
     class Meta:
         db_table = 'jmeter_test_task'
+
+
+class TestTaskLogs(models.Model):
+    id = models.CharField(max_length=16, verbose_name='log id', primary_key=True)
+    task = models.ForeignKey(PerformanceTestTask, on_delete=models.CASCADE, verbose_name='task id')
+    action = models.IntegerField(null=True, verbose_name='action, 0-change TPS, 1-add server, 2-del server')
+    value = models.CharField(max_length=20, verbose_name='action 对应的值')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create Time')
+    operator = models.CharField(max_length=50, verbose_name='operator')
+    objects = models.Manager()
+
+    class Meta:
+        db_table = 'jmeter_test_task_log'

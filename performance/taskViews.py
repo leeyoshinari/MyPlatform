@@ -143,7 +143,7 @@ def add_to_task(request):
                 return result(code=1, msg='The Test Plan has been disabled ~')
 
             tasks = PerformanceTestTask.objects.create(id=task_id, plan_id=plan_id, ratio=1, status=0, number_samples=number_of_samples,
-                                                       path=task_path, server_num=plans.server_num, operator=username)
+                                                       path=task_path, operator=username)
             logger.info(f'Task {tasks.id} generate success, operator: {username}')
             return result(msg=f'Start success ~')
         except:
@@ -171,11 +171,10 @@ def start_task(request):
             task_id = request.POST.get('task_id')
             host = request.POST.get('host')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            server_num = tasks.server_num
             post_data = {
                 'taskId': task_id,
                 'planId': tasks.plan.id,
-                'agentNum': server_num,
+                'agentNum': 1,
                 'filePath': tasks.path,
                 'isDebug': True
             }
@@ -187,7 +186,6 @@ def start_task(request):
                     if response_data['code'] == 0:
                         tasks.servers = tasks.servers + ',' + host
                         tasks.status = 0
-                        tasks.server_num = server_num + 1
                         tasks.save()
                         logger.info(f'Task {task_id} run task success, host: {host}, operator: {username}')
                         return result(msg='Agent run task success ~')
@@ -200,10 +198,10 @@ def start_task(request):
             else:
                 all_servers = get_all_host()
                 idle_servers = [s for s in all_servers if s['status'] == 0]
-                if server_num > len(idle_servers):
+                if len(idle_servers) > 0:
                     logger.warning(f'There is not enough servers to run performance test, operator: {username}')
                     return result(code=1, msg='There is not enough servers to run performance test ~')
-                all_servers = idle_servers[0: server_num]
+                all_servers = idle_servers[0]
                 hosts = []
                 for h in all_servers:
                     res = http_request('post', h['host'], h['port'], 'runTask', json=post_data)
@@ -212,8 +210,8 @@ def start_task(request):
                         hosts.append(h['host'])
 
                 if not hosts:
-                    logger.error(f'{server_num - len(hosts)} agent run task failure, operator: {username}')
-                    return result(code=1, msg=f'{server_num - len(hosts)} agent run task failure ~')
+                    logger.error(f'{all_servers} agent run task failure, operator: {username}')
+                    return result(code=1, msg=f'{all_servers} agent run task failure ~')
                 tasks.servers = ','.join(hosts)
                 tasks.status = 0
                 tasks.running_num = 0
@@ -339,18 +337,17 @@ def set_message(request):
             if task_type == 'run_task':
                 if data == 1:
                     tasks.running_num = tasks.running_num + 1
-                else:
-                    tasks.stopping_num = tasks.stopping_num + 1
-                if tasks.running_num == tasks.server_num:
                     tasks.status = 1
                     tasks.start_time = strfTime()
+                else:
+                    tasks.stopping_num = tasks.stopping_num + 1
 
             if task_type == 'stop_task':
                 if data == 0:
                     tasks.running_num = tasks.running_num + 1
                 else:
                     tasks.stopping_num = tasks.stopping_num + 1
-                if tasks.stopping_num == tasks.server_num:
+                if tasks.running_num == 0:
                     tasks.status = 2
                     tasks.end_time = strfTime()
                     durations = time.time() - toTimeStamp(tasks.start_time)

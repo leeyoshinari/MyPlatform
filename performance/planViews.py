@@ -56,14 +56,14 @@ def add(request):
             serialize = request.POST.get('serialize')
             run_type = request.POST.get('run_type')
             schedule = request.POST.get('schedule')
-            server_num = request.POST.get('server_num')
+            server_room = request.POST.get('server_room')
             # init_number = request.POST.get('init_number')
             target_number = request.POST.get('target_number')
             duration = request.POST.get('duration')
             time_setting = request.POST.get('time_setting') if schedule == '1' else None
             comment = request.POST.get('comment')
             plans = TestPlan.objects.create(id=primaryKey(), name=name, tearDown=teardown, serialize=serialize, is_valid='true',
-                            type=run_type, schedule=schedule, server_num=server_num, target_num=target_number,time_setting=time_setting,
+                            type=run_type, schedule=schedule, server_room=server_room, target_num=target_number,time_setting=time_setting,
                             duration=duration, comment=comment, operator=username)
             logger.info(f'Test plan {name} is save success, id is {plans.id}, operator: {username}')
             return result(msg='Save success ~')
@@ -84,7 +84,7 @@ def edit(request):
             serialize = request.POST.get('serialize')
             run_type = request.POST.get('run_type')
             schedule = request.POST.get('schedule')
-            server_num = request.POST.get('server_num')
+            server_room = request.POST.get('server_room')
             # init_number = request.POST.get('init_number')
             target_number = request.POST.get('target_number')
             duration = request.POST.get('duration')
@@ -96,7 +96,7 @@ def edit(request):
             plan.serialize = serialize
             plan.type = run_type
             plan.schedule = schedule
-            plan.server_num = server_num
+            plan.server_room = server_room
             # plan.init_num = init_number
             plan.target_num = target_number
             plan.duration = duration
