@@ -1,44 +1,43 @@
 {% extends 'shell/home.html' %}
 {% load static %}
 
-{% block addjs %}
-    <script src="{% static 'shell/js/index.js' %}"></script>
-{% endblock %}
-
 {% block container2 %}
     <div id="filter">
         <div style="width: 30%">
-            <button onclick="create_group()">Create Group</button>
             {% if is_staff %}
-                <button onclick="add_user()">Add User</button>
+                <button id="createGroup">Create Group</button>
+                <button id="createRoom" style="width: 155px;">Create Server Room</button>
+                <button id="addUser">Add User</button>
             {% endif %}
-            <button onclick="add_server()">Add Server</button>
+            <button id="addServer">Add Server</button>
         </div>
         <div style="width: 60%;">
             <label>Group: </label>
-            <input id="groupName" type="text" placeholder="Please Input Group Name ~">
+            <input id="groupName" type="text" placeholder="Group Name ~">
             <label>Server: </label>
-            <input id="serverName" type="text" placeholder="Please Input Server Name or Server IP ~">
-            <button onclick="search_server()">Search</button>
+            <input id="serverName" type="text" placeholder="Server Name or Server IP ~">
+            <button id="searchServer">Search</button>
         </div>
     </div>
     <table id="layout-table" border="1" cellspacing="0" cellpadding="6">
         <thead>
             <tr class="table_style">
-                <th width=10%>GroupName</th>
-                <th width=12%>ServerName</th>
+                <th width=8%>ServerRoom</th>
+                <th width=9%>GroupName</th>
+                <th width=9%>ServerName</th>
                 <th width=10%>IP</th>
                 <th width=5%>User</th>
                 <th width=10%>System</th>
                 <th width=4%>CPU(core)</th>
                 <th width=5%>Memory</th>
                 <th width=5%>Disk</th>
-                <th width=20%>Action</th>
+                <th width=16%>Action</th>
             </tr>
         </thead>
         <tbody id="tbody">
             {% for host in servers %}
                 <tr>
+                    <td>{{ host.room.name }}</td>
                     <td>{{ host.group.name }}</td>
                     <td>{{ host.name }}</td>
                     <td style="text-align: center;">{{ host.host }}</td>
@@ -57,7 +56,9 @@
                                 <a onclick="stop_mon('{{ host.host }}')">StopMonitor</a>
                             {% endif %}
                         {% endif %}
-                        <a href="" onclick="delete_server('{{ host.id }}')">Delete</a>
+                        {% if is_staff %}
+                            <a href="" onclick="delete_server('{{ host.id }}')">Delete</a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
@@ -91,8 +92,8 @@
                     <div class="input">
                         <select id="ServerRoom">
                             <option value="" selected></option>
-                            {% for group in groups %}
-                                <option value="{{ group.id }}">{{ group.name }}</option>
+                            {% for room in rooms %}
+                                <option value="{{ room.id }}">{{ room.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -153,7 +154,7 @@
             <div class="modal-body">
                 <div class="modal-col">
                     <div class="label">
-                        <label>Operate: </label>
+                        <label>Operation: </label>
                      </div>
                     <div class="input">
                         <select id="operator">
@@ -212,6 +213,28 @@
             </div>
         </div>
     </div>
+    <div class="myModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2 id="title-name">Create Server Room</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-col">
+                    <div class="label">
+                        <label>Name：</label>
+                    </div>
+                    <div class="input">
+                        <input id="room_name" type="text" placeholder="Please input server room name ~">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="cancel">Cancel</a>
+                <a class="submit">Submit</a>
+            </div>
+        </div>
+    </div>
     <div class="modal_cover">
         <div class="modal_gif"></div>
     </div>
@@ -221,5 +244,8 @@
         PagingManage($("#paging"), {{ total_page }}, {{ page }}, '{% url 'shell:index' %}?pageSize=' + {{ page_size }} + '&page=')
     });
     </script>
+{% endblock %}
+{% block define_js %}
+    <script src="{% static 'shell/js/index.js' %}"></script>
 {% endblock %}
 

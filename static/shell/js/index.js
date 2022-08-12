@@ -57,7 +57,7 @@ function delete_server(server) {
     })
 }
 
-function search_server() {
+document.getElementById('searchServer').addEventListener('click', function () {
     let groupName = document.getElementById('groupName').value;
     let serverName = document.getElementById('serverName').value;
     let to_url = document.getElementById('location').value;
@@ -66,9 +66,9 @@ function search_server() {
     } else {
         window.location.href = to_url + 'search/server?group=' + groupName + '&server=' + serverName;
     }
-}
+})
 
-function add_server() {
+document.getElementById('addServer').addEventListener('click', function () {
     let modal = document.getElementsByClassName('myModal')[0];
     let close_a = document.getElementsByClassName("close")[0];
     let cancel_a = document.getElementsByClassName("cancel")[0];
@@ -157,7 +157,7 @@ function add_server() {
             modal.style.display = "none";
         }
     }
-}
+})
 
 function clear_input() {
     document.getElementById('ServerName').value = '';
@@ -207,7 +207,7 @@ function stop_mon(host) {
     })
 }
 
-function add_user() {
+document.getElementById('addUser').addEventListener('click', function(){
     let modal = document.getElementsByClassName('myModal')[1];
     let close_a = document.getElementsByClassName("close")[1];
     let cancel_a = document.getElementsByClassName("cancel")[1];
@@ -264,9 +264,9 @@ function add_user() {
             modal.style.display = "none";
         }
     }
-}
+})
 
-function create_group() {
+document.getElementById('createGroup').addEventListener('click', function () {
     let modal = document.getElementsByClassName('myModal')[2];
     let close_a = document.getElementsByClassName("close")[2];
     let cancel_a = document.getElementsByClassName("cancel")[2];
@@ -316,4 +316,58 @@ function create_group() {
             modal.style.display = "none";
         }
     }
-}
+})
+
+document.getElementById('createRoom').addEventListener('click', function () {
+    let modal = document.getElementsByClassName('myModal')[3];
+    let close_a = document.getElementsByClassName("close")[3];
+    let cancel_a = document.getElementsByClassName("cancel")[3];
+    let submit_a = document.getElementsByClassName("submit")[3];
+
+    modal.style.display = "block";
+
+    close_a.onclick = function() {
+        modal.style.display = "none";
+    }
+    cancel_a.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    submit_a.onclick = function() {
+        let RoomName = document.getElementById("room_name").value;
+
+        if (!RoomName) {
+            $.Toast('Please select group name ~ ', 'error');
+            return;
+        }
+
+        let post_data = {
+            roomName: RoomName,
+        }
+        $.ajax({
+            type: 'POST',
+            async: false,
+            url: 'create/room',
+            data: post_data,
+            dataType: 'json',
+            success: function (data) {
+                if (data['code'] !== 0) {
+                    $.Toast(data['msg'], 'error');
+                    return;
+                } else {
+                    $.Toast(data['msg'], 'success');
+                    modal.style.display = "none";
+                    location.reload();
+                }
+            }
+        })
+    }
+
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+})
+
+

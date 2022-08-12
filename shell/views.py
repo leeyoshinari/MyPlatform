@@ -11,7 +11,8 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from common.Result import result
-from .models import Servers
+from common.generator import primaryKey
+from .models import Servers, ServerRoom
 from .channel.ssh import get_server_info, UploadAndDownloadFile, deploy_mon, stop_mon
 
 
@@ -26,16 +27,19 @@ def index(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            is_staff = request.user.is_staff
             page = request.GET.get('page')
             page_size = request.GET.get('pageSize')
             page = int(page) if page else 1
             page_size = int(page_size) if page_size else 20
             groups = request.user.groups.all()
+            rooms = ServerRoom.objects.all().order_by('-create_time')
             total_num = Servers.objects.filter(group__in=groups).count()
             servers = Servers.objects.filter(group__in=groups).order_by('-id')[(page - 1) * page_size: page * page_size]
             logger.info(f'access shell index.html. operator: {username}')
             return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page, 'isMonitor': settings.IS_MONITOR,
-                                                                'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1})
+                                                                'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1,
+                                                                'rooms': rooms, 'is_staff': is_staff})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Access shell index.html failure ~')
@@ -77,7 +81,7 @@ def add_server(request):
 
             server = Servers.objects.create(id = current_time, group_id = group_id, name=server_name,
                                    host=server_ip, port = int(port), user = sshname, pwd = password, system = system,
-                                   cpu = cpu, arch=arch, mem = mem, disk = disk, is_monitor=0)
+                                   cpu = cpu, arch=arch, mem = mem, disk = disk, is_monitor=0, operator=username)
             logger.info(f'Add server success. ip: {server.host}, operator: {username}, time: {server.id}')
             return result(code=0, msg='Add server success ~ ')
         except Exception as err:
@@ -121,6 +125,19 @@ def create_group(request):
                 user.groups.add(group.id)
             logger.info(f'create group {group_name} success, operator: {username}')
             return result(msg='Create group success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='System error ~')
+
+
+def create_room(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            room_name = request.POST.get('roomName')
+            room = ServerRoom.objects.create(id=primaryKey(), name=room_name, operator=username)
+            logger.info(f'create server room {room_name} success, operator: {username}')
+            return result(msg='Create server room success ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='System error ~')

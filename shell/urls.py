@@ -23,6 +23,7 @@ urlpatterns = [
     path('add/server', views.add_server, name='add_server'),
     path('add/user', views.add_user, name='add_user'),
     path('create/group', views.create_group, name='create_group'),
+    path('create/room', views.create_room, name='create_room'),
     path('delete/server', views.delete_server, name='delete_server'),
     path('search/server', views.search_server, name='search_server'),
     path('file/upload', views.upload_file, name='upload_file'),
