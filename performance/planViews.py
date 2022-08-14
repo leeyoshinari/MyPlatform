@@ -7,9 +7,10 @@ import logging
 import traceback
 from django.shortcuts import render, redirect, resolve_url
 from django.conf import settings
+from django.db.models import Count
 from .models import TestPlan, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
-from shell.models import Servers
+from shell.models import Servers, ServerRoom
 from .common.parseJmx import read_jmeter_from_byte
 from .common.generateJmx import *
 from .common.getRedis import *
@@ -26,6 +27,7 @@ logger = logging.getLogger('django')
 def home(request):
     if request.method == 'GET':
         try:
+            server_num_rooms = {}
             username = request.user.username
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
@@ -40,8 +42,10 @@ def home(request):
                 total_page = TestPlan.objects.all().count()
                 plans = TestPlan.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
 
+            if plans:
+                server_num_rooms = get_idle_server_num()
             logger.info(f'Get test plan success, operator: {username}')
-            return render(request, 'performance/plan/home.html', context={'plans': plans, 'page': page, 'page_size': page_size,
+            return render(request, 'performance/plan/home.html', context={'plans': plans, 'page': page, 'page_size': page_size, 'server_num_rooms': server_num_rooms,
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -63,7 +67,7 @@ def add(request):
             time_setting = request.POST.get('time_setting') if schedule == '1' else None
             comment = request.POST.get('comment')
             plans = TestPlan.objects.create(id=primaryKey(), name=name, tearDown=teardown, serialize=serialize, is_valid='true',
-                            type=run_type, schedule=schedule, server_room=server_room, target_num=target_number,time_setting=time_setting,
+                            type=run_type, schedule=schedule, server_room_id=server_room, target_num=target_number,time_setting=time_setting,
                             duration=duration, comment=comment, operator=username)
             logger.info(f'Test plan {name} is save success, id is {plans.id}, operator: {username}')
             return result(msg='Save success ~')
@@ -71,7 +75,8 @@ def add(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Save failure ~')
     else:
-        return render(request, 'performance/plan/add.html')
+        server_num_rooms = get_idle_server_num(is_name=True)
+        return render(request, 'performance/plan/add.html', context={'server_num_rooms': server_num_rooms})
 
 
 def edit(request):
@@ -96,7 +101,7 @@ def edit(request):
             plan.serialize = serialize
             plan.type = run_type
             plan.schedule = schedule
-            plan.server_room = server_room
+            plan.server_room_id = server_room
             # plan.init_num = init_number
             plan.target_num = target_number
             plan.duration = duration
@@ -113,7 +118,8 @@ def edit(request):
         try:
             plan_id = request.GET.get('id')
             plans = TestPlan.objects.get(id=plan_id)
-            return render(request, 'performance/plan/edit.html', context={'plan': plans})
+            server_num_rooms = get_idle_server_num(is_name=True)
+            return render(request, 'performance/plan/edit.html', context={'plan': plans, 'server_num_rooms': server_num_rooms})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get test plan failure ~')
@@ -228,3 +234,26 @@ def get_server(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get server info Error ~')
+
+def get_idle_server_num(is_name=False):
+    result = {}
+    try:
+        # registered_servers = get_all_host()
+        available_servers = ['127.0.10.1', '127.0.0.2', '127.0.0.3', '127.0.0.4', '127.0.0.5', '127.0.0.6']
+        # available_servers = [s['host'] for s in registered_servers if s['status'] == 0]
+        servers = Servers.objects.values('room_id').filter(host__in=available_servers).annotate(count=Count('room_id'))
+        if is_name:     # whether return name
+            room_dict = {}
+            server_rooms = ServerRoom.objects.values('id', 'name').all()
+            for r in server_rooms:
+                room_dict.update({r['id']: r['name']})
+            for s in servers:
+                result.update({s['room_id']: f"{room_dict[s['room_id']]} ({s['count']} idle)"})
+        else:
+            for s in servers:
+                result.update({s['room_id']: s['count']})
+        logger.info('Get idle server success ~')
+    except:
+        logger.error('Get idle server failure ~')
+        logger.error(traceback.format_exc())
+    return result

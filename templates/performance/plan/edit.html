@@ -103,7 +103,15 @@
                 <label>Server Room:</label>
             </div>
             <div class="value-div">
-                <input type="text" id="server_room" value="{{ plan.server_num }}">
+                <select id="server_room">
+                    {% for k, v in server_num_rooms.items %}
+                        {% if plan.server_room_id == k %}
+                            <option value="{{ k }}" selected>{{ v }}</option>
+                        {% else %}
+                            <option value="{{ k }}">{{ v }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
             </div>
         </div>
         <!--div class="row-cols">

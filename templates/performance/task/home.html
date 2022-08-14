@@ -37,12 +37,14 @@
 {% block table_head %}
     <tr class="table_style">
         <th width="15%">Plan Name</th>
-        <th width="10%">Status</th>
-        <th width="10%"># Samples</th>
+        <th width="10%">Server Room</th>
+        <th width="9%">Status</th>
+        <th width="9%"># Samples</th>
         <th width="10%">Average(RT)</th>
-        <th width="9%">TPS(/s)</th>
-        <th width="9%">Error(%)</th>
-        <th width="18%">Actions</th>
+        <th width="8%">TPS(/s)</th>
+        <th width="8%">Error(%)</th>
+        <th width="9%">Operator</th>
+        <th width="22%">Actions</th>
     </tr>
 {% endblock %}
 
@@ -50,11 +52,13 @@
     {% for task in tasks %}
         <tr>
             <td title="{{ task.plan.comment }}"><a href="{% url 'perf:plan_home' %}?keyWord={{ task.plan.name }}">{{ task.plan.name }}</a></td>
+            <td>{{ task.server_room.name }}</td>
             <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
             <td style="text-align: center;">{{ task.samples }}</td>
             <td style="text-align: center;">{{ task.average_rt }}</td>
             <td style="text-align: center;">{{ task.tps }}</td>
             <td style="text-align: center;">{{ task.error }} %</td>
+            <td style="text-align: center;">{{ task.operator }}</td>
             <td>
                 <a target="_blank" href="{{ task.path }}">DownloadFile</a>
                 {% if task.status == 0 %}

@@ -143,7 +143,7 @@ def add_to_task(request):
                 return result(code=1, msg='The Test Plan has been disabled ~')
 
             tasks = PerformanceTestTask.objects.create(id=task_id, plan_id=plan_id, ratio=1, status=0, number_samples=number_of_samples,
-                                                       path=task_path, operator=username)
+                                                       server_room_id=plans.server_room_id, path=task_path, operator=username)
             logger.info(f'Task {tasks.id} generate success, operator: {username}')
             return result(msg=f'Start success ~')
         except:

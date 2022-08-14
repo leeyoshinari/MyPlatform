@@ -50,6 +50,7 @@ def add_server(request):
         try:
             group_id = request.POST.get('GroupName')
             server_name = request.POST.get('ServerName')
+            room_id = request.POST.get('ServerRoom')
             server_ip = request.POST.get('ServerIP')
             try:
                 Servers.objects.get(host=server_ip)
@@ -79,7 +80,7 @@ def add_server(request):
                 else:
                     return result(code=1, msg=datas['msg'])
 
-            server = Servers.objects.create(id = current_time, group_id = group_id, name=server_name,
+            server = Servers.objects.create(id = current_time, group_id = group_id, name=server_name, room_id=room_id,
                                    host=server_ip, port = int(port), user = sshname, pwd = password, system = system,
                                    cpu = cpu, arch=arch, mem = mem, disk = disk, is_monitor=0, operator=username)
             logger.info(f'Add server success. ip: {server.host}, operator: {username}, time: {server.id}')

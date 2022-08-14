@@ -30,7 +30,7 @@
         <th width="10%">Name</th>
         <th width="7%"><div class="helpstyle"><span data-tooltip="Run type. Specify thread group or Specify TPS.">?</span></div>runType</th>
         <th width="7%"><div class="helpstyle"><span data-tooltip="Task type. Regular: manual running. Crontab: set time to auto-run.">?</span></div>Schedule</th>
-        <th width="8%"><div class="helpstyle"><span data-tooltip="Specify Pressure Servers number. When running, it will select server randomly.">?</span></div>Server Number</th>
+        <th width="8%"><div class="helpstyle"><span data-tooltip="Specify Pressure Server Room. When running, it will select server randomly.">?</span></div>Server Room</th>
         <th width="8%"><div class="helpstyle"><span data-tooltip="Target Number per server. it is target number of the test. When 'runType' is 'Thread', it is target number of thread group. When 'runType' is 'TPS', it is target number of TPS.">?</span></div>Target Number</th>
         <th width="8%">Duration</th>
         <th width="42%">Actions</th>
@@ -47,7 +47,7 @@
             <td title="{{ plan.comment }}"><a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">{{ plan.name }}</a></td>
             <td style="text-align: center;">{{ plan.type | get_value_from_list:'plan_type' }}</td>
             <td style="text-align: center;">{{ plan.schedule | get_value_from_list:'plan_schedule' }}</td>
-            <td style="text-align: center;">{{ plan.server_num }}</td>
+            <td style="text-align: center;">{{ plan.server_room.name }} ({{ server_num_rooms | get_list:plan.server_room.id }} idle)</td>
             <td style="text-align: center;">{{ plan.target_num }}</td>
             <td style="text-align: center;">{{ plan.duration }}</td>
             <td>
