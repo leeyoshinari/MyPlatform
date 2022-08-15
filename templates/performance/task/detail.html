@@ -17,6 +17,14 @@
             <h3>Test Plan Name:
                 <span><a href="{% url 'perf:plan_home' %}?keyWord={{ tasks.plan.name }}">{{ tasks.plan.name }}</a></span>
             </h3>
+            <span style="float: right; margin-right: 30px; width: 105px;">
+                <a>Download File</a>
+            </span>
+            {% if tasks.plan.type == 1 %}
+                <span style="float: right; margin-right: 30px; width: 90px;">
+                    <a target="_blank" href="{{ tasks.path }}">Change TPS</a>
+                </span>
+            {% endif %}
         </div>
     </div>
     <div style="height: 50px; margin-left: 3%;">
@@ -73,11 +81,19 @@
     </div>
 {% endblock %}
 {% block other_content %}
+    <div><h3>Monitor Figure</h3></div>
     <div id="figure" style="width: 95%;height:540px;margin: 0 auto;"></div>
+    <div>
+        <h3>Pressure Server</h3>
+        <span style="float: right; margin-right: 30px;">
+            <a target="_blank" href="{{ tasks.path }}" style="text-decoration: none;">Download All Logs</a>
+        </span>
+    </div>
 {% endblock %}
 {% block table_head %}
     <tr class="table_style">
         <th width="15%">Server</th>
+        <th width="10%">TPS</th>
         <th width="10%">CPU</th>
         <th width="10%">Memory</th>
         <th width="10%">Disks</th>
