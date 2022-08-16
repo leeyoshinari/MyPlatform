@@ -60,7 +60,6 @@
             <td style="text-align: center;">{{ task.error }} %</td>
             <td style="text-align: center;">{{ task.operator }}</td>
             <td>
-                <a target="_blank" href="{{ task.path }}">DownloadFile</a>
                 {% if task.status == 0 %}
                     <a href="#" onclick="start_task('{% url 'perf:task_start' %}', {{ task.id }}, {{ task.plan.id }})">Start</a>
                 {% else %}

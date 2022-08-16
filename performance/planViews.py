@@ -238,9 +238,9 @@ def get_server(request):
 def get_idle_server_num(is_name=False):
     result = {}
     try:
-        # registered_servers = get_all_host()
-        available_servers = ['127.0.10.1', '127.0.0.2', '127.0.0.3', '127.0.0.4', '127.0.0.5', '127.0.0.6']
-        # available_servers = [s['host'] for s in registered_servers if s['status'] == 0]
+        registered_servers = get_all_host()
+        # available_servers = ['127.0.10.1', '127.0.0.2', '127.0.0.3', '127.0.0.4', '127.0.0.5', '127.0.0.6']
+        available_servers = [s['host'] for s in registered_servers if s['status'] == 0]
         servers = Servers.objects.values('room_id').filter(host__in=available_servers).annotate(count=Count('room_id'))
         if is_name:     # whether return name
             room_dict = {}

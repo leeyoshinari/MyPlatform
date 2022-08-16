@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block add_js %}
-    <script src="{% static 'performance/js/plan.js' %}"></script>
 {% endblock %}
 
 {% block navigate %}
@@ -52,9 +51,18 @@
             </div>
             <div class="value-div">
                 <select id="run_type">
-                    <option value="0">Thread</option>
                     <option value="1">TPS</option>
+                    <option value="0">Thread</option>
                 </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="It is target number of the test. When 'runType' is 'Thread', it is target number of thread group. When 'runType' is 'TPS', it is target number of TPS.">?</span></div>
+                <label>Target TPS:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="target_number" placeholder="Please input target number ~">
             </div>
         </div>
         <div class="row-cols">
@@ -63,7 +71,7 @@
                 <label>Schedule:</label>
             </div>
             <div class="value-div">
-                <select id="schedule" onchange="change_schedule();">
+                <select id="schedule">
                     <option value="0">Regular</option>
                     <option value="1">Crontab</option>
                 </select>
@@ -91,15 +99,6 @@
                 <input type="text" id="init_number" placeholder="Please input initial number ~">
             </div>
         </div-->
-        <div class="row-cols">
-            <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Target Number. it is target number of the test. When 'runType' is 'Thread', it is target number of thread group. When 'runType' is 'TPS', it is target number of TPS.">?</span></div>
-                <label>Target Number:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="target_number" placeholder="Please input target number ~">
-            </div>
-        </div>
         <div class="row-cols">
             <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Duration (seconds). It specifies Thread lifetime.">?</span></div>
@@ -134,8 +133,18 @@
     </div>
 {% endblock %}
 {% block define_js %}
+    <script src="{% static 'performance/js/plan.js' %}"></script>
     <script type="text/javascript">
-        function change_schedule() {
+        document.getElementById('run_type').onchange = function () {
+            let s = document.getElementById('run_type').value;
+            if (s === '0') {
+                document.getElementsByClassName('label-div')[4].getElementsByTagName('label')[0].innerText = 'Thread Num';
+            } else {
+                document.getElementsByClassName('label-div')[4].getElementsByTagName('label')[0].innerText = 'Target TPS';
+            }
+        }
+
+        document.getElementById('schedule').onchange = function () {
             let s = document.getElementById('schedule').value;
             if (s === '0') {
                 document.getElementById('time-setting').style.display = 'none';

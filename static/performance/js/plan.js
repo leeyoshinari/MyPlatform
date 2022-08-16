@@ -199,7 +199,8 @@ function add_task(url, location_url, plan_id) {
             $('.modal_gif').css("display", "none");
             if(data['code'] === 0) {
                 $.Toast(data['msg'], 'success');
-                window.location.href = location_url + '?id=' + plan_id;
+                window.location.href = location_url + '?id=' + data['data'];
+                $.ajax()
             } else {
                 $.Toast(data['msg'], 'error');
             }

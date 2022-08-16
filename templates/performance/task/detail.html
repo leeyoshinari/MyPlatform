@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block navigate %}
-    <a href="{% url 'perf:plan_home' %}">Test Plan</a>
+    <a href="{% url 'perf:task_home' %}">Test Task</a>
 {% endblock %}
 
 {% block detail_action %}
@@ -18,11 +18,16 @@
                 <span><a href="{% url 'perf:plan_home' %}?keyWord={{ tasks.plan.name }}">{{ tasks.plan.name }}</a></span>
             </h3>
             <span style="float: right; margin-right: 30px; width: 105px;">
-                <a>Download File</a>
+                <a target="_blank" href="{{ tasks.path }}">Download File</a>
             </span>
-            {% if tasks.plan.type == 1 %}
+            {% if tasks.status == 1 %}
+                <span style="float: right; margin-right: 30px; width: 42px;">
+                    <a>Stop</a>
+                </span>
+            {% endif %}
+            {% if tasks.plan.type == 1 and tasks.status == 1 %}
                 <span style="float: right; margin-right: 30px; width: 90px;">
-                    <a target="_blank" href="{{ tasks.path }}">Change TPS</a>
+                    <a>Change TPS</a>
                 </span>
             {% endif %}
         </div>
@@ -31,10 +36,11 @@
         <div class="plan-detail" style="width: 12%;">
             {% if tasks.plan.type == 0 %}
                 <label>Fixed Thread Num: </label>
+                <span>{{ tasks.plan.target_num }}</span>
             {% else %}
                 <label>Target TPS: </label>
+                <span>{{ tasks.plan.target_num }}/s</span>
             {% endif %}
-            <span>{{ tasks.plan.target_num }}/s</span>
         </div>
         {% if tasks.status == 1 %}
             <div class="plan-detail" style="width: 12%;">
@@ -48,7 +54,12 @@
             <label>StartTime: </label>
             <span>{{ tasks.start_time | date:"Y-m-d H:i:s" }}</span>
         </div>
-        <div class="plan-detail" style="width: 260px;">
+        {% if tasks.status > 1 %}
+            <div class="plan-detail" style="width: 260px;">
+        {% else %}
+            <div class="plan-detail" style="display: none;">
+        {% endif %}
+        <!--div class="plan-detail" style="width: 260px;"-->
             <label>EndTime: </label>
             <span>{{ tasks.end_time | date:"Y-m-d H:i:s" }}</span>
         </div>
