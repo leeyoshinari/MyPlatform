@@ -17,7 +17,7 @@
             <h3>Test Plan Name:
                 <span><a href="{% url 'perf:plan_home' %}?keyWord={{ tasks.plan.name }}">{{ tasks.plan.name }}</a></span>
             </h3>
-            <span style="float: right; margin-right: 30px; width: 105px;">
+            <span style="float: right; margin-right: 30px; width: 110px;">
                 <a target="_blank" href="{{ tasks.path }}">Download File</a>
             </span>
             {% if tasks.status == 1 %}
@@ -26,14 +26,14 @@
                 </span>
             {% endif %}
             {% if tasks.plan.type == 1 and tasks.status == 1 %}
-                <span style="float: right; margin-right: 30px; width: 90px;">
+                <span style="float: right; margin-right: 30px; width: 100px;">
                     <a>Change TPS</a>
                 </span>
             {% endif %}
         </div>
     </div>
     <div style="height: 50px; margin-left: 3%;">
-        <div class="plan-detail" style="width: 12%;">
+        <div class="plan-detail">
             {% if tasks.plan.type == 0 %}
                 <label>Fixed Thread Num: </label>
                 <span>{{ tasks.plan.target_num }}</span>
@@ -43,19 +43,19 @@
             {% endif %}
         </div>
         {% if tasks.status == 1 %}
-            <div class="plan-detail" style="width: 12%;">
+            <div class="plan-detail">
         {% else %}
             <div class="plan-detail" style="display: none;">
         {% endif %}
                 <label>Current TPS: </label>
                 <span>{{ tasks.plan.duration }}/s</span>
             </div>
-        <div class="plan-detail" style="width: 260px;">
+        <div class="plan-detail">
             <label>StartTime: </label>
             <span>{{ tasks.start_time | date:"Y-m-d H:i:s" }}</span>
         </div>
         {% if tasks.status > 1 %}
-            <div class="plan-detail" style="width: 260px;">
+            <div class="plan-detail">
         {% else %}
             <div class="plan-detail" style="display: none;">
         {% endif %}
@@ -65,27 +65,27 @@
         </div>
     </div>
     <div style="height: 50px; margin-left: 3%;">
-        <div class="plan-detail" style="width: 180px;">
+        <div class="plan-detail">
             <label>Samples: </label>
             <span>{{ tasks.samples }}</span>
         </div>
-        <div class="plan-detail" style="width: 210px;">
+        <div class="plan-detail">
             <label>Average TPS: </label>
             <span>{{ tasks.tps }}/s</span>
         </div>
-        <div class="plan-detail" style="width: 200px;">
+        <div class="plan-detail">
             <label>RT(avg): </label>
             <span>{{ tasks.average_rt }} ms</span>
         </div>
-        <div class="plan-detail" style="width: 190px;">
+        <div class="plan-detail">
             <label>RT(min): </label>
             <span>{{ tasks.min_rt }} ms</span>
         </div>
-        <div class="plan-detail" style="width: 210px;">
+        <div class="plan-detail">
             <label>RT(max): </label>
             <span>{{ tasks.max_rt }} ms</span>
         </div>
-        <div class="plan-detail" style="width: 170px;">
+        <div class="plan-detail">
             <label>Error(%): </label>
             <span>{{ tasks.error }}%</span>
         </div>
@@ -116,5 +116,12 @@
 {% endblock %}
 {% block define_js %}
     <script type="text/javascript">
+        let W = window.screen.width;
+        document.getElementsByClassName('toolbar')[0].style.width = (W - 200) + 'px';
+        document.getElementsByClassName('detail')[0].style.width = (W * 0.99 - 200) + 'px';
+        plot({{ tasks.id }}, '{% url 'perf:task_query' %}');
+        let timer = setInterval(function () {
+            plot({{ tasks.id }}, '{% url 'perf:task_query' %}')
+        }, 10000);
     </script>
 {% endblock %}
