@@ -1,38 +1,21 @@
 function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, max_rt, error) {
-    // let samples_sorted = [...samples];
-    // let tps_sorted = [...tps];
-    // let avg_rt_sorted = [...avg_rt];
     let min_rt_sorted = [...min_rt];
     let max_rt_sorted = [...max_rt];
-    // let error_sorted = [...error];
 
-    // samples_sorted.sort(function (a, b) {return a - b});
-    // tps_sorted.sort(function (a, b) {return a - b});
-    // avg_rt_sorted.sort(function (a, b) {return a - b});
     min_rt_sorted.sort(function (a, b) {return a - b});
     max_rt_sorted.sort(function (a, b) {return a - b});
-    // error_sorted.sort(function (a, b) {return a - b});
 
-    let duration = Date.parse(new Date(x_label.slice(-1)[0])) - Date.parse(new Date(x_label[0]));
+    let duration = (Date.parse(new Date(x_label.slice(-1)[0])) - Date.parse(new Date(x_label[0]))) / 1000;
     let total_sample = sum(samples);
     details[1].getElementsByTagName("span")[0].innerText = tps.slice(-1)[0] + "/s";
     details[4].getElementsByTagName("span")[0].innerText = total_sample;
     details[5].getElementsByTagName("span")[0].innerText = (total_sample / duration).toFixed(2) + "/s";
     details[6].getElementsByTagName("span")[0].innerText = twoArrSumOfProduct(samples, avg_rt, total_sample) + " ms";
-    details[7].getElementsByTagName("span")[0].innerText = min_rt_sorted.slice[0] + " ms";
+    details[7].getElementsByTagName("span")[0].innerText = min_rt_sorted.slice(0, 1)[0] + " ms";
     details[8].getElementsByTagName("span")[0].innerText = max_rt_sorted.slice(-1)[0] + " ms";
     details[9].getElementsByTagName("span")[0].innerText = (sum(error) / total_sample * 100).toFixed(4) + "%";
 
     option = {
-        title: [
-            {
-                text: 'CPU(%)',
-                textStyle: {
-                    fontSize: 13
-                }
-            }
-        ],
-
         grid: [
             {
                 left: '5%',
@@ -89,17 +72,6 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 }
             }
         ],
-
-        yAxis: [
-            {
-                name: 'Speed(MB/s)',
-                type: 'value'
-            },
-            {
-                name: 'IO(%)',
-                type: 'value'
-            }
-        ],
         series: [
             {
                 name: 'Samples',
@@ -107,9 +79,10 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
+                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
-                    color: 'red'
+                    color: 'black'
                 },
                 data: samples
             },
@@ -119,6 +92,7 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
+                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
                     color: 'blue'
@@ -131,6 +105,7 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
+                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
                     color: 'orange'
@@ -143,9 +118,10 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
+                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
-                    color: 'red'
+                    color: 'green'
                 },
                 data: min_rt
             },
@@ -155,9 +131,10 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
+                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
-                    color: 'blue'
+                    color: 'gray'
                 },
                 data: max_rt
             },
@@ -167,9 +144,10 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
+                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
-                    color: 'blue'
+                    color: 'red'
                 },
                 data: error
             }
@@ -191,21 +169,17 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
         let max_rt_sorted = max_rt.slice(start_index, end_index);
         let error_sorted = error.slice(start_index, end_index);
 
-        let duration = Date.parse(new Date(x_label[end_index])) - Date.parse(new Date(x_label[start_index]));
+        let duration = (Date.parse(new Date(x_label[end_index])) - Date.parse(new Date(x_label[start_index]))) / 1000;
         let total_sample = sum(samples_sorted);
         details[4].getElementsByTagName("span")[0].innerText = total_sample;
         details[5].getElementsByTagName("span")[0].innerText = (total_sample / duration).toFixed(2) + "/s";
         details[6].getElementsByTagName("span")[0].innerText = twoArrSumOfProduct(samples_sorted, avg_rt_sorted, total_sample) + " ms";
         details[9].getElementsByTagName("span")[0].innerText = (sum(error_sorted) / total_sample * 100).toFixed(4) + "%";
 
-        // samples_sorted.sort(function (a, b) {return a - b});
-        // tps_sorted.sort(function (a, b) {return a - b});
-        // avg_rt_sorted.sort(function (a, b) {return a - b});
         min_rt_sorted.sort(function (a, b) {return a - b});
         max_rt_sorted.sort(function (a, b) {return a - b});
-        // error_sorted.sort(function (a, b) {return a - b});
 
-        details[7].getElementsByTagName("span")[0].innerText = min_rt_sorted.slice[0] + " ms";
+        details[7].getElementsByTagName("span")[0].innerText = min_rt_sorted.slice(0, 1)[0] + " ms";
         details[8].getElementsByTagName("span")[0].innerText = max_rt_sorted.slice(-1)[0] + " ms";
 
         myChart.setOption({
@@ -273,4 +247,105 @@ function quickSort(arr){
         }
     }
     return quickSort(left).concat(temp,quickSort(right));
+}
+
+function plot_delta_figure(myChart, x_label, samples, tps, avg_rt, min_rt, max_rt, error) {
+    myChart.setOption({
+        xAxis: [
+            {
+                gridIndex: 0,
+                type: 'category',
+                boundaryGap: false,
+                data: x_label,
+                axisTick: {
+                    alignWithLabel: true,
+                    interval: 'auto'
+                },
+                axisLabel: {
+                    interval: 'auto',
+                    showMaxLabel: true
+                }
+            }
+        ],
+        series: [
+            {
+                name: 'Samples',
+                type: 'line',
+                xAxisIndex: 0,
+                yAxisIndex: 0,
+                showSymbol: false,
+                emphasis: {focus: 'series'},
+                lineStyle: {
+                    width: 1,
+                    color: 'black'
+                },
+                data: samples
+            },
+            {
+                name: 'TPS',
+                type: 'line',
+                xAxisIndex: 0,
+                yAxisIndex: 0,
+                showSymbol: false,
+                emphasis: {focus: 'series'},
+                lineStyle: {
+                    width: 1,
+                    color: 'blue'
+                },
+                data: tps
+            },
+            {
+                name: 'RT(Average)',
+                type: 'line',
+                xAxisIndex: 0,
+                yAxisIndex: 0,
+                showSymbol: false,
+                emphasis: {focus: 'series'},
+                lineStyle: {
+                    width: 1,
+                    color: 'orange'
+                },
+                data: avg_rt
+            },
+            {
+                name: 'RT(Min)',
+                type: 'line',
+                xAxisIndex: 0,
+                yAxisIndex: 0,
+                showSymbol: false,
+                emphasis: {focus: 'series'},
+                lineStyle: {
+                    width: 1,
+                    color: 'green'
+                },
+                data: min_rt
+            },
+            {
+                name: 'RT(Max)',
+                type: 'line',
+                xAxisIndex: 0,
+                yAxisIndex: 0,
+                showSymbol: false,
+                emphasis: {focus: 'series'},
+                lineStyle: {
+                    width: 1,
+                    color: 'gray'
+                },
+                data: max_rt
+            },
+            {
+                name: 'ERROR',
+                type: 'line',
+                xAxisIndex: 0,
+                yAxisIndex: 0,
+                showSymbol: false,
+                emphasis: {focus: 'series'},
+                lineStyle: {
+                    width: 1,
+                    color: 'red'
+                },
+                data: error
+            }
+        ]
+    });
 }
