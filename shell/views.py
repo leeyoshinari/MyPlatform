@@ -8,6 +8,7 @@ import traceback
 from django.shortcuts import render, redirect
 from django.http import StreamingHttpResponse
 from django.conf import settings
+from django.forms.models import model_to_dict
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from common.Result import result
@@ -89,6 +90,45 @@ def add_server(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg=err)
 
+def get_server(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            server_id = request.GET.get('id')
+            servers = Servers.objects.get(id=server_id)
+            server_dict = model_to_dict(servers)
+            server_dict.pop('pwd')
+            logger.info(f'Get server {servers.host} info success, operator: {username}')
+            return result(data=server_dict)
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get server failure ~')
+
+def edit_server(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            server_id = request.POST.get('ServerId')
+            server_ip = request.POST.get('ServerIP')
+            servers = Servers.objects.get(id=server_id, host=server_ip)
+            servers.group_id = request.POST.get('GroupName')
+            servers.name = request.POST.get('ServerName')
+            servers.room_id = request.POST.get('ServerRoom')
+            servers.port = request.POST.get('Port')
+            servers.user = request.POST.get('UserName')
+            servers.operator = username
+            password = request.POST.get('Password')
+            if password:
+                servers.pwd = password
+            servers.save()
+            logger.info(f'Edit server success. ip: {servers.host}, operator: {username}, id: {servers.id}')
+            return result(msg='Edit server success ~ ')
+        except Servers.DoesNotExist:
+            logger.error(f'Please donot modify server id and host ~')
+            return result(code=2, msg='Please donot modify server id and host ~')
+        except Exception as err:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg=err)
 
 def add_user(request):
     if request.method == 'POST':
@@ -136,7 +176,8 @@ def create_room(request):
         try:
             username = request.user.username
             room_name = request.POST.get('roomName')
-            room = ServerRoom.objects.create(id=primaryKey(), name=room_name, operator=username)
+            room_type = request.POST.get('roomType')
+            room = ServerRoom.objects.create(id=primaryKey(), name=room_name, type=room_type, operator=username)
             logger.info(f'create server room {room_name} success, operator: {username}')
             return result(msg='Create server room success ~')
         except:

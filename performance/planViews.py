@@ -61,14 +61,15 @@ def add(request):
             run_type = request.POST.get('run_type')
             schedule = request.POST.get('schedule')
             server_room = request.POST.get('server_room')
+            server_num = request.POST.get('server_num')
             # init_number = request.POST.get('init_number')
             target_number = request.POST.get('target_number')
             duration = request.POST.get('duration')
             time_setting = request.POST.get('time_setting') if schedule == '1' else None
             comment = request.POST.get('comment')
             plans = TestPlan.objects.create(id=primaryKey(), name=name, tearDown=teardown, serialize=serialize, is_valid='true',
-                            type=run_type, schedule=schedule, server_room_id=server_room, target_num=target_number,time_setting=time_setting,
-                            duration=duration, comment=comment, operator=username)
+                            type=run_type, schedule=schedule, server_room_id=server_room, server_number=server_num,
+                            target_num=target_number,time_setting=time_setting, duration=duration, comment=comment, operator=username)
             logger.info(f'Test plan {name} is save success, id is {plans.id}, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -84,29 +85,18 @@ def edit(request):
         try:
             username = request.user.username
             plan_id = request.POST.get('plan_id')
-            name = request.POST.get('name')
-            teardown = request.POST.get('teardown')
-            serialize = request.POST.get('serialize')
-            run_type = request.POST.get('run_type')
-            schedule = request.POST.get('schedule')
-            server_room = request.POST.get('server_room')
-            # init_number = request.POST.get('init_number')
-            target_number = request.POST.get('target_number')
-            duration = request.POST.get('duration')
-            time_setting = request.POST.get('time_setting') if schedule == '1' else None
-            comment = request.POST.get('comment')
             plan = TestPlan.objects.get(id=plan_id)
-            plan.name = name
-            plan.tearDown = teardown
-            plan.serialize = serialize
-            plan.type = run_type
-            plan.schedule = schedule
-            plan.server_room_id = server_room
-            # plan.init_num = init_number
-            plan.target_num = target_number
-            plan.duration = duration
-            plan.time_setting = time_setting
-            plan.comment = comment
+            plan.name = request.POST.get('name')
+            plan.tearDown = request.POST.get('teardown')
+            plan.serialize = request.POST.get('serialize')
+            plan.type = request.POST.get('run_type')
+            plan.schedule = request.POST.get('schedule')
+            plan.server_room_id = request.POST.get('server_room')
+            plan.server_number = request.POST.get('server_num')
+            plan.target_num = request.POST.get('target_number')
+            plan.duration = request.POST.get('duration')
+            plan.time_setting = request.POST.get('time_setting') if request.POST.get('schedule') == '1' else None
+            plan.comment = request.POST.get('comment')
             plan.operator = username
             plan.save()
             logger.info(f'Test plan {plan_id} is edited success, operator: {username}')
@@ -238,13 +228,13 @@ def get_server(request):
 def get_idle_server_num(is_name=False):
     result = {}
     try:
-        registered_servers = get_all_host()
-        # available_servers = ['127.0.10.1', '127.0.0.2', '127.0.0.3', '127.0.0.4', '127.0.0.5', '127.0.0.6']
-        available_servers = [s['host'] for s in registered_servers if s['status'] == 0]
-        servers = Servers.objects.values('room_id').filter(host__in=available_servers).annotate(count=Count('room_id'))
+        # registered_servers = get_all_host()
+        available_servers = ['127.0.10.1', '127.0.0.2', '127.0.0.3', '127.0.0.4', '127.0.0.5', '127.0.0.6']
+        # available_servers = [s['host'] for s in registered_servers if s['status'] == 0]
+        servers = Servers.objects.values('room_id').filter(room__type=2, host__in=available_servers).annotate(count=Count('room_id'))
         if is_name:     # whether return name
             room_dict = {}
-            server_rooms = ServerRoom.objects.values('id', 'name').all()
+            server_rooms = ServerRoom.objects.values('id', 'name').filter(type=2)
             for r in server_rooms:
                 room_dict.update({r['id']: r['name']})
             for s in servers:

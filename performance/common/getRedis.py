@@ -21,10 +21,10 @@ def get_value_by_host(host_key, k=None):
         return None
 
 
-def get_all_host():
+def get_all_host(k='jmeterServer_*'):
     agents = []
     try:
-        keys = settings.REDIS.keys('jmeterServer_*')
+        keys = settings.REDIS.keys(k)
         for key in keys:
             agents.append(json.loads(settings.REDIS.get(key)))
     except:
@@ -32,5 +32,5 @@ def get_all_host():
     return agents
 
 
-def get_all_keys():
-    return settings.REDIS.keys('jmeterServer_*')
+def get_all_keys(k='jmeterServer_*'):
+    return settings.REDIS.keys(k)

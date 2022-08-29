@@ -21,7 +21,7 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 left: '5%',
                 right: '5%',
                 top: 50,
-                height: 250
+                height: 350
             }
         ],
 
@@ -55,9 +55,16 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 endValue: samples.length
             }
         ],
-
-        xAxis: [
+        yAxis: [
             {
+                name: 'Monitor',
+                type: 'value'
+            },
+            {
+                type: 'value'
+            }
+        ],
+        xAxis: {
                 gridIndex: 0,
                 type: 'category',
                 boundaryGap: false,
@@ -70,8 +77,7 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                     interval: 'auto',
                     showMaxLabel: true
                 }
-            }
-        ],
+            },
         series: [
             {
                 name: 'Samples',
@@ -79,7 +85,6 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
-                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
                     color: 'black'
@@ -92,7 +97,6 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
-                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
                     color: 'blue'
@@ -105,7 +109,6 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
-                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
                     color: 'orange'
@@ -118,7 +121,6 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
-                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
                     color: 'green'
@@ -131,7 +133,6 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
-                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
                     color: 'gray'
@@ -144,7 +145,6 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
-                emphasis: {focus: 'series'},
                 lineStyle: {
                     width: 1,
                     color: 'red'
@@ -251,101 +251,28 @@ function quickSort(arr){
 
 function plot_delta_figure(myChart, x_label, samples, tps, avg_rt, min_rt, max_rt, error) {
     myChart.setOption({
-        xAxis: [
-            {
-                gridIndex: 0,
-                type: 'category',
-                boundaryGap: false,
+        xAxis: {
                 data: x_label,
-                axisTick: {
-                    alignWithLabel: true,
-                    interval: 'auto'
-                },
-                axisLabel: {
-                    interval: 'auto',
-                    showMaxLabel: true
-                }
-            }
-        ],
+            },
         series: [
             {
-                name: 'Samples',
-                type: 'line',
-                xAxisIndex: 0,
-                yAxisIndex: 0,
-                showSymbol: false,
-                emphasis: {focus: 'series'},
-                lineStyle: {
-                    width: 1,
-                    color: 'black'
-                },
                 data: samples
             },
             {
-                name: 'TPS',
-                type: 'line',
-                xAxisIndex: 0,
-                yAxisIndex: 0,
-                showSymbol: false,
-                emphasis: {focus: 'series'},
-                lineStyle: {
-                    width: 1,
-                    color: 'blue'
-                },
                 data: tps
             },
             {
-                name: 'RT(Average)',
-                type: 'line',
-                xAxisIndex: 0,
-                yAxisIndex: 0,
-                showSymbol: false,
-                emphasis: {focus: 'series'},
-                lineStyle: {
-                    width: 1,
-                    color: 'orange'
-                },
                 data: avg_rt
             },
             {
-                name: 'RT(Min)',
-                type: 'line',
-                xAxisIndex: 0,
-                yAxisIndex: 0,
-                showSymbol: false,
-                emphasis: {focus: 'series'},
-                lineStyle: {
-                    width: 1,
-                    color: 'green'
-                },
                 data: min_rt
             },
             {
-                name: 'RT(Max)',
-                type: 'line',
-                xAxisIndex: 0,
-                yAxisIndex: 0,
-                showSymbol: false,
-                emphasis: {focus: 'series'},
-                lineStyle: {
-                    width: 1,
-                    color: 'gray'
-                },
                 data: max_rt
             },
             {
-                name: 'ERROR',
-                type: 'line',
-                xAxisIndex: 0,
-                yAxisIndex: 0,
-                showSymbol: false,
-                emphasis: {focus: 'series'},
-                lineStyle: {
-                    width: 1,
-                    color: 'red'
-                },
                 data: error
             }
         ]
-    });
+    }, true);
 }

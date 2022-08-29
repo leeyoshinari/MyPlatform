@@ -1,46 +1,3 @@
-function get_connect_info() {
-    var name = $.trim($('#name').val());
-    var host = $.trim($('#host').val());
-    var port = $.trim($('#port').val());
-    var user = $.trim($('#user').val());
-    var auth = $("input[name='auth']:checked").val();
-    var pwd = $.trim($('#password').val());
-    var password = window.btoa(pwd); //加密密码传输
-    var dockerName = $.trim($('#dockerName').val());
-    var ssh_key = null;
-    let sshkey_filename = '';
-    if (auth === 'key') {
-        var pkey = $('#pkey')[0].files[0];
-        var csrf = $("[name='csrfmiddlewaretoken']").val();
-        var formData = new FormData();
-
-        formData.append('pkey', pkey);
-        formData.append('csrfmiddlewaretoken', csrf);
-
-        $.ajax({
-            url: '/upload_ssh_key/',
-            type: 'post',
-            data: formData,
-            async: false,
-            processData: false,
-            contentType: false,
-            mimeType: 'multipart/form-data',
-            success: function (data) {
-                ssh_key = data;
-            }
-        });
-    }
-
-    var connect_info1 = 'host=' + host + '&port=' + port + '&user=' + user + '&auth=' + auth;
-    var connect_info2 = '&password=' + password + '&ssh_key=' + ssh_key;
-    // var connect_info = connect_info1 + connect_info2;
-    //组装为ssh连接参数
-    // var ssh_args = `host=${host}`;
-    var conn_info={"type":"web","name":name,"host":host,"port":port,"user":user,"pwd":pwd,"docker_name":dockerName}
-    return conn_info
-
-}
-
 function delete_server(server) {
     $.ajax({
         type: 'GET',
@@ -49,6 +6,21 @@ function delete_server(server) {
             if (data['code'] === 0) {
                 $.Toast(data['msg'], 'success');
                 location.reload();
+            } else {
+                $.Toast(data['msg'], 'error');
+                return;
+            }
+        }
+    })
+}
+function edit_server(server) {
+    $.ajax({
+        type: 'GET',
+        url: 'get/server?id=' + server,
+        success: function (data) {
+            if (data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+                server_modal(data['data']);
             } else {
                 $.Toast(data['msg'], 'error');
                 return;
@@ -75,6 +47,7 @@ document.getElementById('addServer').addEventListener('click', function () {
     let submit_a = document.getElementsByClassName("submit")[0];
 
     modal.style.display = "block";
+    document.getElementById("title-name").innerText = "Add Server";
 
     close_a.onclick = function() {
         clear_input();
@@ -335,6 +308,7 @@ document.getElementById('createRoom').addEventListener('click', function () {
 
     submit_a.onclick = function() {
         let RoomName = document.getElementById("room_name").value;
+        let room_type = document.getElementById("room_type").value;
 
         if (!RoomName) {
             $.Toast('Please select group name ~ ', 'error');
@@ -343,6 +317,7 @@ document.getElementById('createRoom').addEventListener('click', function () {
 
         let post_data = {
             roomName: RoomName,
+            roomType: room_type
         }
         $.ajax({
             type: 'POST',
@@ -370,4 +345,114 @@ document.getElementById('createRoom').addEventListener('click', function () {
     }
 })
 
+function server_modal(data) {
+    let modal = document.getElementsByClassName('myModal')[0];
+    let close_a = document.getElementsByClassName("close")[0];
+    let cancel_a = document.getElementsByClassName("cancel")[0];
+    let submit_a = document.getElementsByClassName("submit")[0];
+
+    modal.style.display = "block";
+    document.getElementById("title-name").innerText = "Edit Server";
+    let opts = document.getElementById("GroupName").options;
+    for(let opt of opts) {
+        if(parseInt(opt.value) === data['group']) {
+            opt.selected = true;
+        }
+    }
+    opts = document.getElementById("ServerRoom").options;
+    for(let opt of opts) {
+        if(opt.value === data['room']) {
+            opt.selected = true;
+        }
+    }
+    document.getElementById('ID').value = data['id'];
+    document.getElementById('ServerName').value = data['name'];
+    document.getElementById('ServerIP').value = data['host'];
+    document.getElementById('Port').value = data['port'];
+    document.getElementById('UserName').value = data['user'];
+    document.getElementById('ServerIP').setAttribute('readonly', true);
+    document.getElementById('ServerIP').setAttribute('disabled', true);
+
+    close_a.onclick = function() {
+        clear_input();
+        modal.style.display = "none";
+    }
+    cancel_a.onclick = function() {
+        clear_input();
+        modal.style.display = "none";
+    }
+
+    submit_a.onclick = function() {
+        let ServerId = document.getElementById("ID").value;
+        let GroupName = document.getElementById("GroupName").value;
+        let ServerRoom = document.getElementById("ServerRoom").value;
+        let ServerName = document.getElementById('ServerName').value;
+        let ServerIP = document.getElementById('ServerIP').value;
+        let Port = document.getElementById('Port').value;
+        let UserName = document.getElementById('UserName').value;
+        let p = document.getElementById('Password').value;
+
+        if (!GroupName) {
+            $.Toast('Please select group name ~ ', 'error');
+            return;
+        }
+        if (!ServerRoom) {
+            $.Toast('Please select server room ~ ', 'error');
+            return;
+        }
+        if (!ServerName) {
+            $.Toast('Please input server name ~ ', 'error');
+            return;
+        }
+        if (!ServerIP || ServerIP.split('.').length !== 4) {
+            $.Toast('Please input server ip ~ ', 'error');
+            return;
+        }
+
+        let total = ServerId.length;
+        let password = '';
+        if (p) {
+            for (let i = 0; i < p.length; i++) {
+                if (i >= total) {
+                    password += String.fromCharCode(p[i].charCodeAt() ^ parseInt(ServerId[i - total]));
+                } else {
+                    password += String.fromCharCode(p[i].charCodeAt() ^ parseInt(ServerId[i]));
+                }
+            }
+        }
+
+        let post_data = {
+            ServerId: ServerId,
+            GroupName: GroupName,
+            ServerName: ServerName,
+            ServerRoom: ServerRoom,
+            ServerIP: ServerIP,
+            Port: Port,
+            UserName: UserName,
+            Password: password,
+        }
+        $.ajax({
+            type: 'POST',
+            async: false,
+            url: 'edit/server',
+            data: post_data,
+            dataType: 'json',
+            success: function (data) {
+                if (data['code'] !== 0) {
+                    $.Toast(data['msg'], 'error');
+                    return;
+                } else {
+                    location.reload();
+                }
+            }
+        })
+    }
+
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            clear_input();
+            modal.style.display = "none";
+        }
+    }
+}
 

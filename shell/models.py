@@ -10,6 +10,7 @@ from django.contrib.auth.models import Group
 class ServerRoom(models.Model):
     id = models.CharField(max_length=16, primary_key=True, verbose_name='primary key')
     name = models.CharField(max_length=32, verbose_name='server room name')
+    type = models.IntegerField(default=0, verbose_name='server room type. 0-use to application, 1-use to middleware, 2-use to pressure test')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
     update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
     operator = models.CharField(max_length=50, verbose_name='operator')

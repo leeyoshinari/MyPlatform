@@ -44,9 +44,7 @@ function plot_delta(task_id, url, startTime) {
                 return;
             }
 
-            $('#figure').removeAttr("_echarts_instance_").empty();
             let figure = document.getElementById('figure');
-
             let myChart = echarts.init(figure);
             plot_delta_figure(myChart, data['data']['time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
             data['data']['min_rt'], data['data']['max_rt'], data['data']['err']);

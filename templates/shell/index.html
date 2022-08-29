@@ -1,5 +1,6 @@
 {% extends 'shell/home.html' %}
 {% load static %}
+{% load myFilter %}
 
 {% block container2 %}
     <div id="filter">
@@ -37,7 +38,7 @@
         <tbody id="tbody">
             {% for host in servers %}
                 <tr>
-                    <td>{{ host.room.name }}</td>
+                    <td>{{ host.room.name }} - {{ host.room.type|get_value_from_list:'room_type' }}</td>
                     <td>{{ host.group.name }}</td>
                     <td>{{ host.name }}</td>
                     <td style="text-align: center;">{{ host.host }}</td>
@@ -57,6 +58,7 @@
                             {% endif %}
                         {% endif %}
                         {% if is_staff %}
+                            <a onclick="edit_server('{{ host.id }}')">Edit</a>
                             <a href="" onclick="delete_server('{{ host.id }}')">Delete</a>
                         {% endif %}
                     </td>
@@ -72,6 +74,14 @@
                 <h2 id="title-name">Add Server</h2>
             </div>
             <div class="modal-body">
+                <div class="modal-col" style="display: none;">
+                    <div class="label">
+                        <label>ID: </label>
+                     </div>
+                    <div class="input">
+                        <input id="ID" type="text" disabled readonly>
+                    </div>
+                </div>
                 <div class="modal-col">
                     <div class="label">
                         <label>GroupName: </label>
@@ -93,7 +103,7 @@
                         <select id="ServerRoom">
                             <option value="" selected></option>
                             {% for room in rooms %}
-                                <option value="{{ room.id }}">{{ room.name }}</option>
+                                <option value="{{ room.id }}">{{ room.name }} - {{ room.type|get_value_from_list:'room_type' }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -226,6 +236,18 @@
                     </div>
                     <div class="input">
                         <input id="room_name" type="text" placeholder="Please input server room name ~">
+                    </div>
+                </div>
+                <div class="modal-col">
+                    <div class="label">
+                        <label>Type: </label>
+                     </div>
+                    <div class="input">
+                        <select id="room_type">
+                            <option value="0" selected>Used to Applications</option>
+                            <option value="1">Used to Middleware</option>
+                            <option value="2">Used to Pressure Test</option>
+                        </select>
                     </div>
                 </div>
             </div>

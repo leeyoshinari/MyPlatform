@@ -26,7 +26,7 @@ class Process(object):
 
     def agent_setter(self, value):
         logger.debug(f'The client registration data is {value}')
-        key = 'server_' + value['host']
+        key = 'Server_' + value['host']
         value['disks'] = value['disks'].split(',')
         settings.REDIS.set(key, json.dumps(value, ensure_ascii=False), ex=settings.HEARTBEAT)
         logger.info(f'{key} server registered successfully!')
@@ -123,7 +123,7 @@ class Process(object):
     def get_all_host(self):
         agents = []
         try:
-            keys = settings.REDIS.keys('server_*')
+            keys = settings.REDIS.keys('Server_*')
             for key in keys:
                 agents.append(json.loads(settings.REDIS.get(key)))
         except:
@@ -131,4 +131,4 @@ class Process(object):
         return agents
 
     def get_all_keys(self):
-        return settings.REDIS.keys('server_*')
+        return settings.REDIS.keys('Server_*')

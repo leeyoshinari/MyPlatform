@@ -67,14 +67,22 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Task type. Regular: manual running. Crontab: set time to auto-run.">?</span></div>
+                <div class="helpstyle"><span data-tooltip="Task run type. Manual: manual running. Automatic: set time to auto-run.">?</span></div>
                 <label>Schedule:</label>
             </div>
             <div class="value-div">
                 <select id="schedule">
-                    <option value="0">Regular</option>
-                    <option value="1">Crontab</option>
+                    <option value="0">Manual</option>
+                    <option value="1">Automatic</option>
                 </select>
+            </div>
+        </div>
+        <div class="row-cols" id="time-setting" style="display: none;">
+            <div class="label-div">
+                <label>Time Setting:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="time_setting" placeholder="Please input the time of Crontab ~">
             </div>
         </div>
         <div class="row-cols">
@@ -85,7 +93,7 @@
             <div class="value-div">
                 <select id="server_room">
                     {% for k, v in server_num_rooms.items %}
-                    <option value="{{ k }}">{{ v }}</option>
+                        <option value="{{ k }}">{{ v }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -101,19 +109,20 @@
         </div-->
         <div class="row-cols">
             <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="It specifies the number of pressure servers.">?</span></div>
+                <label>Server Number:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="server-num" placeholder="Please input Server Number, default 1 ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Duration (seconds). It specifies Thread lifetime.">?</span></div>
                 <label>Duration:</label>
             </div>
             <div class="value-div">
                 <input type="text" id="duration" placeholder="Please input duration (seconds) ~">
-            </div>
-        </div>
-        <div class="row-cols" id="time-setting" style="display: none;">
-            <div class="label-div">
-                <label>Time Setting:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="time_setting" placeholder="Please input the time of Crontab ~">
             </div>
         </div>
         <div class="row-cols">

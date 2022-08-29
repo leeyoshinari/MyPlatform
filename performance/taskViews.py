@@ -7,9 +7,11 @@ import logging
 import traceback
 from django.shortcuts import render, redirect, resolve_url
 from django.conf import settings
+from django.db.models import Q
 from django.http import StreamingHttpResponse
 from .models import TestPlan, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
+from shell.models import Servers
 from .common.generateJmx import *
 from .common.getRedis import *
 from .common.request import http_request
@@ -180,7 +182,7 @@ def start_task(request):
             }
             if host:
                 host_info = get_value_by_host('jmeterServer_'+host)
-                if host_info:
+                if host_info and host_info['status'] == 0:
                     res = http_request('post', host, host_info['port'], 'runTask', json=post_data)
                     response_data = json.loads(res.content.decode())
                     if response_data['code'] == 0:
@@ -193,11 +195,13 @@ def start_task(request):
                         logger.error(f'Task {task_id} run task failure, host: {host}, operator: {username}')
                         return result(code=1, msg='Agent run task failure ~')
                 else:
-                    logger.error(f'Agent {host} is not registered ~')
-                    return result(code=1, msg='Agent is not registered ~')
+                    logger.error(f'Agent {host} is not registered or busy ~')
+                    return result(code=1, msg='Agent is not registered or busy ~')
             else:
-                all_servers = get_all_host()
-                idle_servers = [s for s in all_servers if s['status'] == 0]
+                resistered_servers = get_all_host()
+                all_servers = Servers.objects('host').filter(room_id=tasks.server_room_id)
+                idle_servers = [s for s in resistered_servers if s['status'] == 0]
+                # idle_servers = [s for s in idle_servers1 if s in]
                 if len(idle_servers) > 0:
                     logger.warning(f'There is not enough servers to run performance test, operator: {username}')
                     return result(code=1, msg='There is not enough servers to run performance test ~')
@@ -372,9 +376,24 @@ def set_message(request):
 def view_task_detail(request):
     if request.method == 'GET':
         try:
+            username = request.user.username
             task_id = request.GET.get('id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            return render(request, 'performance/task/detail.html', context={'tasks': tasks})
+            # agents = get_all_keys(k='Server_*')
+            # jmeter_agents = get_all_keys(k='jmeterServer_*')
+            # keys = [k.split('_')[-1] for k in agents if 'jmeter' + k in jmeter_agents]
+            # servers = Servers.objects.values('host').filter(Q(room_id=tasks.server_room_id), Q(host__in=keys), Q(room__type=2))
+            # host_info = []
+            # for server in servers:
+            #     host_dict = get_value_by_host('jmeterServer_' + server.host)
+            #     host_dict.update(get_value_by_host('Server_' + server.host))
+            #     host_info.append(host_dict)
+            host_info = [{'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
+'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12, 'status': 0},{'host': '127.0.0.3', 'status': 1},{'host': '127.0.0.4', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
+'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12, 'status': 2}, {'host': '127.0.0.5', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
+'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12, 'status': 1}]
+            logger.info(f'query task {task_id} detail page success, operator: {username}')
+            return render(request, 'performance/task/detail.html', context={'tasks': tasks, 'servers': host_info})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get task detail error ~')
@@ -397,7 +416,7 @@ def query_data(request):
 
 
 def get_data_from_influx(task_id, host=None, start_time=None, end_time=None):
-    query_data = {'time': [], 'samples': [], 'tps': [], 'avg_rt': [], 'min_rt': [], 'max_rt': [], 'err': [], 'active': []}
+    query_data = {'time': ['20:00:00','20:00:10','20:00:18'], 'samples': [20, 46, 97], 'tps': [5, 7, 20], 'avg_rt': [345, 378, 567], 'min_rt': [123, 102, 120], 'max_rt': [678, 567, 969], 'err': [1, 3, 2], 'active': [150, 200, 200]}
     res = {'code': 0, 'data': None, 'message': 'Query InfluxDB Successful!'}
     try:
         conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
@@ -438,5 +457,6 @@ def get_data_from_influx(task_id, host=None, start_time=None, end_time=None):
     except:
         logger.error(traceback.format_exc())
         res['message'] = 'System Error ~'
-        res['code'] = 1
+        res['code'] = 0
+        res['data'] = query_data
     return res
