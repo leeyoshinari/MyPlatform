@@ -416,7 +416,7 @@ def query_data(request):
 
 
 def get_data_from_influx(task_id, host=None, start_time=None, end_time=None):
-    query_data = {'time': ['20:00:00','20:00:10','20:00:18'], 'samples': [20, 46, 97], 'tps': [5, 7, 20], 'avg_rt': [345, 378, 567], 'min_rt': [123, 102, 120], 'max_rt': [678, 567, 969], 'err': [1, 3, 2], 'active': [150, 200, 200]}
+    query_data = {'time': ['23:50:00','23:58:10','00:00:01'], 'samples': [20, 46, 97], 'tps': [5, 7, 20], 'avg_rt': [345, 378, 567], 'min_rt': [123, 102, 120], 'max_rt': [678, 567, 969], 'err': [1, 3, 2], 'active': [150, 200, 200]}
     res = {'code': 0, 'data': None, 'message': 'Query InfluxDB Successful!'}
     try:
         conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,

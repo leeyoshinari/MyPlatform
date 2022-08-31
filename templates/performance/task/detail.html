@@ -93,7 +93,7 @@
 {% endblock %}
 {% block other_content %}
     <div><h3>Monitor Figure</h3>
-        <input id="startTime" value="{{ tasks.start_time }}" style="display: none;">
+        <input id="start-time" value="{{ tasks.start_time }}" style="display: none;">
     </div>
     <div id="figure" style="width: 100%;height:480px;margin: 0 auto;"></div>
     <div style="margin-top: 20px;">
@@ -185,11 +185,11 @@
 {% block define_js %}
     <script type="text/javascript">
         let W = window.screen.width;
-        let startTime = document.getElementById('startTime').value;
+        let startTime = document.getElementById('start-time').value;
         document.getElementsByClassName('toolbar')[0].style.width = (W - 200) + 'px';
         document.getElementsByClassName('detail')[0].style.width = (W * 0.99 - 200) + 'px';
         plot({{ tasks.id }}, '{% url 'perf:task_query' %}');
-        if(!startTime) {
+        if(startTime) {
             let timer = setInterval(function () {
                 plot_delta({{ tasks.id }}, '{% url 'perf:task_query' %}', startTime)
             }, 10000);
