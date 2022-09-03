@@ -28,6 +28,8 @@ async def run_task(request):
     :return:
     """
     try:
+        if task.status > 0:
+            return web.json_response({'code': 1, 'msg': f'Host {task.IP} is busy ~', 'data': None})
         data = await request.json()
         task_id = data.get('taskId')
         # plan_id = data.get('planId')

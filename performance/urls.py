@@ -48,6 +48,7 @@ urlpatterns = [
     path('task/register/getMessage', taskViews.set_message, name='task_set_message'),
     path('task/query', taskViews.query_data, name='task_query'),
     path('task/detail', taskViews.view_task_detail, name='task_detail'),
+    path('task/getIdleServer', taskViews.get_idle_server, name='get_idle_server'),
 
     path('group', threadViews.home, name='group_home'),
     path('group/add', threadViews.add_group, name='group_add'),

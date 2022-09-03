@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect, resolve_url
 from django.conf import settings
 from django.db.models import Q
 from django.http import StreamingHttpResponse
-from .models import TestPlan, ThreadGroup, TransactionController
+from .models import TestPlan, ThreadGroup, TransactionController, TestTaskLogs
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from shell.models import Servers
 from .common.generateJmx import *
@@ -189,44 +189,34 @@ def start_task(request):
                         tasks.servers = tasks.servers + ',' + host
                         tasks.status = 0
                         tasks.save()
-                        logger.info(f'Task {task_id} run task success, host: {host}, operator: {username}')
-                        return result(msg='Agent run task success ~')
+                        logger.info(f'Task {task_id} is starting, host: {host}, operator: {username}')
+                        return result(msg=f'Task {task_id} is starting, please wait a minute ~ ~')
                     else:
                         logger.error(f'Task {task_id} run task failure, host: {host}, operator: {username}')
-                        return result(code=1, msg='Agent run task failure ~')
+                        return result(code=1, msg=response_data['msg'])
                 else:
                     logger.error(f'Agent {host} is not registered or busy ~')
-                    return result(code=1, msg='Agent is not registered or busy ~')
+                    return result(code=1, msg=f'Host {host} is not registered or busy ~')
             else:
                 resistered_servers = get_all_host()
-                all_servers = Servers.objects('host').filter(room_id=tasks.server_room_id)
-                idle_servers = [s for s in resistered_servers if s['status'] == 0]
-                # idle_servers = [s for s in idle_servers1 if s in]
-                if len(idle_servers) > 0:
+                idle_servers = [s['host'] for s in resistered_servers if s['status'] == 0]
+                available_servers = Servers.objects['host'].filter(room_id=tasks.server_room_id, host__in=idle_servers)
+                if len(available_servers) < tasks.plan.server_number:
                     logger.warning(f'There is not enough servers to run performance test, operator: {username}')
                     return result(code=1, msg='There is not enough servers to run performance test ~')
-                all_servers = idle_servers[0]
-                hosts = []
-                for h in all_servers:
+                for h in available_servers:
                     res = http_request('post', h['host'], h['port'], 'runTask', json=post_data)
-                    response_data = json.loads(res.content.decode())
-                    if response_data['code'] == 0:
-                        hosts.append(h['host'])
-
-                if not hosts:
-                    logger.error(f'{all_servers} agent run task failure, operator: {username}')
-                    return result(code=1, msg=f'{all_servers} agent run task failure ~')
-                tasks.servers = ','.join(hosts)
+                    # response_data = json.loads(res.content.decode())
                 tasks.status = 0
                 tasks.running_num = 0
                 tasks.stopping_num = 0
                 tasks.start_time = strfTime()
                 tasks.save()
-                logger.info(f'Task {task_id} run task success, operator: {username}')
-                return result(msg=f'{len(hosts)} agent run task success ~')
+                logger.info(f'Task {task_id} is starting, operator: {username}')
+                return result(msg=f'Task {task_id} is starting, please wait a minute ~')
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Run task failure ~')
+            return result(code=1, msg='Task started failure ~')
 
 
 def stop_task(request):
@@ -237,32 +227,20 @@ def stop_task(request):
             host = request.GET.get('host')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             if host:
+                host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
                 hosts = [host]
             else:
-                hosts = tasks.servers.split(',')
-            stop_host = []
+                runnging_server = TestTaskLogs.objects.filter(task_id=task_id, action=1)
+                hosts = [h['value'] for h in runnging_server]
             for h in hosts:
                 res = http_request('get', h, get_value_by_host('jmeterServer_'+h, 'port'), 'stopTask/'+task_id)
-                response_data = json.loads(res.content.decode())
-                if response_data['code'] == 0:
-                    stop_host.append(h)
-            # if stop_host:
-            #     tasks.servers = ','.join(stop_host)
-            #     tasks.save()
-            #     logger.error(f'{len(stop_host)} agent stop failure, operator: {username}')
-            #     return result(code=1, msg=f'{len(stop_host)} agent stop failure ~')
-            # else:
+                # response_data = json.loads(res.content.decode())
             tasks.status = 1
             tasks.running_num = 0
             tasks.stopping_num = 0
-            # tasks.end_time = strfTime()
-            # tasks.samples =
-            # tasks.tps =
-            # tasks.average_rt =
-            # tasks.error =
             tasks.save()
-            logger.info(f'Task {task_id} stop success, operator: {username}')
-            return result(msg=f'Stop success ~')
+            logger.info(f'Task {task_id} is stopping, operator: {username}')
+            return result(msg=f'Task {task_id} is stopping, please wait a minute ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Stop failure ~')
@@ -306,24 +284,24 @@ def change_tps(request):
             host = request.POST.get('host')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             if host:
-                post_data = {'taskId': task_id, 'tps': int(tasks.plan.target_num * tps)}
-                res = http_request('post', host, get_value_by_host('jmeterServer_' + host, 'port'), 'change', json=post_data)
+                host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
+                hosts = [host]
+            else:
+                runnging_server = TestTaskLogs.objects.filter(task_id=task_id, action=1)
+                hosts = [h['value'] for h in runnging_server]
+            current_tps = int(tasks.plan.target_num * tps / len(hosts))
+            post_data = {'taskId': task_id, 'tps': current_tps}
+            res_host = []
+            for h in hosts:
+                res = http_request('post', h, get_value_by_host('jmeterServer_'+h, 'port'), 'change', json=post_data)
                 response_data = json.loads(res.content.decode())
                 if response_data['code'] != 0:
-                    logger.error(f'Change TPS failure, host: {host}, operator: {username}')
-                    return result(code=1, msg='Change TPS failure ~')
-                logger.info(f'Change TPS success, {host}: current tps is {tasks.plan.target_num * tps}, operator: {username}')
-            else:
-                hosts = tasks.servers.split(',')
-                current_tps = int(tasks.plan.target_num * tps / len(hosts))
-                post_data = {'taskId': task_id, 'tps': current_tps}
-                for h in hosts:
-                    res = http_request('post', h, get_value_by_host('jmeterServer_'+h, 'port'), 'change', json=post_data)
-                    response_data = json.loads(res.content.decode())
-                    if response_data['code'] != 0:
-                        logger.error(f'Change TPS failure, host: {h}, operator: {username}')
-                        return result(code=1, msg='Change TPS failure ~')
-                logger.info(f'Change TPS success, current tps is {current_tps}, operator: {username}')
+                    res_host.append(h)
+                    logger.error(f'Change TPS failure, task: {task_id}, host: {h}, operator: {username}')
+
+            if res_host:
+                return result(code=1, msg=f'{",".join(res_host)} change TPS failure ~')
+            logger.info(f'Change TPS success, task: {task_id}, current tps is {current_tps}, operator: {username}')
             return result(msg='Change TPS success ~')
         except:
             logger.error(traceback.format_exc())
@@ -335,6 +313,7 @@ def set_message(request):
         try:
             datas = json.loads(request.body.decode())
             task_id = datas.get('taskId')
+            host = datas.get('host')
             task_type = datas.get('type')
             data = datas.get('data')
             tasks = PerformanceTestTask.objects.get(id=task_id)
@@ -343,14 +322,19 @@ def set_message(request):
                     tasks.running_num = tasks.running_num + 1
                     tasks.status = 1
                     tasks.start_time = strfTime()
-                else:
-                    tasks.stopping_num = tasks.stopping_num + 1
+                    try:
+                        task_log = TestTaskLogs.objects.get(task_id=task_id, value=host)
+                        task_log.action = 2
+                        task_log.save()
+                    except TestTaskLogs.DoesNotExist:
+                        TestTaskLogs.objects.create(id=primaryKey(), task_id=task_id, action=1, value=host, operator='System')
 
             if task_type == 'stop_task':
-                if data == 0:
-                    tasks.running_num = tasks.running_num + 1
-                else:
-                    tasks.stopping_num = tasks.stopping_num + 1
+                if data == 1:
+                    tasks.running_num = tasks.running_num - 1
+                    task_log = TestTaskLogs.objects.get(task_id=task_id, value=host)
+                    task_log.action = 2
+                    task_log.save()
                 if tasks.running_num == 0:
                     tasks.status = 2
                     tasks.end_time = strfTime()
@@ -379,24 +363,50 @@ def view_task_detail(request):
             username = request.user.username
             task_id = request.GET.get('id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            # agents = get_all_keys(k='Server_*')
-            # jmeter_agents = get_all_keys(k='jmeterServer_*')
-            # keys = [k.split('_')[-1] for k in agents if 'jmeter' + k in jmeter_agents]
-            # servers = Servers.objects.values('host').filter(Q(room_id=tasks.server_room_id), Q(host__in=keys), Q(room__type=2))
+            hosts = TestTaskLogs.objects.values('value').filter(task_id=task_id, action=1)
             # host_info = []
-            # for server in servers:
-            #     host_dict = get_value_by_host('jmeterServer_' + server.host)
-            #     host_dict.update(get_value_by_host('Server_' + server.host))
+            # for h in hosts:
+            #     host_dict = get_value_by_host('jmeterServer_' + h.value)
+            #     host_dict.update(get_value_by_host('Server_' + h.value))
             #     host_info.append(host_dict)
             host_info = [{'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
 'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12, 'status': 0},{'host': '127.0.0.3', 'status': 1},{'host': '127.0.0.4', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
 'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12, 'status': 2}, {'host': '127.0.0.5', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
 'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12, 'status': 1}]
             logger.info(f'query task {task_id} detail page success, operator: {username}')
-            return render(request, 'performance/task/detail.html', context={'tasks': tasks, 'servers': host_info})
+            return render(request, 'performance/task/detail.html', context={'tasks': tasks, 'servers': host_info, 'total_server': len(host_info)})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get task detail error ~')
+
+
+def get_idle_server(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            server_room_id = request.GET.get('id')
+            servers = Servers.objects.values('host').filter(Q(room_id=server_room_id), Q(room__type=2))
+            # host_info = []
+            # for server in servers:
+            #     host_dict = get_value_by_host('jmeterServer_' + server.host)
+            #     if host_dict['status'] == 0:
+            #         host_dict.update(get_value_by_host('Server_' + server.host))
+            #         host_info.append(host_dict)
+            host_info = [
+                {'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
+                 'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
+                 'status': 0}, {'host': '127.0.0.3', 'status': 1},
+                {'host': '127.0.0.4', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
+                 'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
+                 'status': 2},
+                {'host': '127.0.0.5', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
+                 'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
+                 'status': 1}]
+            logger.info(f'Query idle servers success, operator: {username}')
+            return result(msg='Get idle servers success ~', data=host_info)
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get idle servers failure ~')
 
 
 def query_data(request):

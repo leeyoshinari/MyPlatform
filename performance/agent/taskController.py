@@ -159,6 +159,7 @@ class Task(object):
         try:
             url = f'http://{get_config("address")}/performance/task/register/getMessage'
             post_data = {
+                'host': self.IP,
                 'taskId': self.task_id,
                 'type': task_type,
                 'data': post_data

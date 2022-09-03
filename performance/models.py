@@ -135,8 +135,9 @@ class TestTaskLogs(models.Model):
     id = models.CharField(max_length=16, verbose_name='log id', primary_key=True)
     task = models.ForeignKey(PerformanceTestTask, on_delete=models.CASCADE, verbose_name='task id')
     action = models.IntegerField(null=True, verbose_name='action, 0-change TPS, 1-add server, 2-del server')
-    value = models.CharField(max_length=20, verbose_name='action 对应的值')
+    value = models.CharField(max_length=20, verbose_name='action value')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create Time')
+    update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
     operator = models.CharField(max_length=50, verbose_name='operator')
     objects = models.Manager()
 
