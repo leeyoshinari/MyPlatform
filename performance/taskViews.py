@@ -363,21 +363,40 @@ def view_task_detail(request):
             username = request.user.username
             task_id = request.GET.get('id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            hosts = TestTaskLogs.objects.values('value').filter(task_id=task_id, action=1)
+            logger.info(f'query task {task_id} detail page success, operator: {username}')
+            return render(request, 'performance/task/detail.html', context={'tasks': tasks})
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get task detail error ~')
+
+
+def get_running_server(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            task_id = request.GET.get('id')
+            hosts = TestTaskLogs.objects.values('value', 'action').filter(task_id=task_id, action=1)
             # host_info = []
             # for h in hosts:
             #     host_dict = get_value_by_host('jmeterServer_' + h.value)
             #     host_dict.update(get_value_by_host('Server_' + h.value))
+            #     host_dict.update({'action': h.action})
             #     host_info.append(host_dict)
-            host_info = [{'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
-'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12, 'status': 0},{'host': '127.0.0.3', 'status': 1},{'host': '127.0.0.4', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
-'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12, 'status': 2}, {'host': '127.0.0.5', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
-'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12, 'status': 1}]
-            logger.info(f'query task {task_id} detail page success, operator: {username}')
-            return render(request, 'performance/task/detail.html', context={'tasks': tasks, 'servers': host_info, 'total_server': len(host_info)})
+            host_info = [
+                {'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
+                 'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
+                 'status': 0, 'action':1}, {'host': '127.0.0.3', 'status': 1, 'action': 2},
+                {'host': '127.0.0.4', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
+                 'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
+                 'status': 2, 'action':1},
+                {'host': '127.0.0.5', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
+                 'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
+                 'status': 1, 'action':1}]
+            logger.info(f'Query running servers success, operator: {username}')
+            return result(msg='Get running servers success ~', data=host_info)
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get task detail error ~')
+            return result(code=1, msg='Get running servers failure ~')
 
 
 def get_idle_server(request):

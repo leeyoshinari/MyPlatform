@@ -106,81 +106,15 @@
 {% block table_head %}
     <tr class="table_style">
         <th width="15%">Server</th>
-        <th width="10%">TPS</th>
+        <th width="8%">TPS</th>
         <th width="10%">CPU</th>
         <th width="10%">Memory</th>
         <th width="10%">Disks</th>
-        <th width="9%">Network</th>
-        <th width="18%">Actions</th>
+        <th width="8%">Network</th>
+        <th width="21%">Actions</th>
     </tr>
 {% endblock %}
 {% block table_body %}
-    {% for s in servers %}
-        {% if s.status == 1 %}
-            <tr>
-                <td>{{ s.host }}</td>
-                <td>-</td>
-                {% if s.cpu %}
-                    <td>{{ s.cpu }}core(s)/{{ s.cpu_usage|floatformat:2 }}%</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
-                {% if s.mem %}
-                    <td>{{ s.mem }}G/{{ s.mem_usage|floatformat:2 }}%</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
-                {% if s.disk %}
-                    <td>{{ s.disk }}/{{ s.disk_usage|floatformat:2 }}%</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
-                {% if s.network_speed %}
-                    <td>{{ s.network_speed }}Mb/s</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
-                <td>
-                    <a>Offline</a>
-                    <a>Change TPS</a>
-                    <a>Download logs</a>
-                </td>
-            </tr>
-        {% endif %}
-    {% endfor %}
-    {% for s in servers %}
-        {% if s.status != 1 %}
-            <tr class="hidden">
-                <td>{{ s.host }}</td>
-                <td>-</td>
-                {% if s.cpu %}
-                    <td>{{ s.cpu }}core(s)/{{ s.cpu_usage|floatformat:2 }}%</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
-                {% if s.mem %}
-                    <td>{{ s.mem }}G/{{ s.mem_usage|floatformat:2 }}%</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
-                {% if s.disk %}
-                    <td>{{ s.disk }}/{{ s.disk_usage|floatformat:2 }}%</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
-                {% if s.network_speed %}
-                    <td>{{ s.network_speed }}Mb/s</td>
-                {% else %}
-                    <td></td>
-                {% endif %}
-                <td>
-                    <a>Online</a>
-                    <a>Download logs</a>
-                </td>
-            </tr>
-        {% endif %}
-    {% endfor %}
-
 {% endblock %}
 {% block define_js %}
     <script type="text/javascript">
@@ -189,27 +123,31 @@
         document.getElementsByClassName('toolbar')[0].style.width = (W - 200) + 'px';
         document.getElementsByClassName('detail')[0].style.width = (W * 0.99 - 200) + 'px';
         plot({{ tasks.id }}, '{% url 'perf:task_query' %}');
-        if(startTime) {
-            let timer = setInterval(function () {
-                plot_delta({{ tasks.id }}, '{% url 'perf:task_query' %}', startTime)
-            }, 10000);
-        }
+        get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}');
+        {% if tasks.status == 1 %}
+            if(startTime) {
+                let timer = setInterval(function () {
+                    plot_delta({{ tasks.id }}, '{% url 'perf:task_query' %}', startTime)
+                }, 10000);
+            }
+            let query_server_timer = setInterval(function () {
+                get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}')
+            }, 15000);
+        {% endif %}
+
         document.getElementById('show-server').addEventListener('click', function () {
             let title = document.getElementById('show-server').innerText;
             if (title === 'Show more') {
-                $('.hidden').css("display", "table-row");
+                get_idle_server({{ tasks.server_room.id }}, '{% url 'perf:get_idle_server' %}');
                 document.getElementById('show-server').innerText = "Show less";
             } else {
-                $('.hidden').css("display", "none");
+                let trs = document.getElementById('tbody').getElementsByClassName('idling');
+                let trs_length = trs.length;
+                for(let i=0; i<trs_length; i++) {
+                    trs[0].remove();
+                }
                 document.getElementById('show-server').innerText = "Show more";
             }
         })
-
-        let total_server = document.getElementsByTagName("tr").length - document.getElementsByClassName("hidden").length - 1;
-        if (total_server === 1) {
-            document.getElementById("total-server").innerText = "(1 Running Server)";
-        } else if (total_server > 1) {
-            document.getElementById("total-server").innerText = "(" + total_server + " Running Servers)";
-        }
     </script>
 {% endblock %}
