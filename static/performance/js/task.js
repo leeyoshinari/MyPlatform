@@ -1,7 +1,9 @@
 function plot(task_id, url) {
+    let figure_title = document.getElementById('figure-title').name;
     let post_data = {
         id: task_id,
-    };
+        host: figure_title
+    }
     $.ajax({
         type: 'post',
         url: url,
@@ -48,7 +50,7 @@ function plot_delta(task_id, url, startTime) {
     });
 }
 
-function get_running_server(task_id, url, ) {
+function get_running_server(task_id, url, status, url1, url2, url3, url4, url5) {
     $.ajax({
         type: 'get',
         url: url + '?id=' + task_id,
@@ -56,9 +58,7 @@ function get_running_server(task_id, url, ) {
             if (data['code'] === 0) {
                 let s = "";
                 let all_host = data['data'];
-                if (all_host.length > 0) {
-                    document.getElementById("total-server").innerText = "(" + all_host.length + " Running Servers)";
-                }
+                let server_num = 0;
                 let trs = document.getElementById('tbody').getElementsByClassName('running');
                 let trs_length = trs.length;
                 for(let i=0; i<trs_length; i++) {
@@ -86,11 +86,25 @@ function get_running_server(task_id, url, ) {
                     } else {
                         s += '<td></td>';
                     }
-                    if (all_host[i]['action'] === 1) {
-                        s += '<td><a>Offline</a><a>Change TPS</a><a>Download logs</a><a>View</a></td></tr>';
+                    if (all_host[i]['action'] === 1 && status === 1) {
+                        s += '<td><a onclick="stop_test(\'' + url5 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Stop</a>' +
+                            '<a onclick="change_tps(\'' + url2 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Change TPS</a>' +
+                            '<a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
+                            '<a onclick="view_host_figure(\'' + url4 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
+                        server_num += 1;
                     } else {
-                        s += '<td><a>Online</a><a>Download logs</a><a>View</a></td></tr>';
+                        if (status === 1) {
+                            s += '<td><a onclick="start_test(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Start</a>' +
+                                '<a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
+                                '<a onclick="view_host_figure(\'' + url4 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
+                        } else {
+                            s += '<td><a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
+                                '<a onclick="view_host_figure(\'' + url4 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
+                        }
                     }
+                }
+                if (server_num > 0) {
+                    document.getElementById("total-server").innerText = "(" + server_num + " Running Servers)";
                 }
                 document.getElementById('tbody').innerHTML = s + document.getElementById('tbody').innerHTML;
             } else {
@@ -101,10 +115,10 @@ function get_running_server(task_id, url, ) {
     })
 }
 
-function get_idle_server(room_id, url) {
+function get_idle_server(room_id, url, task_id, url1) {
     $.ajax({
         type: 'get',
-        url: url,
+        url: url + '?id=' + room_id,
         success: function (data) {
             if (data['code'] === 0) {
                 let s = "";
@@ -131,7 +145,7 @@ function get_idle_server(room_id, url) {
                     } else {
                         s += '<td></td>';
                     }
-                    s += '<td><a>Online</a><a>Download logs</a></td></tr>';
+                    s += '<td><a onclick="start_test(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Start</a></td></tr>';
                 }
                 document.getElementById('tbody').innerHTML = document.getElementById('tbody').innerHTML + s;
             } else {
@@ -141,3 +155,61 @@ function get_idle_server(room_id, url) {
     })
 }
 
+function start_test(url, task_id, host) {
+    let post_data = {
+        task_id: task_id,
+        host: host
+    }
+    $.ajax({
+        type: 'post',
+        url: url,
+        data: post_data,
+        dataType: 'json',
+        success: function (data) {
+            if(data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
+}
+
+function stop_test(url, task_id, host) {
+    $.ajax({
+        type: 'get',
+        url: url + '?id=' + task_id + '&host=' + host,
+        success: function (data) {
+            if(data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
+}
+
+function download_log(url, task_id, host) {
+    $.ajax({
+        type: 'get',
+        url: url + '?id=' + task_id + '&host=' + host,
+        success: function (data) {
+            if(data['code'] === 0) {
+                $.Toast(data['msg'], 'success');
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
+}
+
+function change_tps(url, task_id, host) {
+
+}
+
+function view_host_figure(url, task_id, host) {
+    let figure_title = document.getElementById('figure-title');
+    figure_title.value = '(' + host + ')';
+    figure_title.name = host;
+    plot(task_id, url);
+}

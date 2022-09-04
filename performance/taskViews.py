@@ -186,9 +186,6 @@ def start_task(request):
                     res = http_request('post', host, host_info['port'], 'runTask', json=post_data)
                     response_data = json.loads(res.content.decode())
                     if response_data['code'] == 0:
-                        tasks.servers = tasks.servers + ',' + host
-                        tasks.status = 0
-                        tasks.save()
                         logger.info(f'Task {task_id} is starting, host: {host}, operator: {username}')
                         return result(msg=f'Task {task_id} is starting, please wait a minute ~ ~')
                     else:
@@ -207,16 +204,11 @@ def start_task(request):
                 for h in available_servers:
                     res = http_request('post', h['host'], h['port'], 'runTask', json=post_data)
                     # response_data = json.loads(res.content.decode())
-                tasks.status = 0
-                tasks.running_num = 0
-                tasks.stopping_num = 0
-                tasks.start_time = strfTime()
-                tasks.save()
                 logger.info(f'Task {task_id} is starting, operator: {username}')
                 return result(msg=f'Task {task_id} is starting, please wait a minute ~')
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Task started failure ~')
+            return result(code=1, msg=f'Task {task_id} started failure ~')
 
 
 def stop_task(request):
@@ -225,7 +217,6 @@ def stop_task(request):
             username = request.user.username
             task_id = request.GET.get('id')
             host = request.GET.get('host')
-            tasks = PerformanceTestTask.objects.get(id=task_id)
             if host:
                 host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
                 hosts = [host]
@@ -235,15 +226,11 @@ def stop_task(request):
             for h in hosts:
                 res = http_request('get', h, get_value_by_host('jmeterServer_'+h, 'port'), 'stopTask/'+task_id)
                 # response_data = json.loads(res.content.decode())
-            tasks.status = 1
-            tasks.running_num = 0
-            tasks.stopping_num = 0
-            tasks.save()
             logger.info(f'Task {task_id} is stopping, operator: {username}')
             return result(msg=f'Task {task_id} is stopping, please wait a minute ~')
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Stop failure ~')
+            return result(code=1, msg=f'Task {task_id} Stop failure ~')
 
 
 def download_file(request):
@@ -335,7 +322,7 @@ def set_message(request):
                     task_log = TestTaskLogs.objects.get(task_id=task_id, value=host)
                     task_log.action = 2
                     task_log.save()
-                if tasks.running_num == 0:
+                if tasks.running_num == 0 and TestTaskLogs.objects.filter(task_id=task_id, action=1).count() == 0:
                     tasks.status = 2
                     tasks.end_time = strfTime()
                     durations = time.time() - toTimeStamp(tasks.start_time)
@@ -436,6 +423,7 @@ def query_data(request):
             tasks = PerformanceTestTask.objects.get(id=task_id)
             start_time = tasks.start_time
             end_time = strfTime()
+            host = None if host == 'all' else host
             if tasks.end_time:
                 end_time = tasks.end_time
             return json_result(get_data_from_influx(task_id, host=host, start_time=start_time, end_time=end_time))

@@ -22,7 +22,7 @@
             </span>
             {% if tasks.status == 1 %}
                 <span style="float: right; margin-right: 30px; width: 42px;">
-                    <a>Stop</a>
+                    <a href="#" onclick="stop_test('{% url 'perf:task_stop' %}?id={{ task.id }}')">Stop</a>
                 </span>
             {% endif %}
             {% if tasks.plan.type == 1 and tasks.status == 1 %}
@@ -92,15 +92,19 @@
     </div>
 {% endblock %}
 {% block other_content %}
-    <div><h3>Monitor Figure</h3>
+    <div><h3 style="float: left;">Monitor Figure</h3>
+        <input id="figure-title" value="(All Servers)" name="all" style="border: none; margin-left: 1%; vertical-align: bottom; background-color: white;" disabled readonly>
         <input id="start-time" value="{{ tasks.start_time }}" style="display: none;">
     </div>
     <div id="figure" style="width: 100%;height:480px;margin: 0 auto;"></div>
     <div style="margin-top: 20px;">
         <h3>Pressure Server <span id="total-server" style="font-size: medium; font-weight: normal;"></span></h3>
-        <span style="float: right; margin-right: 30px;">
-            <a id="show-server" target="_blank" style="text-decoration: none; cursor: pointer; color: blue;">Show more</a>
-        </span>
+        {% if tasks.status == 1 %}
+            <div style="float: right; margin-right: 30px;">
+                <a id="view-all" title="View all servers summary data." style="text-decoration: none; cursor: pointer; color: blue; margin-right: 20px;">View All</a>
+                <a id="show-server" title="View idle servers." style="text-decoration: none; cursor: pointer; color: blue; margin-right: 20px;">Show More</a>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 {% block table_head %}
@@ -123,31 +127,39 @@
         document.getElementsByClassName('toolbar')[0].style.width = (W - 200) + 'px';
         document.getElementsByClassName('detail')[0].style.width = (W * 0.99 - 200) + 'px';
         plot({{ tasks.id }}, '{% url 'perf:task_query' %}');
-        get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}');
+        get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
+                '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}');
         {% if tasks.status == 1 %}
             if(startTime) {
                 let timer = setInterval(function () {
-                    plot_delta({{ tasks.id }}, '{% url 'perf:task_query' %}', startTime)
+                    plot({{ tasks.id }}, '{% url 'perf:task_query' %}', startTime)
                 }, 10000);
             }
             let query_server_timer = setInterval(function () {
-                get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}')
+                get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
+                '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}')
             }, 15000);
-        {% endif %}
 
-        document.getElementById('show-server').addEventListener('click', function () {
-            let title = document.getElementById('show-server').innerText;
-            if (title === 'Show more') {
-                get_idle_server({{ tasks.server_room.id }}, '{% url 'perf:get_idle_server' %}');
-                document.getElementById('show-server').innerText = "Show less";
-            } else {
-                let trs = document.getElementById('tbody').getElementsByClassName('idling');
-                let trs_length = trs.length;
-                for(let i=0; i<trs_length; i++) {
-                    trs[0].remove();
+            document.getElementById('show-server').addEventListener('click', function () {
+                let title = document.getElementById('show-server').innerText;
+                if (title === 'Show More') {
+                    get_idle_server({{ tasks.server_room.id }}, '{% url 'perf:get_idle_server' %}', {{ tasks.id }}, '{% url 'perf:task_start' %}');
+                    document.getElementById('show-server').innerText = "Show Less";
+                } else {
+                    let trs = document.getElementById('tbody').getElementsByClassName('idling');
+                    let trs_length = trs.length;
+                    for(let i=0; i<trs_length; i++) {
+                        trs[0].remove();
+                    }
+                    document.getElementById('show-server').innerText = "Show More";
                 }
-                document.getElementById('show-server').innerText = "Show more";
-            }
+            })
+        {% endif %}
+        document.getElementById('view-all').addEventListener('click', function () {
+            let figure_title = document.getElementById('figure-title');
+            figure_title.value = '(All Servers)';
+            figure_title.name = 'all';
+            plot({{ tasks.id }}, '{% url 'perf:task_query' %}');
         })
     </script>
 {% endblock %}
