@@ -203,13 +203,67 @@ function download_log(url, task_id, host) {
     })
 }
 
-function change_tps(url, task_id, host) {
-
-}
-
 function view_host_figure(url, task_id, host) {
     let figure_title = document.getElementById('figure-title');
     figure_title.value = '(' + host + ')';
     figure_title.name = host;
     plot(task_id, url);
+}
+
+function change_tps(url, task_id, host) {
+    let modal = document.getElementsByClassName('myModal')[0];
+    let close_a = document.getElementsByClassName("close")[0];
+    let cancel_a = document.getElementsByClassName("cancel")[0];
+    let submit_a = document.getElementsByClassName("submit")[0];
+    if(host === 'all') {
+        document.getElementById('title-name').innerText = 'Change All Servers TPS';
+    } else {
+        document.getElementById('title-name').innerText = 'Change ' +  host + ' TPS';
+    }
+
+    modal.style.display = "block";
+
+    close_a.onclick = function() {
+        modal.style.display = "none";
+    }
+    cancel_a.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    submit_a.onclick = function() {
+        let ratio = document.getElementById("tps-ratio").value;
+
+        if (!ratio) {
+            $.Toast('Please input TPS ratio ~ ', 'error');
+            return;
+        }
+
+        let post_data = {
+            taskId: task_id,
+            host: host,
+            TPS: ratio
+        }
+        $.ajax({
+            type: 'POST',
+            async: false,
+            url: url,
+            data: post_data,
+            dataType: 'json',
+            success: function (data) {
+                if (data['code'] !== 0) {
+                    $.Toast(data['msg'], 'error');
+                    return;
+                } else {
+                    $.Toast(data['msg'], 'success');
+                    modal.style.display = "none";
+                }
+            }
+        })
+    }
+
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
 }

@@ -217,12 +217,12 @@ def stop_task(request):
             username = request.user.username
             task_id = request.GET.get('id')
             host = request.GET.get('host')
-            if host:
-                host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
-                hosts = [host]
-            else:
+            if host == 'all':
                 runnging_server = TestTaskLogs.objects.filter(task_id=task_id, action=1)
                 hosts = [h['value'] for h in runnging_server]
+            else:
+                host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
+                hosts = [host]
             for h in hosts:
                 res = http_request('get', h, get_value_by_host('jmeterServer_'+h, 'port'), 'stopTask/'+task_id)
                 # response_data = json.loads(res.content.decode())
@@ -269,13 +269,18 @@ def change_tps(request):
             task_id = request.POST.get('taskId')
             tps = request.POST.get('TPS')
             host = request.POST.get('host')
+            try:
+                tps = float(tps)
+            except ValueError:
+                logger.error(traceback.format_exc())
+                return result(code=1, msg='TPS is not a number ~')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            if host:
-                host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
-                hosts = [host]
-            else:
+            if host == 'all':
                 runnging_server = TestTaskLogs.objects.filter(task_id=task_id, action=1)
                 hosts = [h['value'] for h in runnging_server]
+            else:
+                host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
+                hosts = [host]
             current_tps = int(tasks.plan.target_num * tps / len(hosts))
             post_data = {'taskId': task_id, 'tps': current_tps}
             res_host = []

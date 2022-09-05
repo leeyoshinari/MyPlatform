@@ -22,12 +22,12 @@
             </span>
             {% if tasks.status == 1 %}
                 <span style="float: right; margin-right: 30px; width: 42px;">
-                    <a href="#" onclick="stop_test('{% url 'perf:task_stop' %}?id={{ task.id }}')">Stop</a>
+                    <a href="#" onclick="stop_test('{% url 'perf:task_stop' %}', {{ tasks.id }}, 'all')">Stop</a>
                 </span>
             {% endif %}
             {% if tasks.plan.type == 1 and tasks.status == 1 %}
                 <span style="float: right; margin-right: 30px; width: 100px;">
-                    <a>Change TPS</a>
+                    <a onclick="change_tps('{% url 'perf:change_tps' %}', {{ tasks.id }}, 'all')">Change TPS</a>
                 </span>
             {% endif %}
         </div>
@@ -105,6 +105,28 @@
                 <a id="show-server" title="View idle servers." style="text-decoration: none; cursor: pointer; color: blue; margin-right: 20px;">Show More</a>
             </div>
         {% endif %}
+    </div>
+    <div class="myModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2 id="title-name" style="margin-top: 3%;">Change All Servers TPS</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-col">
+                    <div class="label">
+                        <label>TPS Ratio(%)：</label>
+                    </div>
+                    <div class="input">
+                        <input id="tps-ratio" type="text" placeholder="Please input TPS ratio (%)" style="width: 66%;">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="cancel">Cancel</a>
+                <a class="submit">Submit</a>
+            </div>
+        </div>
     </div>
 {% endblock %}
 {% block table_head %}

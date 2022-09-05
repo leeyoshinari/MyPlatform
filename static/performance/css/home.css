@@ -345,7 +345,7 @@ tr:hover td {
 .fenye ul.pagination li a:hover:not(.active) {background-color: #ddd;}
 
 /* 弹窗 (background) */
-#myModal {
+.myModal {
     display: none;
     position: fixed;
     z-index: 1000;
