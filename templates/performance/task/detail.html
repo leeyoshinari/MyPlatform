@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block add_js %}
-    <script src="{% static 'performance/js/task.js' %}"></script>
     <script src="{% static 'performance/js/echarts.common.js' %}"></script>
     <script src="{% static 'performance/js/visualize.js' %}"></script>
+    <script src="{% static 'performance/js/task.js' %}"></script>
 {% endblock %}
 
 {% block navigate %}
@@ -93,8 +93,8 @@
 {% endblock %}
 {% block other_content %}
     <div><h3 style="float: left;">Monitor Figure</h3>
-        <input id="figure-title" value="(All Servers)" name="all" style="border: none; margin-left: 1%; vertical-align: bottom; background-color: white;" disabled readonly>
-        <input id="start-time" value="{{ tasks.start_time }}" style="display: none;">
+        <input id="figure-title" type="text" value="(All Servers)" name="all" style="border: none; margin-left: 1%; vertical-align: bottom; background-color: white;" disabled readonly>
+        <input id="start-time" type="text" value="{{ tasks.start_time }}" style="display: none;">
     </div>
     <div id="figure" style="width: 100%;height:480px;margin: 0 auto;"></div>
     <div style="margin-top: 20px;">
@@ -110,7 +110,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span class="close">&times;</span>
-                <h2 id="title-name" style="margin-top: 3%;">Change All Servers TPS</h2>
+                <h2 id="title-name" style="margin-top: 3%;">Change Total TPS to</h2>
             </div>
             <div class="modal-body">
                 <div class="modal-col">
@@ -118,7 +118,7 @@
                         <label>TPS Ratio(%)：</label>
                     </div>
                     <div class="input">
-                        <input id="tps-ratio" type="text" placeholder="Please input TPS ratio (%)" style="width: 66%;">
+                        <input id="tps-ratio" type="number" name="{{ tasks.plan.target_num }}" placeholder="Please input TPS ratio (%)" style="width: 66%;">
                     </div>
                 </div>
             </div>
@@ -145,18 +145,21 @@
 {% block define_js %}
     <script type="text/javascript">
         let W = window.screen.width;
-        let startTime = document.getElementById('start-time').value;
         document.getElementsByClassName('toolbar')[0].style.width = (W - 200) + 'px';
         document.getElementsByClassName('detail')[0].style.width = (W * 0.99 - 200) + 'px';
-        plot({{ tasks.id }}, '{% url 'perf:task_query' %}');
+
+        $('#figure').removeAttr("_echarts_instance_").empty();
+        let figure = document.getElementById('figure');
+        let myChart = echarts.init(figure);
+
+        plot(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}');
         get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
                 '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}');
         {% if tasks.status == 1 %}
-            if(startTime) {
-                let timer = setInterval(function () {
-                    plot({{ tasks.id }}, '{% url 'perf:task_query' %}', startTime)
-                }, 10000);
-            }
+            let timer = setInterval(function () {
+                plot_delta(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}')
+            }, 10000);
+
             let query_server_timer = setInterval(function () {
                 get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
                 '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}')
@@ -181,7 +184,13 @@
             let figure_title = document.getElementById('figure-title');
             figure_title.value = '(All Servers)';
             figure_title.name = 'all';
-            plot({{ tasks.id }}, '{% url 'perf:task_query' %}');
+            plot(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}');
         })
+        function view_host_figure(url, task_id, host) {
+            let figure_title = document.getElementById('figure-title');
+            figure_title.value = '(' + host + ')';
+            figure_title.name = host;
+            plot(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}');
+        }
     </script>
 {% endblock %}

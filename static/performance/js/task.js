@@ -1,23 +1,16 @@
-function plot(task_id, url) {
+function plot(myChart, task_id, url) {
     let figure_title = document.getElementById('figure-title').name;
-    let post_data = {
-        id: task_id,
-        host: figure_title
-    }
     $.ajax({
-        type: 'post',
-        url: url,
-        data: post_data,
-        dataType: "json",
+        type: 'get',
+        url: url + '?id=' + task_id + '&host=' + figure_title,
         success: function (data) {
             if (data['code'] === 0) {
-                $('#figure').removeAttr("_echarts_instance_").empty();
-                let figure = document.getElementById('figure');
                 let details = document.getElementsByClassName("plan-detail");
-
-                let myChart = echarts.init(figure);
                 plot_figure(myChart, details, data['data']['time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
                 data['data']['min_rt'], data['data']['max_rt'], data['data']['err']);
+                if(data['data']['time'].length > 0) {
+                    document.getElementById('start-time').value = data['data']['time'].slice(-1)[0];
+                }
             } else {
                 $.Toast(data['message'], 'error');
                 return;
@@ -26,22 +19,20 @@ function plot(task_id, url) {
     });
 }
 
-function plot_delta(task_id, url, startTime) {
-    let post_data = {
-        id: task_id,
-        startTime: startTime
-    };
+function plot_delta(myChart, task_id, url) {
+    let figure_title = document.getElementById('figure-title').name;
+    let startTime = document.getElementById('start-time').value;
     $.ajax({
-        type: 'post',
-        url: url,
-        data: post_data,
-        dataType: "json",
+        type: 'get',
+        url: url + '?id=' + task_id + '&host=' + figure_title + '&startTime=' + startTime,
         success: function (data) {
             if (data['code'] === 0) {
-                let figure = document.getElementById('figure');
-                let myChart = echarts.init(figure);
-                plot_delta_figure(myChart, data['data']['time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
+                let details = document.getElementsByClassName("plan-detail");
+                plot_delta_figure(myChart, details, data['data']['time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
                 data['data']['min_rt'], data['data']['max_rt'], data['data']['err']);
+                if(data['data']['time'].length > 0) {
+                    document.getElementById('start-time').value = data['data']['time'].slice(-1)[0];
+                }
             } else {
                 $.Toast(data['message'], 'error');
                 return;
@@ -203,31 +194,40 @@ function download_log(url, task_id, host) {
     })
 }
 
-function view_host_figure(url, task_id, host) {
-    let figure_title = document.getElementById('figure-title');
-    figure_title.value = '(' + host + ')';
-    figure_title.name = host;
-    plot(task_id, url);
-}
-
 function change_tps(url, task_id, host) {
     let modal = document.getElementsByClassName('myModal')[0];
     let close_a = document.getElementsByClassName("close")[0];
     let cancel_a = document.getElementsByClassName("cancel")[0];
     let submit_a = document.getElementsByClassName("submit")[0];
+    let total_tps = parseInt(document.getElementById("tps-ratio").name);
     if(host === 'all') {
-        document.getElementById('title-name').innerText = 'Change All Servers TPS';
+        document.getElementById('title-name').innerHTML = 'Change Total TPS to';
     } else {
-        document.getElementById('title-name').innerText = 'Change ' +  host + ' TPS';
+        document.getElementById('title-name').innerHTML = 'Change ' +  host + ' TPS to ';
     }
 
     modal.style.display = "block";
 
+    document.getElementById("tps-ratio").addEventListener('input', function () {
+        let ratio = document.getElementById("tps-ratio").value;
+        if (!ratio) {
+            ratio = 0;
+        }
+        let current_tps = parseInt(parseFloat(ratio) / 100 * total_tps);
+        if(host === 'all') {
+            document.getElementById('title-name').innerHTML = 'Change Total TPS to <span style="color: red;">' + current_tps + '/s</span>';
+        } else {
+            document.getElementById('title-name').innerHTML = 'Change ' +  host + ' TPS to <span style="color: red;">' + current_tps + '/s</span>';
+        }
+    })
+
     close_a.onclick = function() {
         modal.style.display = "none";
+        document.getElementById("tps-ratio").value = "";
     }
     cancel_a.onclick = function() {
         modal.style.display = "none";
+        document.getElementById("tps-ratio").value = "";
     }
 
     submit_a.onclick = function() {
@@ -252,6 +252,7 @@ function change_tps(url, task_id, host) {
             success: function (data) {
                 if (data['code'] !== 0) {
                     $.Toast(data['msg'], 'error');
+                    document.getElementById("tps-ratio").value = "";
                     return;
                 } else {
                     $.Toast(data['msg'], 'success');
@@ -264,6 +265,7 @@ function change_tps(url, task_id, host) {
     window.onclick = function(event) {
         if (event.target === modal) {
             modal.style.display = "none";
+            document.getElementById("tps-ratio").value = "";
         }
     }
 }

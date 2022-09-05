@@ -5,11 +5,7 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
     min_rt_sorted.sort(function (a, b) {return a - b});
     max_rt_sorted.sort(function (a, b) {return a - b});
 
-    let day_format = details[2].getElementsByTagName("span")[0].innerText.split(" ")[0];
-    let duration = Date.parse(new Date(day_format + ' ' + x_label.slice(-1)[0])) - Date.parse(new Date(day_format + ' ' + x_label[0]));
-    if (duration < 0) {
-        duration = 86400000 + Date.parse(new Date(day_format + ' ' + x_label.slice(-1)[0])) - Date.parse(new Date(day_format + ' ' + x_label[0]));
-    }
+    let duration = Date.parse(new Date(x_label.slice(-1)[0])) - Date.parse(new Date(x_label[0]));
     let total_sample = sum(samples);
     details[1].getElementsByTagName("span")[0].innerText = tps.slice(-1)[0] + "/s";
     details[4].getElementsByTagName("span")[0].innerText = total_sample;
@@ -253,56 +249,31 @@ function quickSort(arr){
     return quickSort(left).concat(temp,quickSort(right));
 }
 
-function plot_delta_figure(myChart, x_label, samples, tps, avg_rt, min_rt, max_rt, error) {
-    myChart.setOption({
-        yAxis: [
-            {
-                name: 'Monitor',
-                type: 'value'
-            },
-            {
-                type: 'value'
-            }
-        ],
-        xAxis: {
-                gridIndex: 0,
-                type: 'category',
-                boundaryGap: false,
-                data: x_label,
-                axisTick: {
-                    alignWithLabel: true,
-                    interval: 'auto'
-                },
-                axisLabel: {
-                    interval: 'auto',
-                    showMaxLabel: true
-                }
-            },
-        series: [
-            {
-                type: 'line',
-                data: samples
-            },
-            {
-                type: 'line',
-                data: tps
-            },
-            {
-                type: 'line',
-                data: avg_rt
-            },
-            {
-                type: 'line',
-                data: min_rt
-            },
-            {
-                type: 'line',
-                data: max_rt
-            },
-            {
-                type: 'line',
-                data: error
-            }
-        ]
-    }, true);
+function plot_delta_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, max_rt, error) {
+    options = myChart.getOption();
+    for(let i=0; i<x_label.length; i++) {
+        options.xAxis[0].data.push(x_label[i]);
+        options.series[0].data.push(samples[i]);
+        options.series[1].data.push(tps[i]);
+        options.series[2].data.push(avg_rt[i]);
+        options.series[3].data.push(min_rt[i]);
+        options.series[4].data.push(max_rt[i]);
+        options.series[5].data.push(error[i]);
+    }
+    let min_rt_sorted = [...options.series[3].data];
+    let max_rt_sorted = [...options.series[4].data];
+
+    min_rt_sorted.sort(function (a, b) {return a - b});
+    max_rt_sorted.sort(function (a, b) {return a - b});
+
+    let duration = Date.parse(new Date(options.xAxis[0].data.slice(-1)[0])) - Date.parse(new Date(options.xAxis[0].data[0]));
+    let total_sample = sum(options.series[0].data);
+    details[1].getElementsByTagName("span")[0].innerText = options.series[1].data.slice(-1)[0] + "/s";
+    details[4].getElementsByTagName("span")[0].innerText = total_sample;
+    details[5].getElementsByTagName("span")[0].innerText = (1000 * total_sample / duration).toFixed(2) + "/s";
+    details[6].getElementsByTagName("span")[0].innerText = twoArrSumOfProduct(options.series[0].data, options.series[2].data, total_sample) + " ms";
+    details[7].getElementsByTagName("span")[0].innerText = min_rt_sorted.slice(0, 1)[0] + " ms";
+    details[8].getElementsByTagName("span")[0].innerText = max_rt_sorted.slice(-1)[0] + " ms";
+    details[9].getElementsByTagName("span")[0].innerText = (sum(options.series[5].data) / total_sample * 100).toFixed(4) + "%";
+    myChart.setOption(options);
 }
