@@ -94,17 +94,17 @@
 {% block other_content %}
     <div><h3 style="float: left;">Monitor Figure</h3>
         <input id="figure-title" type="text" value="(All Servers)" name="all" style="border: none; margin-left: 1%; vertical-align: bottom; background-color: white;" disabled readonly>
-        <input id="start-time" type="text" value="{{ tasks.start_time }}" style="display: none;">
+        <input id="start-time" type="text" value="{{ tasks.start_time | date:"Y-m-d H:i:s" }}" style="display: none;">
     </div>
     <div id="figure" style="width: 100%;height:480px;margin: 0 auto;"></div>
     <div style="margin-top: 20px;">
         <h3>Pressure Server <span id="total-server" style="font-size: medium; font-weight: normal;"></span></h3>
-        {% if tasks.status == 1 %}
-            <div style="float: right; margin-right: 30px;">
-                <a id="view-all" title="View all servers summary data." style="text-decoration: none; cursor: pointer; color: blue; margin-right: 20px;">View All</a>
+        <div style="float: right; margin-right: 30px;">
+            <a id="view-all" title="View all servers summary data." style="text-decoration: none; cursor: pointer; color: blue; margin-right: 20px;">View All</a>
+            {% if tasks.status == 1 %}
                 <a id="show-server" title="View idle servers." style="text-decoration: none; cursor: pointer; color: blue; margin-right: 20px;">Show More</a>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
     <div class="myModal">
         <div class="modal-content">
@@ -132,7 +132,7 @@
 {% block table_head %}
     <tr class="table_style">
         <th width="15%">Server</th>
-        <th width="8%">TPS</th>
+        <th width="8%">TPS(/s)</th>
         <th width="10%">CPU</th>
         <th width="10%">Memory</th>
         <th width="10%">Disks</th>
@@ -141,6 +141,13 @@
     </tr>
 {% endblock %}
 {% block table_body %}
+{% endblock %}
+{% block back_body %}
+    <div style="margin-bottom: 3%;"></div>
+{% endblock %}
+{% block fenye %}
+{% endblock %}
+{% block backjs %}
 {% endblock %}
 {% block define_js %}
     <script type="text/javascript">
@@ -186,7 +193,7 @@
             figure_title.name = 'all';
             plot(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}');
         })
-        function view_host_figure(url, task_id, host) {
+        function view_host_figure(host) {
             let figure_title = document.getElementById('figure-title');
             figure_title.value = '(' + host + ')';
             figure_title.name = host;

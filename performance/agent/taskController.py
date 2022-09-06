@@ -17,6 +17,7 @@ class Task(object):
     def __init__(self):
         self.IP = get_ip()
         self.status = 0     # 0 idle, 1 busy, -1 pending
+        self.current_tps = 0
         self.task_id = None
         self.plan_id = None
         self.agent_num = 1
@@ -95,7 +96,8 @@ class Task(object):
         post_data = {
             'host': self.IP,
             'port': get_config('port'),
-            'status': self.status
+            'status': self.status,
+            'tps': self.current_tps
         }
 
         while True:
@@ -197,6 +199,7 @@ class Task(object):
                             self.redis_client.set(self.task_id, self.agent_num, ex=self.key_expire)
                             flag = False
                         res = re.findall(self.pattern, line.replace(' ', ''))[0]
+                        self.current_tps = res[1]
                         data = list(map(float, res))
                         self.write_to_redis(data)
                     else:
@@ -316,6 +319,7 @@ class Task(object):
                 if self.check_status(is_run=False):
                     self.status = 0
                     self.task_id = None
+                    self.current_tps = 0
                     flag = 1
                     del self.redis_client, self.influx_client
                     logger.info(f'task {task_id} stop successful ~')
@@ -326,7 +330,6 @@ class Task(object):
                 flag = 0
                 logger.error(traceback.format_exc())
         self.send_message('stop_task', flag)
-
 
     def kill_process(self):
         try:

@@ -11,26 +11,6 @@
 {% endblock %}
 
 {% block detail_action %}
-    <div>
-        {% if plans %}
-            <div class="plan-detail">
-                <label>Test Plan: </label>
-                <span><a href="{% url 'perf:plan_home' %}?keyWord={{ plans.name }}">{{ plans.name }}</a></span>
-            </div>
-            <div class="plan-detail" style="width: 12%;">
-                {% if plans.type == 0 %}
-                    <label>Fixed Thread Num: </label>
-                {% else %}
-                    <label>Target TPS: </label>
-                {% endif %}
-                <span>{{ plans.target_num }}/s</span>
-            </div>
-            <div class="plan-detail" style="width: 12%;">
-                <label>Duration: </label>
-                <span>{{ plans.duration }} s</span>
-            </div>
-        {% endif %}
-    </div>
 {% endblock %}
 {% block searchBlock %}
 {% endblock %}

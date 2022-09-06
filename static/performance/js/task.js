@@ -1,4 +1,6 @@
 function plot(myChart, task_id, url) {
+    $('.modal_cover').css("display", "block");
+    $('.modal_gif').css("display", "block");
     let figure_title = document.getElementById('figure-title').name;
     $.ajax({
         type: 'get',
@@ -13,8 +15,9 @@ function plot(myChart, task_id, url) {
                 }
             } else {
                 $.Toast(data['message'], 'error');
-                return;
             }
+            $('.modal_cover').css("display", "none");
+            $('.modal_gif').css("display", "none");
         }
     });
 }
@@ -56,7 +59,7 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5) 
                     trs[0].remove();
                 }
                 for(let i=0; i<all_host.length; i++) {
-                    s += '<tr class="running"><td>' + all_host[i]['host'] + '</td><td>-</td>';
+                    s += '<tr class="running"><td>' + all_host[i]['host'] + '</td><td>' + all_host[i]['tps'] + '</td>';
                     if (all_host[i]['cpu']) {
                         s += '<td>' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
                     } else {
@@ -81,16 +84,16 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5) 
                         s += '<td><a onclick="stop_test(\'' + url5 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Stop</a>' +
                             '<a onclick="change_tps(\'' + url2 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Change TPS</a>' +
                             '<a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
-                            '<a onclick="view_host_figure(\'' + url4 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
+                            '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
                         server_num += 1;
                     } else {
                         if (status === 1) {
                             s += '<td><a onclick="start_test(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Start</a>' +
                                 '<a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
-                                '<a onclick="view_host_figure(\'' + url4 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
+                                '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
                         } else {
                             s += '<td><a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
-                                '<a onclick="view_host_figure(\'' + url4 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
+                                '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
                         }
                     }
                 }
@@ -100,7 +103,6 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5) 
                 document.getElementById('tbody').innerHTML = s + document.getElementById('tbody').innerHTML;
             } else {
                 $.Toast(data['message'], 'error');
-                return;
             }
         }
     })
@@ -115,7 +117,7 @@ function get_idle_server(room_id, url, task_id, url1) {
                 let s = "";
                 let all_host = data['data'];
                 for(let i=0; i<all_host.length; i++) {
-                    s += '<tr class="idling"><td>' + all_host[i]['host'] + '</td><td>-</td>';
+                    s += '<tr class="idling"><td>' + all_host[i]['host'] + '</td><td>0</td>';
                     if (all_host[i]['cpu']) {
                         s += '<td>' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
                     } else {
@@ -253,7 +255,6 @@ function change_tps(url, task_id, host) {
                 if (data['code'] !== 0) {
                     $.Toast(data['msg'], 'error');
                     document.getElementById("tps-ratio").value = "";
-                    return;
                 } else {
                     $.Toast(data['msg'], 'success');
                     modal.style.display = "none";

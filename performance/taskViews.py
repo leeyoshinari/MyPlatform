@@ -33,14 +33,11 @@ def home(request):
             username = request.user.username
             plan_id = request.GET.get('id')
             if plan_id:
-                plans = TestPlan.objects.get(id=plan_id)
                 tasks = PerformanceTestTask.objects.filter(plan_id=plan_id).order_by('-create_time')
-                context = {'plans': plans, 'tasks': tasks}
             else:
                 tasks = PerformanceTestTask.objects.all().order_by('-create_time')
-                context = {'tasks': tasks}
             logger.info(f'Get task success, operator: {username}')
-            return render(request, 'performance/task/home.html', context=context)
+            return render(request, 'performance/task/home.html', context={'tasks': tasks})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get task Failure ~')
@@ -320,6 +317,9 @@ def set_message(request):
                         task_log.save()
                     except TestTaskLogs.DoesNotExist:
                         TestTaskLogs.objects.create(id=primaryKey(), task_id=task_id, action=1, value=host, operator='System')
+                    plans = TestPlan.objects.get(id=tasks.plan.id)
+                    plans.is_running = 1
+                    plans.save()
 
             if task_type == 'stop_task':
                 if data == 1:
@@ -331,6 +331,9 @@ def set_message(request):
                     tasks.status = 2
                     tasks.end_time = strfTime()
                     durations = time.time() - toTimeStamp(tasks.start_time)
+                    plans = TestPlan.objects.get(id=tasks.plan.id)
+                    plans.is_running = 0
+                    plans.save()
                     datas = get_data_from_influx(task_id, host=None, start_time=tasks.start_time, end_time=strfTime())
                     if datas['code'] == 0:
                         total_samples = sum(datas['data']['samples'])
@@ -377,7 +380,7 @@ def get_running_server(request):
             host_info = [
                 {'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
                  'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
-                 'status': 0, 'action':1}, {'host': '127.0.0.3', 'status': 1, 'action': 2},
+                 'status': 0, 'action':1, 'tps': 20}, {'host': '127.0.0.3', 'status': 1, 'action': 2, 'tps': 0},
                 {'host': '127.0.0.4', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
                  'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
                  'status': 2, 'action':1},
