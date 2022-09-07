@@ -187,7 +187,7 @@ function upload_file(url) {
     }
 }
 
-function add_task(url, location_url, plan_id) {
+function add_task(url, start_url, location_url, plan_id) {
     $('.modal_cover').css("display", "block");
     $('.modal_gif').css("display", "block");
     let post_data = {
@@ -199,15 +199,28 @@ function add_task(url, location_url, plan_id) {
         data: post_data,
         dataType: 'json',
         success: function (data) {
-            $('.modal_cover').css("display", "none");
-            $('.modal_gif').css("display", "none");
             if(data['code'] === 0) {
-                $.Toast(data['msg'], 'success');
-                window.location.href = location_url + '?id=' + data['data'];
-                $.ajax()
+                let post_data = {
+                    task_id: data['data']}
+                $.ajax({
+                    type: 'post',
+                    url: start_url,
+                    data: post_data,
+                    dataType: 'json',
+                    success: function (data) {
+                        if(data['code'] === 0) {
+                            $.Toast(data['msg'], 'success');
+                            window.location.href = location_url + '?id=' + data['data'];
+                        } else {
+                            $.Toast(data['msg'], 'error');
+                        }
+                    }
+                })
             } else {
                 $.Toast(data['msg'], 'error');
             }
+            $('.modal_cover').css("display", "none");
+            $('.modal_gif').css("display", "none");
         }
     })
 }
@@ -227,12 +240,11 @@ function stop_task(url) {
     })
 }
 
-function start_task(url, task_id, plan_id) {
+function start_task(url, task_id, status_url, detail_url) {
     $('.modal_cover').css("display", "block");
     $('.modal_gif').css("display", "block");
     let post_data = {
         task_id: task_id,
-        plan_id: plan_id
     }
     $.ajax({
         type: 'post',
@@ -240,14 +252,24 @@ function start_task(url, task_id, plan_id) {
         data: post_data,
         dataType: 'json',
         success: function (data) {
-            $('.modal_cover').css("display", "none");
-            $('.modal_gif').css("display", "none");
             if(data['code'] === 0) {
-                $.Toast(data['msg'], 'success');
-                window.location.reload();
+                $.ajax({
+                    type: 'get',
+                    url: status_url + '?id=' + task_id,
+                    success: function (data) {
+                        if(data['code'] === 0) {
+                            $.Toast(data['msg'], 'success');
+                            window.location.href = detail_url + '?id=' + task_id;
+                        } else {
+                            $.Toast(data['msg'], 'error');
+                        }
+                    }
+                })
             } else {
                 $.Toast(data['msg'], 'error');
             }
+            $('.modal_cover').css("display", "none");
+            $('.modal_gif').css("display", "none");
         }
     })
 }

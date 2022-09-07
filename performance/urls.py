@@ -38,6 +38,7 @@ urlpatterns = [
 
     path('task', taskViews.home, name='task_home'),
     path('task/register', taskViews.register, name='agent_register'),
+    path('task/status', taskViews.get_running_status, name='task_status'),
     path('task/add', taskViews.add_to_task, name='task_add'),
     path('task/delete', taskViews.delete_task, name='task_delete'),
     path('task/start', taskViews.start_task, name='task_start'),

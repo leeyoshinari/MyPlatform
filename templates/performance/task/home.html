@@ -41,7 +41,7 @@
             <td style="text-align: center;">{{ task.operator }}</td>
             <td>
                 {% if task.status == 0 %}
-                    <a href="#" onclick="start_task('{% url 'perf:task_start' %}', {{ task.id }}, {{ task.plan.id }})">Start</a>
+                    <a href="#" onclick="start_task('{% url 'perf:task_start' %}', {{ task.id }}, '{% url 'perf:task_status' %}', '{% url 'perf:task_detail' %}')">Start</a>
                 {% else %}
                     <a href="{% url 'perf:task_detail' %}?id={{ task.id }}">View</a>
                     {% if task.status == 1 %}

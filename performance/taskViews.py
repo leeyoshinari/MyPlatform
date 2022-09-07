@@ -3,6 +3,7 @@
 # Author: leeyoshinari
 
 import json
+import time
 import logging
 import traceback
 from django.shortcuts import render, redirect, resolve_url
@@ -202,7 +203,7 @@ def start_task(request):
                     res = http_request('post', h['host'], h['port'], 'runTask', json=post_data)
                     # response_data = json.loads(res.content.decode())
                 logger.info(f'Task {task_id} is starting, operator: {username}')
-                return result(msg=f'Task {task_id} is starting, please wait a minute ~')
+                return result(msg=f'Task {task_id} is starting, please wait a minute ~', data=task_id)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg=f'Task {task_id} started failure ~')
@@ -228,6 +229,32 @@ def stop_task(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg=f'Task {task_id} Stop failure ~')
+
+
+def get_running_status(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            task_id = request.GET.get('id')
+            code = 0
+            msg = ''
+            start_time = time.time()
+            while True:
+                time.sleep(2)
+                tasks = PerformanceTestTask.objects.get(id=task_id)
+                if tasks.status == 1:
+                    code = 0
+                    msg = f'Task {task_id} start success ~'
+                    break
+                if time.time() - start_time > 60:
+                    code = 2
+                    msg = f'Task {task_id} is starting, please wait a minute ~'
+                    break
+            logger.info(f'{msg}, operator: {username}')
+            return result(code=code, msg=msg, data=tasks.status)
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Query task status failure ~')
 
 
 def download_file(request):
