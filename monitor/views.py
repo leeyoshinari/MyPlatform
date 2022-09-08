@@ -141,6 +141,26 @@ def course_zh_CN(request):
 def course_en(request):
     return render(request, 'monitor/course_en.html', context={})
 
+def register_first(request):
+    """
+    register
+    """
+    if request.method == 'POST':
+        logger.debug(f'The request parameters are {request.body}')
+        datas = json.loads(request.body)
+        try:
+            servers = Servers.objects.get(host=datas['host'])
+            monitor_server.agent_setter(request.body)
+            return result(msg='registered successfully!', data={'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
+                                        'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD,
+                                        'database': settings.INFLUX_DATABASE, 'roomId': servers.room.id})
+        except Servers.DoesNotExist:
+            logger.error(f"Host: {datas['host']} is not set in 'shell->server'")
+            return result(code=1, msg=f"Host: {datas['host']} is not set in 'shell->server'")
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Register Error ~')
+
 def registers(request):
     """
     register
@@ -148,8 +168,7 @@ def registers(request):
     if request.method == 'POST':
         logger.debug(f'The request parameters are {request.body}')
         monitor_server.agent_setter(request.body)
-        return result(msg='registered successfully!', data={'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
-                      'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE})
+        return result(msg='registered successfully!')
 
 def run_monitor(request):
     """
@@ -186,6 +205,7 @@ def plot_monitor(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         host = data.get('host')
+        roomId = data.get('roomId')
         start_time = data.get('startTime')
         end_time = data.get('endTime')
         type_ = data.get('type')
@@ -195,7 +215,7 @@ def plot_monitor(request):
         if server_info:
             try:
                 if type_ == 'port':
-                    res = draw_data_from_db(host=host, port=port_pid, startTime=start_time, endTime=end_time, disk=disk)
+                    res = draw_data_from_db(roomId=roomId, host=host, port=port_pid, startTime=start_time, endTime=end_time, disk=disk)
                     if res['code'] == 0:
                         raise Exception(res['message'])
                     res.update({'gc': monitor_server.get_gc(host, server_info['port'], f'getGC/{port_pid}')})
@@ -204,7 +224,7 @@ def plot_monitor(request):
                     return JsonResponse(res)
 
                 if type_ == 'system':
-                    res = draw_data_from_db(host=host, startTime=start_time, endTime=end_time, system=1, disk=disk)
+                    res = draw_data_from_db(roomId=roomId, host=host, startTime=start_time, endTime=end_time, system=1, disk=disk)
                     if res['code'] == 0:
                         raise Exception(res['message'])
                     res['flag'] = 0

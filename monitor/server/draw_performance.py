@@ -9,7 +9,7 @@ from django.conf import settings
 
 logger = logging.getLogger('django')
 
-def draw_data_from_db(host, port=None, pid=None, startTime=None, endTime=None, system=None, disk=None):
+def draw_data_from_db(roomId, host, port=None, pid=None, startTime=None, endTime=None, system=None, disk=None):
     """
     Get data from InfluxDB, and visualize
     :param host: client IP, required
@@ -23,6 +23,7 @@ def draw_data_from_db(host, port=None, pid=None, startTime=None, endTime=None, s
     """
     post_data = {
         'types': 'system',
+        'roomId': roomId,
         'cpu_time': [],
         'cpu': [],
         'iowait': [],
@@ -60,8 +61,8 @@ def draw_data_from_db(host, port=None, pid=None, startTime=None, endTime=None, s
 
         s_time = time.time()
         if port:
-            sql = f"select cpu, wait_cpu, mem, tcp, jvm, rKbs, wKbs, iodelay, close_wait, time_wait from \"{host}\" " \
-                  f"where time>'{startTime}' and time<'{endTime}' and type='{port}' tz('Asia/Shanghai')"
+            sql = f"select cpu, wait_cpu, mem, tcp, jvm, rKbs, wKbs, iodelay, close_wait, time_wait from \"{roomId}\" " \
+                  f"where host='{host}' and type='{port}' and time>='{startTime}' and time<'{endTime}' tz('Asia/Shanghai')"
             logger.info(f'Execute sql: {sql}')
             datas = connection.query(sql)
             if datas:
@@ -84,8 +85,8 @@ def draw_data_from_db(host, port=None, pid=None, startTime=None, endTime=None, s
                 res['code'] = 0
 
             if disk:
-                sql = f"select rec, trans, net from \"{host}\" where time>'{startTime}' and time<'{endTime}' and " \
-                      f"type='system' tz('Asia/Shanghai')"
+                sql = f"select rec, trans, net from \"{roomId}\" where host='{host}' and type='system' and " \
+                      f"time>='{startTime}' and time<'{endTime}' tz('Asia/Shanghai')"
                 logger.info(f'Execute sql: {sql}')
                 datas = connection.query(sql)
                 if datas:
@@ -106,8 +107,8 @@ def draw_data_from_db(host, port=None, pid=None, startTime=None, endTime=None, s
             disk_w = disk_n + '_w'
             disk_d = disk_n + '_d'
             sql = f"select cpu, iowait, usr_cpu, mem, mem_available, {disk_n}, {disk_r}, {disk_w}, {disk_d}, rec, trans, " \
-                  f"net, tcp, retrans from \"{host}\" where time>'{startTime}' and time<'{endTime}' and " \
-                  f"type='system' tz('Asia/Shanghai')"
+                  f"net, tcp, retrans from \"{roomId}\" where host='{host}' and type='system' and time>='{startTime}' " \
+                  f"and time<'{endTime}' tz('Asia/Shanghai')"
             logger.info(f'Execute sql: {sql}')
             datas = connection.query(sql)
             if datas:

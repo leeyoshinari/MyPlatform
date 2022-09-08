@@ -26,6 +26,7 @@ urlpatterns = [
     path('course_zh_CN', views.course_zh_CN, name='course_zh_CN'),
     path('course_en', views.course_en, name='course_en'),
     path('register', views.registers, name='register'),
+    path('register/first', views.register_first, name='register_first'),
     path('getPortAndDisk', views.get_port_disk, name='get_port_disk'),
     path('runMonitor', views.run_monitor, name='run_monitor'),
     path('plotMonitor', views.plot_monitor, name='plot_monitor'),
