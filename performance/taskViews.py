@@ -196,6 +196,7 @@ def start_task(request):
                 resistered_servers = get_all_host()
                 idle_servers = [s['host'] for s in resistered_servers if s['status'] == 0]
                 available_servers = Servers.objects['host'].filter(room_id=tasks.server_room_id, host__in=idle_servers)
+                logger.debug(available_servers.query)
                 if len(available_servers) < tasks.plan.server_number:
                     logger.warning(f'There is not enough servers to run performance test, operator: {username}')
                     return result(code=1, msg='There is not enough servers to run performance test ~')

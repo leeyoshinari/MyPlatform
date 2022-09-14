@@ -41,7 +41,7 @@ def home(request):
             else:
                 total_page = TestPlan.objects.all().count()
                 plans = TestPlan.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
-
+            logger.debug(plans.query)
             if plans:
                 server_num_rooms = get_idle_server_num()
             logger.info(f'Get test plan success, operator: {username}')
@@ -232,6 +232,7 @@ def get_idle_server_num(is_name=False):
         # available_servers = ['127.0.10.1', '127.0.0.2', '127.0.0.3', '127.0.0.4', '127.0.0.5', '127.0.0.6']
         available_servers = [s['host'] for s in registered_servers if s['status'] == 0]
         servers = Servers.objects.values('room_id').filter(room__type=2, host__in=available_servers).annotate(count=Count('room_id'))
+        logger.debug(servers.query)
         if is_name:     # whether return name
             room_dict = {}
             server_rooms = ServerRoom.objects.values('id', 'name').filter(type=2)
