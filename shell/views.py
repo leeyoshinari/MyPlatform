@@ -124,8 +124,8 @@ def edit_server(request):
             logger.info(f'Edit server success. ip: {servers.host}, operator: {username}, id: {servers.id}')
             return result(msg='Edit server success ~ ')
         except Servers.DoesNotExist:
-            logger.error(f'Please donot modify server id and host ~')
-            return result(code=2, msg='Please donot modify server id and host ~')
+            logger.error(f'Please do not modify server id and host ~')
+            return result(code=2, msg='Please do not modify server id and host ~')
         except Exception as err:
             logger.error(traceback.format_exc())
             return result(code=1, msg=err)

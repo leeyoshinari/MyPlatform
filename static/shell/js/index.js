@@ -84,6 +84,8 @@ document.getElementById('addServer').addEventListener('click', function () {
             return;
         }
 
+        $('.modal_cover').css("display", "block");
+        $('.modal_gif').css("display", "block");
         let c = new Date().getTime().toString();
         let total = c.length;
         let password = '';
@@ -116,10 +118,11 @@ document.getElementById('addServer').addEventListener('click', function () {
             success: function (data) {
                 if (data['code'] !== 0) {
                     $.Toast(data['msg'], 'error');
-                    return;
                 } else {
                     location.reload();
                 }
+                $('.modal_cover').css("display", "none");
+                $('.modal_gif').css("display", "none");
             }
         })
     }
@@ -409,6 +412,8 @@ function server_modal(data) {
             return;
         }
 
+        $('.modal_cover').css("display", "block");
+        $('.modal_gif').css("display", "block")
         let total = ServerId.length;
         let password = '';
         if (p) {
@@ -440,10 +445,11 @@ function server_modal(data) {
             success: function (data) {
                 if (data['code'] !== 0) {
                     $.Toast(data['msg'], 'error');
-                    return;
                 } else {
                     location.reload();
                 }
+                $('.modal_cover').css("display", "none");
+                $('.modal_gif').css("display", "none");
             }
         })
     }

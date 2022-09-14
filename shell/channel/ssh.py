@@ -144,15 +144,15 @@ def connect_ssh(host, port, user, pwd, current_time):
         client.connect(username=user, password=parse_pwd(current_time, pwd), hostname=host, port=port, timeout=10)
         return {'code': 0, 'client': client}
     except socket.timeout:
-        logger.error('ssh connect timeout ~')
+        logger.error(f'{host} ssh connect timeout ~')
         client.close()
         return {'code': 1, 'msg': 'Session Connect Timeout ~'}
     except paramiko.ssh_exception.NoValidConnectionsError:
-        logger.error('Unable to Connect Session ~ ')
+        logger.error(f'{host} Unable to Connect Session ~ ')
         client.close()
         return {'code': 1, 'msg': 'Unable to connect ~'}
     except paramiko.ssh_exception.AuthenticationException:
-        logger.error('Username or Password Error ~')
+        logger.error(f'{host} Username or Password Error ~')
         client.close()
         return {'code': 1, 'msg': 'Username or password error ~'}
     except:
