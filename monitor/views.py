@@ -205,37 +205,47 @@ def plot_monitor(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         host = data.get('host')
-        roomId = data.get('roomId')
+        room_id = data.get('roomId')
         start_time = data.get('startTime')
         end_time = data.get('endTime')
         type_ = data.get('type')
         port_pid = data.get('port')
         disk = data.get('disk')
-        server_info = monitor_server.get_value_by_host('server_' + host)
-        if server_info:
-            try:
+        try:
+            if host:
+                servers = Servers.objects.filter(room_id=room_id, host=host)
+                server_dict = monitor_server.get_value_by_host('Server_' + host)
+                if servers and server_dict:
+                    hosts = [host]
+                else:
+                    hosts = []
+            else:
+                servers = Servers.objects.filter(room_id=room_id)
+                server_keys = monitor_server.get_all_keys()
+                hosts = [s.host for s in servers if 'Server_' + s.host in server_keys]
+            if hosts:
                 if type_ == 'port':
-                    res = draw_data_from_db(roomId=roomId, host=host, port=port_pid, startTime=start_time, endTime=end_time, disk=disk)
+                    res = draw_data_from_db(roomId=room_id, host=hosts, port=port_pid, startTime=start_time, endTime=end_time, disk=disk)
                     if res['code'] == 0:
                         raise Exception(res['message'])
-                    res.update({'gc': monitor_server.get_gc(host, server_info['port'], f'getGC/{port_pid}')})
+                    res.update({'gc': monitor_server.get_gc(hosts, hosts['port'], f'getGC/{port_pid}')})
                     if res['gc'][0] == -1 and res['gc'][2] == -1:
                         res['flag'] = 0
                     return JsonResponse(res)
 
                 if type_ == 'system':
-                    res = draw_data_from_db(roomId=roomId, host=host, startTime=start_time, endTime=end_time, system=1, disk=disk)
+                    res = draw_data_from_db(roomId=room_id, host=hosts, startTime=start_time, endTime=end_time, system=1, disk=disk)
                     if res['code'] == 0:
                         raise Exception(res['message'])
                     res['flag'] = 0
                     return JsonResponse(res)
+            else:
+                logger.error(f'Server room {room_id} has no registered agents.')
+                return result(code=1, msg=f'Server room {room_id} has no registered agents.')
 
-            except Exception as err:
-                logger.error(traceback.format_exc())
-                return result(code=1, msg=str(err))
-        else:
-            logger.error(f'{host} agent may not register.')
-            return result(code=1, msg=f'{host} agent may not register.')
+        except Exception as err:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg=str(err))
 
 
 def get_port_disk(request):
