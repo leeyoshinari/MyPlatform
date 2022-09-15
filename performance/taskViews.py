@@ -401,9 +401,9 @@ def get_running_server(request):
             hosts = TestTaskLogs.objects.values('value', 'action').filter(task_id=task_id, action=1)
             host_info = []
             for h in hosts:
-                host_dict = get_value_by_host('jmeterServer_' + h.value)
-                host_dict.update(get_value_by_host('Server_' + h.value))
-                host_dict.update({'action': h.action})
+                host_dict = get_value_by_host('jmeterServer_' + h['value'])
+                host_dict.update(get_value_by_host('Server_' + h['value']))
+                host_dict.update({'action': h['action']})
                 host_info.append(host_dict)
             # host_info = [
             #     {'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
@@ -483,13 +483,13 @@ def get_data_from_influx(task_id, host=None, start_time=None, end_time=None):
         else:   # If the end time does not exist, the current time is used
             end_time = strfTime()
 
-        sql = f"select samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
+        sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
               f"host='{host}' and time>='{start_time}' and time<'{end_time}' tz('Asia/Shanghai')"
         logger.info(f'Execute SQL: {sql}')
         datas = conn.query(sql)
         if datas:
             for data in datas.get_points():
-                query_data['time'].append(data['time'][:19].replace('T', ' '))
+                query_data['time'].append(data['c_time'])
                 query_data['samples'].append(data['samples'])
                 query_data['tps'].append(data['tps'])
                 query_data['avg_rt'].append(data['avg_rt'])
