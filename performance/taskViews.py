@@ -201,7 +201,7 @@ def start_task(request):
                     logger.warning(f'There is not enough servers to run performance test, operator: {username}')
                     return result(code=1, msg='There is not enough servers to run performance test ~')
                 for h in available_servers:
-                    res = http_request('post', h['host'], h['port'], 'runTask', json=post_data)
+                    res = http_request('post', h.host, get_value_by_host('jmeterServer_' + h.host, 'port'), 'runTask', json=post_data)
                     # response_data = json.loads(res.content.decode())
                 logger.info(f'Task {task_id} is starting, operator: {username}')
                 return result(msg=f'Task {task_id} is starting, please wait a minute ~', data=task_id)
