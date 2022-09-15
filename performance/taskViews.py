@@ -401,8 +401,11 @@ def get_running_server(request):
             hosts = TestTaskLogs.objects.values('value', 'action').filter(task_id=task_id, action=1)
             host_info = []
             for h in hosts:
-                host_dict = get_value_by_host('jmeterServer_' + h['value'])
-                host_dict.update(get_value_by_host('Server_' + h['value']))
+                jmeter_server_dict = get_value_by_host('jmeterServer_' + h['value'])
+                server_monitor_dict = get_value_by_host('Server_' + h['value'])
+                host_dict = jmeter_server_dict if jmeter_server_dict else {}
+                if server_monitor_dict:
+                    host_dict.update(server_monitor_dict)
                 host_dict.update({'action': h['action']})
                 host_info.append(host_dict)
             # host_info = [

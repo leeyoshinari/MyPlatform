@@ -30,10 +30,10 @@ function plot_delta(myChart, task_id, url) {
         url: url + '?id=' + task_id + '&host=' + figure_title + '&startTime=' + startTime,
         success: function (data) {
             if (data['code'] === 0) {
-                let details = document.getElementsByClassName("plan-detail");
-                plot_delta_figure(myChart, details, data['data']['time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
-                data['data']['min_rt'], data['data']['max_rt'], data['data']['err']);
                 if(data['data']['time'].length > 0) {
+                    let details = document.getElementsByClassName("plan-detail");
+                    plot_delta_figure(myChart, details, data['data']['time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
+                    data['data']['min_rt'], data['data']['max_rt'], data['data']['err']);
                     document.getElementById('start-time').value = data['data']['time'].slice(-1)[0];
                 }
             } else {
@@ -80,7 +80,7 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5) 
                     } else {
                         s += '<td></td>';
                     }
-                    if (all_host[i]['action'] === 1 && status === 1) {
+                    if (all_host[i]['action'] === 1 && all_host[i]['status'] === 1 && status === 1) {
                         s += '<td><a onclick="stop_test(\'' + url5 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Stop</a>' +
                             '<a onclick="change_tps(\'' + url2 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Change TPS</a>' +
                             '<a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
