@@ -134,7 +134,7 @@ class Task(object):
                 'status': self.status
             }
             res = self.request_post(url, post_data)
-            logger.info(f"Agent register successful, status code is {res.status_code}")
+            logger.info(f"Agent register successful, status code is {res.status_code}, task_id: {self.task_id}")
             time.sleep(9)
 
     def connect_influx(self):
@@ -167,7 +167,11 @@ class Task(object):
                 'data': post_data
             }
             res = self.request_post(url, post_data)
-            logger.info(f"Send message successful, data: {post_data}, response: {res.content.decode()}")
+            response = json.loads(res.content.decode())
+            if response['code'] == 0:
+                logger.info(f"Send message successful, data: {post_data}, response: {response}")
+            else:
+                logger.error(f"Send message failure, msg: {response['msg']}")
         except:
             logger.error("Send message failure ~")
 
@@ -305,8 +309,8 @@ class Task(object):
                 self.status = 1
                 self.task_id = task_id
                 flag = 1
-                logger.info(f'{jmx_file_path} run successful, task id: {task_id}')
-                self.start_thread(self.parse_log, (os.path.join(self.file_path, task_id, task_id + '.log'),))
+                logger.info(f'{jmx_file_path} run successful, task id: {self.task_id}')
+                self.start_thread(self.parse_log, (os.path.join(self.file_path, self.task_id, self.task_id + '.log'),))
             else:
                 flag = 0
                 logger.error(f'{jmx_file_path} run failure, task id: {task_id}')
