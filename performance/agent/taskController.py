@@ -131,10 +131,11 @@ class Task(object):
             post_data = {
                 'host': self.IP,
                 'port': get_config('port'),
-                'status': self.status
+                'status': self.status,
+                'tps': self.current_tps
             }
             res = self.request_post(url, post_data)
-            logger.info(f"Agent register successful, status code is {res.status_code}, task_id: {self.task_id}")
+            logger.info(f"Agent register successful, status code is {res.status_code}")
             time.sleep(9)
 
     def connect_influx(self):
@@ -170,10 +171,13 @@ class Task(object):
             response = json.loads(res.content.decode())
             if response['code'] == 0:
                 logger.info(f"Send message successful, data: {post_data}, response: {response}")
+                return True
             else:
                 logger.error(f"Send message failure, msg: {response['msg']}")
+                return False
         except:
             logger.error("Send message failure ~")
+            return False
 
     def write_to_influx(self, datas):
         d = [json.loads(r) for r in datas]
@@ -317,28 +321,31 @@ class Task(object):
         except:
             flag = 0
             logger.error(traceback.format_exc())
-        self.send_message('run_task', flag)
+        if flag == 1:
+            _ = self.send_message('run_task', flag)
 
     def stop_task(self, task_id):
-        flag = 1  # 0-stop task fail, 1-stop task success
+        flag = 0  # 0-stop task fail, 1-stop task success
         if self.check_status(is_run=True):
             try:
                 self.kill_process()
                 time.sleep(2)
                 if self.check_status(is_run=False):
                     self.status = 0
-                    self.task_id = None
                     self.current_tps = 0
                     flag = 1
                     del self.redis_client, self.influx_client
                     logger.info(f'task {task_id} stop successful ~')
                 else:
-                    flag = 0
                     logger.error(f'task {task_id} stop failure ~')
+                    return False
             except:
-                flag = 0
                 logger.error(traceback.format_exc())
-        self.send_message('stop_task', flag)
+                return False
+        if self.send_message('stop_task', flag):
+            return True
+        else:
+            return False
 
     def kill_process(self):
         try:
