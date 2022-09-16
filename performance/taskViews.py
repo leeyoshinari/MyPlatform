@@ -216,8 +216,9 @@ def stop_task(request):
             username = request.user.username
             task_id = request.GET.get('id')
             host = request.GET.get('host')
+            host = host if host else 'all'
             if host == 'all':
-                runnging_server = TestTaskLogs.objects.filter(task_id=task_id, action=1)
+                runnging_server = TestTaskLogs.objects.filter(task_id=task_id, action=1).values('value')
                 hosts = [h['value'] for h in runnging_server]
             else:
                 host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
