@@ -116,7 +116,6 @@ class PerformanceTestTask(models.Model):
     max_rt = models.FloatField(default=0, verbose_name='max Response Time (ms)')
     error = models.FloatField(default=0, verbose_name='error(%)')
     path = models.CharField(null=True, max_length=128, verbose_name='all files used to test, *.zip')
-    servers = models.CharField(null=True, max_length=255, verbose_name='pressure server IPs')
     server_room = models.ForeignKey(ServerRoom, on_delete=models.CASCADE, verbose_name='server room')
     running_num = models.IntegerField(default=0, verbose_name='pressure server running number')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')

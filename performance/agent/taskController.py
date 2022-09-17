@@ -348,6 +348,9 @@ class Task(object):
             except:
                 logger.error(traceback.format_exc())
                 return False
+        else:
+            logger.error(f'task {task_id} has stopped ~')
+
         if self.send_message('stop_task', flag):
             return True
         else:

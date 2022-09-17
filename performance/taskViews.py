@@ -357,7 +357,8 @@ def set_message(request):
                     tasks.status = 2
                     tasks.end_time = strfTime()
                     durations = time.time() - toTimeStamp(str(tasks.start_time))
-                    datas = get_data_from_influx('1', task_id, host='all', start_time=tasks.start_time, end_time=strfTime())
+                    datas = get_data_from_influx('1', task_id, host='all', start_time=tasks.start_time, end_time=tasks.end_time)
+                    logger.info(f"Task {task_id} stop success ~")
                     if datas['code'] == 0:
                         total_samples = sum(datas['data']['samples'])
                         avg_rt = [s * t / total_samples for s, t in zip(datas['data']['samples'], datas['data']['avg_rt'])]
@@ -367,6 +368,9 @@ def set_message(request):
                         tasks.min_rt = min(datas['data']['min_rt'])
                         tasks.max_rt = max(datas['data']['max_rt'])
                         tasks.error = round(sum(datas['data']['err']) / total_samples * 100, 4)
+                        logger.debug(total_samples)
+                    else:
+                        logger.error(datas['message'])
             tasks.save()
             logger.info(f'Set message success, type:{task_type}, task ID: {task_id}')
             return result(msg='Set message success ~')
@@ -385,7 +389,7 @@ def view_task_detail(request):
                 logger.info(f'query task {task_id} detail page success, operator: {username}')
                 return render(request, 'performance/task/detail.html', context={'tasks': tasks})
             else:
-                return render(request, 'performance/task/detail.html', context={'tasks': []})
+                return render(request, 'performance/task/detail.html', context={'tasks': None})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get task detail error ~')
@@ -431,9 +435,9 @@ def get_idle_server(request):
             servers = Servers.objects.values('host').filter(Q(room_id=server_room_id), Q(room__type=2))
             host_info = []
             for server in servers:
-                host_dict = get_value_by_host('jmeterServer_' + server.host)
+                host_dict = get_value_by_host('jmeterServer_' + server['host'])
                 if host_dict['status'] == 0:
-                    host_dict.update(get_value_by_host('Server_' + server.host))
+                    host_dict.update(get_value_by_host('Server_' + server['host']))
                     host_info.append(host_dict)
             # host_info = [
             #     {'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
