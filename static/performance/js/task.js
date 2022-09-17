@@ -8,7 +8,7 @@ function plot(myChart, task_id, url) {
         success: function (data) {
             if (data['code'] === 0) {
                 let details = document.getElementsByClassName("plan-detail");
-                plot_figure(myChart, details, data['data']['time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
+                plot_figure(myChart, details, data['data']['c_time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
                 data['data']['min_rt'], data['data']['max_rt'], data['data']['err']);
                 if(data['data']['time'].length > 0) {
                     document.getElementById('start-time').value = data['data']['time'].slice(-1)[0];
@@ -27,18 +27,15 @@ function plot_delta(myChart, task_id, url) {
     let startTime = document.getElementById('start-time').value;
     $.ajax({
         type: 'get',
-        url: url + '?id=' + task_id + '&host=' + figure_title + '&startTime=' + startTime,
+        url: url + '?id=' + task_id + '&delta=520&host=' + figure_title + '&startTime=' + startTime,
         success: function (data) {
             if (data['code'] === 0) {
                 if(data['data']['time'].length > 0) {
                     let details = document.getElementsByClassName("plan-detail");
-                    plot_delta_figure(myChart, details, data['data']['time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
+                    plot_delta_figure(myChart, details, data['data']['c_time'], data['data']['samples'], data['data']['tps'], data['data']['avg_rt'],
                     data['data']['min_rt'], data['data']['max_rt'], data['data']['err']);
                     document.getElementById('start-time').value = data['data']['time'].slice(-1)[0];
                 }
-            } else {
-                $.Toast(data['message'], 'error');
-                return;
             }
         }
     });

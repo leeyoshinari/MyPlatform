@@ -387,6 +387,8 @@ def view_task_detail(request):
             username = request.user.username
             task_id = request.GET.get('id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
+            if tasks.create_time is None:
+                return render(request, 'performance/task/detail.html', context={})
             logger.info(f'query task {task_id} detail page success, operator: {username}')
             return render(request, 'performance/task/detail.html', context={'tasks': tasks})
         except:
@@ -460,21 +462,20 @@ def query_data(request):
         try:
             task_id = request.GET.get('id')
             host = request.GET.get('host')
+            delta = request.GET.get('delta')
             start_time = request.GET.get('startTime')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             start_time = start_time if start_time else tasks.start_time
-            end_time = strfTime()
-            if tasks.end_time:
-                end_time = tasks.end_time
-            return json_result(get_data_from_influx(task_id, host=host, start_time=start_time, end_time=end_time))
+            end_time = tasks.end_time
+            return json_result(get_data_from_influx(delta, task_id, host=host, start_time=start_time, end_time=end_time))
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Query data error ~')
 
 
-def get_data_from_influx(task_id, host=None, start_time=None, end_time=None):
+def get_data_from_influx(delta, task_id, host=None, start_time=None, end_time=None):
     # query_data = {'time': ['2022-08-20 23:50:00','2022-08-20 23:58:10','2022-08-21 00:00:01'], 'samples': [20, 46, 97], 'tps': [5, 7, 20], 'avg_rt': [345, 378, 567], 'min_rt': [123, 102, 120], 'max_rt': [678, 567, 969], 'err': [1, 3, 2], 'active': [150, 200, 200]}
-    query_data = {'time': [], 'samples': [], 'tps': [], 'avg_rt': [], 'min_rt': [], 'max_rt': [], 'err': [], 'active': []}
+    query_data = {'time': [], 'c_time': [], 'samples': [], 'tps': [], 'avg_rt': [], 'min_rt': [], 'max_rt': [], 'err': [], 'active': []}
     res = {'code': 0, 'data': None, 'message': 'Query InfluxDB Successful!'}
     try:
         conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
@@ -487,13 +488,19 @@ def get_data_from_influx(task_id, host=None, start_time=None, end_time=None):
         else:   # If the end time does not exist, the current time is used
             end_time = strfTime()
 
-        sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
-              f"host='{host}' and time>'{start_time}' and time<='{end_time}' tz('Asia/Shanghai')"
+        if delta == '520':
+            sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
+                  f"host='{host}' and time>'{start_time}'"
+        else:
+            sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
+                  f"host='{host}' and time>'{start_time}' and time<='{end_time}' tz('Asia/Shanghai')"
+
         logger.info(f'Execute SQL: {sql}')
         datas = conn.query(sql)
         if datas:
             for data in datas.get_points():
-                query_data['time'].append(data['c_time'])
+                query_data['time'].append(data['time'])
+                query_data['c_time'].append(data['c_time'])
                 query_data['samples'].append(data['samples'])
                 query_data['tps'].append(data['tps'])
                 query_data['avg_rt'].append(data['avg_rt'])
@@ -511,6 +518,6 @@ def get_data_from_influx(task_id, host=None, start_time=None, end_time=None):
     except:
         logger.error(traceback.format_exc())
         res['message'] = 'System Error ~'
-        res['code'] = 0
+        res['code'] = 1
         res['data'] = query_data
     return res
