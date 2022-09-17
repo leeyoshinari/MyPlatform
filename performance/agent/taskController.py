@@ -216,7 +216,7 @@ class Task(object):
                                  'fields': {'c_time': time.strftime("%Y-%m-%d %H:%M:%S"), 'samples': data[0], 'tps': data[1],
                                             'avg_rt': data[2], 'min_rt': data[3], 'max_rt': data[4], 'err': data[5], 'active': data[6]}}]
                         self.influx_client.write_points(line)  # write to database
-                        if res[-1] == 0:
+                        if res[-1] == '0':
                             self.start_thread(self.stop_task, (self.task_id,))
                     else:
                         index += 1
@@ -358,8 +358,9 @@ class Task(object):
 
     def change_TPS(self, TPS):
         try:
-            res = os.popen(f'java -jar {self.jmeter_path}/lib/bshclient.jar localhost 12525 {self.setprop_path} number_threads {TPS}').read()
-            logger.info(f'Current TPS is {TPS}')
+            cmd = f'java -jar {self.jmeter_path}/lib/bshclient.jar localhost 12525 {self.setprop_path} number_threads {TPS}'
+            res = os.popen(cmd).read()
+            logger.info(f'Change TPS to {TPS}, CMD: {cmd}')
             return {'code': 0, 'msg': 'Change TPS successful ~'}
         except:
             logger.error(traceback.format_exc())

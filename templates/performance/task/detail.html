@@ -11,6 +11,7 @@
     <a href="{% url 'perf:task_home' %}">Test Task</a>
 {% endblock %}
 
+{% if tasks %}
 {% block detail_action %}
     <div style="height: 50px;">
         <div>
@@ -91,7 +92,6 @@
         </div>
     </div>
 {% endblock %}
-{% if tasks %}
 {% block other_content %}
     <div><h3 style="float: left;">Monitor Figure</h3>
         <input id="figure-title" type="text" value="(All Servers)" name="all" style="border: none; margin-left: 1%; vertical-align: bottom; background-color: white;" disabled readonly>
