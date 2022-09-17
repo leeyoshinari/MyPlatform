@@ -48,7 +48,7 @@
                         <a href="#" onclick="stop_task('{% url 'perf:task_stop' %}?id={{ task.id }}')">Stop</a>
                     {% endif %}
                 {% endif %}
-                <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:task_home' %}?id={{ task.plan.id }}', 'task', {{ task.id }})">Delete</a>
+                <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:task_home' %}', 'task', {{ task.id }})">Delete</a>
             </td>
         </tr>
     {% endfor %}

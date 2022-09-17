@@ -307,12 +307,14 @@ def change_tps(request):
             else:
                 host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
                 hosts = [host]
-            current_tps = int(tasks.plan.target_num * tps / len(hosts))
+            current_tps = int(tasks.plan.target_num * tps / 100 / len(hosts))
             post_data = {'taskId': task_id, 'tps': current_tps}
+            logger.debug(f"Change TPS hosts: {hosts}")
             res_host = []
             for h in hosts:
                 res = http_request('post', h, get_value_by_host('jmeterServer_'+h, 'port'), 'change', json=post_data)
                 response_data = json.loads(res.content.decode())
+                logger.debug(response_data)
                 if response_data['code'] != 0:
                     res_host.append(h)
                     logger.error(f'Change TPS failure, task: {task_id}, host: {h}, operator: {username}')
@@ -387,7 +389,7 @@ def view_task_detail(request):
             username = request.user.username
             task_id = request.GET.get('id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            if tasks.create_time:
+            if tasks.start_time:
                 logger.info(f'query task {task_id} detail page success, operator: {username}')
                 return render(request, 'performance/task/detail.html', context={'tasks': tasks})
             else:

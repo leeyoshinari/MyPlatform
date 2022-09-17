@@ -65,3 +65,11 @@ def multiple(v1, v2):
 @register.filter
 def parse_url_name(v1):
     return v1.split('/')[-1]
+
+
+@register.filter
+def get_room_list(v1, v2):
+    try:
+        return v1[v2]
+    except:
+        return 0

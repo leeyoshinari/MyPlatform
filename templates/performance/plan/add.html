@@ -92,8 +92,8 @@
             </div>
             <div class="value-div">
                 <select id="server_room">
-                    {% for k, v in server_num_rooms.items %}
-                        <option value="{{ k }}">{{ v }}</option>
+                    {% for s in server_rooms %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
                     {% endfor %}
                 </select>
             </div>

@@ -124,11 +124,11 @@
             </div>
             <div class="value-div">
                 <select id="server_room">
-                    {% for k, v in server_num_rooms.items %}
-                        {% if plan.server_room_id == k %}
-                            <option value="{{ k }}" selected>{{ v }}</option>
+                    {% for s in server_rooms %}
+                        {% if plan.server_room_id == s.id %}
+                            <option value="{{ s.id }}" selected>{{ s.name }}</option>
                         {% else %}
-                            <option value="{{ k }}">{{ v }}</option>
+                            <option value="{{ s.id }}">{{ s.name }}</option>
                         {% endif %}
                     {% endfor %}
                 </select>

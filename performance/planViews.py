@@ -76,8 +76,8 @@ def add(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Save failure ~')
     else:
-        server_num_rooms = get_idle_server_num(is_name=True)
-        return render(request, 'performance/plan/add.html', context={'server_num_rooms': server_num_rooms})
+        server_rooms = ServerRoom.objects.filter(type=2).order_by('-create_time')
+        return render(request, 'performance/plan/add.html', context={'server_rooms': server_rooms})
 
 
 def edit(request):
@@ -108,8 +108,8 @@ def edit(request):
         try:
             plan_id = request.GET.get('id')
             plans = TestPlan.objects.get(id=plan_id)
-            server_num_rooms = get_idle_server_num(is_name=True)
-            return render(request, 'performance/plan/edit.html', context={'plan': plans, 'server_num_rooms': server_num_rooms})
+            server_rooms = ServerRoom.objects.filter(type=2).order_by('-create_time')
+            return render(request, 'performance/plan/edit.html', context={'plan': plans, 'server_rooms': server_rooms})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get test plan failure ~')
