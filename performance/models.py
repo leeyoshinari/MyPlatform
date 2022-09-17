@@ -17,7 +17,6 @@ class TestPlan(models.Model):
     variables = models.JSONField(null=True, verbose_name='variables')
     server_room = models.ForeignKey(ServerRoom, default=520, on_delete=models.CASCADE, verbose_name='server room')
     server_number = models.IntegerField(default=1, verbose_name='number of pressure servers')
-    is_running = models.IntegerField(default=0, verbose_name='0-no run, 1-running')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
     update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
     operator = models.CharField(max_length=50, verbose_name='operator')
