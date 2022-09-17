@@ -11,8 +11,8 @@
     <a href="{% url 'perf:task_home' %}">Test Task</a>
 {% endblock %}
 
-{% if tasks %}
 {% block detail_action %}
+    {% if tasks %}
     <div style="height: 50px;">
         <div>
             <h3>Test Plan Name:
@@ -91,8 +91,10 @@
             <span>{{ tasks.error }}%</span>
         </div>
     </div>
+    {% endif %}
 {% endblock %}
 {% block other_content %}
+    {% if tasks %}
     <div><h3 style="float: left;">Monitor Figure</h3>
         <input id="figure-title" type="text" value="(All Servers)" name="all" style="border: none; margin-left: 1%; vertical-align: bottom; background-color: white;" disabled readonly>
         <input id="start-time" type="text" value="{{ tasks.start_time | date:"Y-m-d H:i:s" }}" style="display: none;">
@@ -129,8 +131,10 @@
             </div>
         </div>
     </div>
+    {% endif %}
 {% endblock %}
 {% block table_head %}
+    {% if tasks %}
     <tr class="table_style">
         <th width="15%">Server</th>
         <th width="8%">TPS(/s)</th>
@@ -140,6 +144,7 @@
         <th width="8%">Network</th>
         <th width="21%">Actions</th>
     </tr>
+    {% endif %}
 {% endblock %}
 {% block table_body %}
 {% endblock %}
@@ -151,6 +156,7 @@
 {% block backjs %}
 {% endblock %}
 {% block define_js %}
+    {% if tasks %}
     <script type="text/javascript">
         let W = window.screen.width;
         document.getElementsByClassName('toolbar')[0].style.width = (W - 200) + 'px';
@@ -201,9 +207,9 @@
             plot(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}');
         }
     </script>
-{% endblock %}
-{% else %}
+    {% else %}
     <script type="text/javascript">
         $.Toast('Task is in starting, please wait a minute ~', 'warning');
     </script>
-{% endif %}
+    {% endif %}
+{% endblock %}

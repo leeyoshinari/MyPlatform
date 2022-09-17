@@ -35,7 +35,7 @@
             <td>{{ task.server_room.name }}</td>
             <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
             <td style="text-align: center;">{{ task.samples }}</td>
-            <td style="text-align: center;">{{ task.average_rt }}</td>
+            <td style="text-align: center;">{{ task.average_rt }} ms</td>
             <td style="text-align: center;">{{ task.tps }}</td>
             <td style="text-align: center;">{{ task.error }} %</td>
             <td style="text-align: center;">{{ task.operator }}</td>

@@ -23,7 +23,7 @@
     </div>
     <div class="container2">
         <div class="list-icon" style="margin-top: 35px;">
-            <a onclick="get_root_folder()">Home</a>
+            <a href="{% url 'perf:task_home' %}">Home</a>
         </div>
         <div class="list-icon" title="Corresponds to Test Plan in JMeter.">
             <a href="{% url 'perf:plan_home' %}">Test Plan</a>
@@ -43,14 +43,8 @@
         <div class="list-icon">
             <a onclick="files_format('music')">Upload JMeter</a>
         </div>
-        <!--div class="list-icon">
-            <a href="{% url 'perf:get_server' %}">Pressure Servers</a>
-        </div-->
         <div class="list-icon">
             <a href="{% url 'perf:task_home' %}">Test Task</a>
-        </div>
-        <div class="list-icon">
-            <a onclick="get_root_folder()">Test Result</a>
         </div>
     </div>
     <div class="container3">

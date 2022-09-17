@@ -261,7 +261,7 @@ class Task(object):
             archive.write(jtl_path, task_id + '.jtl')
         archive.write(jmeter_log_path, task_id + '.log')
         archive.close()
-        with open(zip_file_path, 'rb', encoding='utf-8') as f:
+        with open(zip_file_path, 'rb') as f:
             res = f.read()
         os.remove(zip_file_path)
         return res
