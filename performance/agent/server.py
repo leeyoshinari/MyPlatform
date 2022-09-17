@@ -66,9 +66,10 @@ async def change_tps(request):
         task_id = data.get('taskId')
         tps = data.get('tps')
         res = task.change_TPS(tps)
-
+        return web.json_response(res)
     except Exception:
         logger.error(traceback.format_exc())
+        return web.json_response({'code': 1, 'msg': 'Change TPS failure ~'})
 
 
 async def stop_task(request):

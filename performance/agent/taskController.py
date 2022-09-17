@@ -135,7 +135,7 @@ class Task(object):
                 'tps': self.current_tps
             }
             res = self.request_post(url, post_data)
-            logger.info(f"Agent register successful, status code is {res.status_code}")
+            logger.info(f"Agent register successful, status code is {res.status_code}, status: {self.status}, TPS: {self.current_tps}")
             time.sleep(9)
 
     def connect_influx(self):
@@ -158,14 +158,14 @@ class Task(object):
         except:
             logger.error(traceback.format_exc())
 
-    def send_message(self, task_type, post_data):
+    def send_message(self, task_type, flag):
         try:
             url = f'http://{get_config("address")}/performance/task/register/getMessage'
             post_data = {
                 'host': self.IP,
                 'taskId': self.task_id,
                 'type': task_type,
-                'data': post_data
+                'data': flag
             }
             res = self.request_post(url, post_data)
             response = json.loads(res.content.decode())
@@ -207,14 +207,17 @@ class Task(object):
                             self.redis_client.set(self.task_id, self.agent_num, ex=self.key_expire)
                             flag = False
                         res = re.findall(self.pattern, line.replace(' ', ''))[0]
+                        logger.debug(res)
                         self.current_tps = res[1]
                         data = list(map(float, res))
+                        self.write_to_redis(data)
                         line = [{'measurement': 'performance_jmeter_task',
                                  'tags': {'task': str(self.task_id), 'host': self.IP},
                                  'fields': {'c_time': time.strftime("%Y-%m-%d %H:%M:%S"), 'samples': data[0], 'tps': data[1],
                                             'avg_rt': data[2], 'min_rt': data[3], 'max_rt': data[4], 'err': data[5], 'active': data[6]}}]
                         self.influx_client.write_points(line)  # write to database
-                        self.write_to_redis(data)
+                        if res[-1] == 0:
+                            self.start_thread(self.stop_task, (self.task_id,))
                     else:
                         index += 1
 
@@ -325,7 +328,7 @@ class Task(object):
             _ = self.send_message('run_task', flag)
 
     def stop_task(self, task_id):
-        flag = 0  # 0-stop task fail, 1-stop task success
+        flag = 1  # 0-stop task fail, 1-stop task success
         if self.check_status(is_run=True):
             try:
                 self.kill_process()

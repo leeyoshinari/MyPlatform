@@ -251,9 +251,9 @@ function change_tps(url, task_id, host) {
             success: function (data) {
                 if (data['code'] !== 0) {
                     $.Toast(data['msg'], 'error');
-                    document.getElementById("tps-ratio").value = "";
                 } else {
                     $.Toast(data['msg'], 'success');
+                    document.getElementById("tps-ratio").value = "";
                     modal.style.display = "none";
                 }
             }

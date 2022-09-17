@@ -335,29 +335,27 @@ def set_message(request):
             task_id = datas.get('taskId')
             host = datas.get('host')
             task_type = datas.get('type')
-            data = datas.get('data')
+            # data = datas.get('data')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             if task_type == 'run_task':
-                if data == 1:
-                    tasks.running_num = tasks.running_num + 1
-                    tasks.status = 1
-                    tasks.start_time = strfTime()
-                    try:
-                        task_log = TestTaskLogs.objects.get(task_id=task_id, value=host)
-                        task_log.action = 2
-                        task_log.save()
-                    except TestTaskLogs.DoesNotExist:
-                        TestTaskLogs.objects.create(id=primaryKey(), task_id=task_id, action=1, value=host, operator='System')
-                    plans = TestPlan.objects.get(id=tasks.plan.id)
-                    plans.is_running = 1
-                    plans.save()
-
-            if task_type == 'stop_task':
-                if data == 1:
-                    tasks.running_num = tasks.running_num - 1
+                tasks.running_num = tasks.running_num + 1
+                tasks.status = 1
+                tasks.start_time = strfTime()
+                try:
                     task_log = TestTaskLogs.objects.get(task_id=task_id, value=host)
                     task_log.action = 2
                     task_log.save()
+                except TestTaskLogs.DoesNotExist:
+                    TestTaskLogs.objects.create(id=primaryKey(), task_id=task_id, action=1, value=host, operator='System')
+                plans = TestPlan.objects.get(id=tasks.plan.id)
+                plans.is_running = 1
+                plans.save()
+
+            if task_type == 'stop_task':
+                tasks.running_num = tasks.running_num - 1
+                task_log = TestTaskLogs.objects.get(task_id=task_id, value=host)
+                task_log.action = 2
+                task_log.save()
                 if tasks.running_num == 0 and TestTaskLogs.objects.filter(task_id=task_id, action=1).count() == 0:
                     tasks.status = 2
                     tasks.end_time = strfTime()
@@ -365,7 +363,7 @@ def set_message(request):
                     plans = TestPlan.objects.get(id=tasks.plan.id)
                     plans.is_running = 0
                     plans.save()
-                    datas = get_data_from_influx(task_id, host=None, start_time=tasks.start_time, end_time=strfTime())
+                    datas = get_data_from_influx('1', task_id, host=None, start_time=tasks.start_time, end_time=strfTime())
                     if datas['code'] == 0:
                         total_samples = sum(datas['data']['samples'])
                         avg_rt = [s * t / total_samples for s, t in zip(datas['data']['samples'], datas['data']['avg_rt'])]
@@ -376,7 +374,7 @@ def set_message(request):
                         tasks.max_rt = max(datas['data']['max_rt'])
                         tasks.error = round(sum(datas['data']['err']) / total_samples * 100, 4)
             tasks.save()
-            logger.info(f'Set message success, type:{task_type}, task ID: {task_id}, data is {data}')
+            logger.info(f'Set message success, type:{task_type}, task ID: {task_id}')
             return result(msg='Set message success ~')
         except:
             logger.error(traceback.format_exc())
