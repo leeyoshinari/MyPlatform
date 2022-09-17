@@ -302,8 +302,8 @@ def change_tps(request):
                 return result(code=1, msg='TPS is not a number ~')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             if host == 'all':
-                runnging_server = TestTaskLogs.objects.filter(task_id=task_id, action=1)
-                hosts = [h['value'] for h in runnging_server]
+                running_server = TestTaskLogs.objects.filter(task_id=task_id, action=1).values('value')
+                hosts = [h['value'] for h in running_server]
             else:
                 host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
                 hosts = [host]
@@ -387,10 +387,11 @@ def view_task_detail(request):
             username = request.user.username
             task_id = request.GET.get('id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
-            if tasks.create_time is None:
+            if tasks.create_time:
+                logger.info(f'query task {task_id} detail page success, operator: {username}')
+                return render(request, 'performance/task/detail.html', context={'tasks': tasks})
+            else:
                 return render(request, 'performance/task/detail.html', context={})
-            logger.info(f'query task {task_id} detail page success, operator: {username}')
-            return render(request, 'performance/task/detail.html', context={'tasks': tasks})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get task detail error ~')
@@ -499,6 +500,7 @@ def get_data_from_influx(delta, task_id, host=None, start_time=None, end_time=No
         datas = conn.query(sql)
         if datas:
             for data in datas.get_points():
+                if data['time'] == start_time: continue
                 query_data['time'].append(data['time'])
                 query_data['c_time'].append(data['c_time'])
                 query_data['samples'].append(data['samples'])

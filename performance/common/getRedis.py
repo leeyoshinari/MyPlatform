@@ -16,6 +16,9 @@ def get_value_by_host(host_key, k=None):
             return server_dict[k]
         else:
             return server_dict
+    except TypeError:
+        logger.debug(traceback.format_exc())
+        return None
     except:
         logger.error(traceback.format_exc())
         return None
@@ -27,6 +30,8 @@ def get_all_host(k='jmeterServer_*'):
         keys = settings.REDIS.keys(k)
         for key in keys:
             agents.append(json.loads(settings.REDIS.get(key)))
+    except TypeError:
+        logger.debug(traceback.format_exc())
     except:
         logger.error(traceback.format_exc())
     return agents
