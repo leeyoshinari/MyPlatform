@@ -5,6 +5,7 @@
 import json
 import logging
 import traceback
+from django.conf import settings
 from django.shortcuts import render, redirect, resolve_url
 from .models import HTTPRequestHeader, HTTPSampleProxy, TransactionController
 from common.Result import result
@@ -29,7 +30,7 @@ def home(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 20
+            page_size = int(page_size) if page_size else settings.PAGE_SIZE
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word and ctl_id:
                 total_page = HTTPSampleProxy.objects.filter(controller_id=ctl_id, name__contains=key_word).count()
@@ -61,7 +62,7 @@ def get_from_header(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 15
+            page_size = int(page_size) if page_size else settings.PAGE_SIZE
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word and header_id:
                 samples = HTTPSampleProxy.objects.filter(http_header_id=header_id, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]

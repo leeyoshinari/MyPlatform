@@ -55,5 +55,6 @@
 {% endblock %}
 {% block define_js %}
     <script type="text/javascript">
+        PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'perf:task_home' %}?page=');
     </script>
 {% endblock %}

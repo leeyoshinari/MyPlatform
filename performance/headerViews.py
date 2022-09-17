@@ -5,6 +5,7 @@
 import json
 import logging
 import traceback
+from django.conf import settings
 from django.shortcuts import render, redirect
 from .models import HTTPRequestHeader
 from common.Result import result
@@ -24,7 +25,7 @@ def home(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 20
+            page_size = int(page_size) if page_size else settings.PAGE_SIZE
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word:
                 total_page = HTTPRequestHeader.objects.filter(name__contains=key_word).count()

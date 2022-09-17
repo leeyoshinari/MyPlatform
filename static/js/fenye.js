@@ -56,7 +56,7 @@ function PagingManage(obj, pageNum, currentpage, fenye_url) {
                         if (i === currentpage) {
                             pagehtml += '<li><a class="active" href=\'' + fenye_url + i + '\'>' + i + '</a></li>';
                         } else {
-                            pagehtml += '<li><a href="\'' + fenye_url + i + '\'>' + i + '</a></li>';
+                            pagehtml += '<li><a href=\'' + fenye_url + i + '\'>' + i + '</a></li>';
                         }
                     }
                 } else {

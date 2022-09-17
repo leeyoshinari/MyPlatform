@@ -32,7 +32,7 @@ def index(request):
             page = request.GET.get('page')
             page_size = request.GET.get('pageSize')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 20
+            page_size = int(page_size) if page_size else settings.PAGE_SIZE
             groups = request.user.groups.all()
             rooms = ServerRoom.objects.all().order_by('-create_time')
             total_num = Servers.objects.filter(group__in=groups).count()

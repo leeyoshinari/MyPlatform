@@ -33,15 +33,14 @@ def home(request):
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
             page = int(page) if page else 1
-            page_size = int(page_size) if page_size else 20
+            page_size = int(page_size) if page_size else settings.PAGE_SIZE
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word:
-                total_page = TestPlan.objects.filter(name__contains=key_word).count()
-                plans = TestPlan.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = TestPlan.objects.filter(is_file=0, name__contains=key_word).count()
+                plans = TestPlan.objects.filter(is_file=0, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
-                total_page = TestPlan.objects.all().count()
-                plans = TestPlan.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
-            logger.debug(plans.query)
+                total_page = TestPlan.objects.filter(is_file=0).count()
+                plans = TestPlan.objects.filter(is_file=0).order_by('-create_time')[page_size * (page - 1): page_size * page]
             if plans:
                 server_num_rooms = get_idle_server_num()
             logger.info(f'Get test plan success, operator: {username}')

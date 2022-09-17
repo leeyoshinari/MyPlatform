@@ -33,12 +33,19 @@ def home(request):
         try:
             username = request.user.username
             plan_id = request.GET.get('id')
+            page_size = request.GET.get('pageSize')
+            page = request.GET.get('page')
+            page = int(page) if page else 1
+            page_size = int(page_size) if page_size else settings.PAGE_SIZE
             if plan_id:
-                tasks = PerformanceTestTask.objects.filter(plan_id=plan_id).order_by('-create_time')
+                total_page = PerformanceTestTask.objects.filter(plan_id=plan_id).count()
+                tasks = PerformanceTestTask.objects.filter(plan_id=plan_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
-                tasks = PerformanceTestTask.objects.all().order_by('-create_time')
+                total_page = PerformanceTestTask.objects.all().count()
+                tasks = PerformanceTestTask.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
             logger.info(f'Get task success, operator: {username}')
-            return render(request, 'performance/task/home.html', context={'tasks': tasks})
+            return render(request, 'performance/task/home.html', context={'tasks': tasks, 'page': page, 'page_size': page_size,
+                          'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get task Failure ~')
@@ -283,7 +290,7 @@ def download_log(request):
             host = request.GET.get('host')
             url = f"http://{host}:{get_value_by_host('jmeterServer_'+host, 'port')}/download/{task_id}"
             response = StreamingHttpResponse(download_file_to_bytes(url))
-            response['Content-Type'] = 'application/zip'
+            response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = f'attachment;filename="{task_id}-log.zip"'
             logger.info(f'{task_id}-log.zip download successful, operator: {username}')
             return response
