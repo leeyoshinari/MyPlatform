@@ -343,12 +343,10 @@ def set_message(request):
                 tasks.start_time = strfTime()
                 try:
                     task_log = TestTaskLogs.objects.get(task_id=task_id, value=host)
-                    task_log.action = 2
+                    task_log.action = 1
                     task_log.save()
                 except TestTaskLogs.DoesNotExist:
                     TestTaskLogs.objects.create(id=primaryKey(), task_id=task_id, action=1, value=host, operator='System')
-                plans = TestPlan.objects.get(id=tasks.plan.id)
-                plans.save()
 
             if task_type == 'stop_task':
                 tasks.running_num = tasks.running_num - 1
@@ -359,9 +357,7 @@ def set_message(request):
                     tasks.status = 2
                     tasks.end_time = strfTime()
                     durations = time.time() - toTimeStamp(str(tasks.start_time))
-                    plans = TestPlan.objects.get(id=tasks.plan.id)
-                    plans.save()
-                    datas = get_data_from_influx('1', task_id, host=None, start_time=tasks.start_time, end_time=strfTime())
+                    datas = get_data_from_influx('1', task_id, host='all', start_time=tasks.start_time, end_time=strfTime())
                     if datas['code'] == 0:
                         total_samples = sum(datas['data']['samples'])
                         avg_rt = [s * t / total_samples for s, t in zip(datas['data']['samples'], datas['data']['avg_rt'])]
@@ -472,7 +468,7 @@ def query_data(request):
             return result(code=1, msg='Query data error ~')
 
 
-def get_data_from_influx(delta, task_id, host=None, start_time=None, end_time=None):
+def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=None):
     # query_data = {'time': ['2022-08-20 23:50:00','2022-08-20 23:58:10','2022-08-21 00:00:01'], 'samples': [20, 46, 97], 'tps': [5, 7, 20], 'avg_rt': [345, 378, 567], 'min_rt': [123, 102, 120], 'max_rt': [678, 567, 969], 'err': [1, 3, 2], 'active': [150, 200, 200]}
     query_data = {'time': [], 'c_time': [], 'samples': [], 'tps': [], 'avg_rt': [], 'min_rt': [], 'max_rt': [], 'err': [], 'active': []}
     res = {'code': 0, 'data': None, 'message': 'Query InfluxDB Successful!'}
