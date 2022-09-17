@@ -13,6 +13,8 @@ import zipfile
 import influxdb
 from common import get_config, logger, get_ip
 
+bean_shell_server_port = 12525
+
 class Task(object):
     def __init__(self):
         self.IP = get_ip()
@@ -80,8 +82,8 @@ class Task(object):
 
     def modify_properties(self):
         properties_path = os.path.join(self.jmeter_path, 'bin', 'jmeter.properties')
-        _ = os.popen(f"sed -i 's|.*summariser.interval.*|summariser.interval=6|g' {properties_path}")
-        _ = os.popen(f"sed -i 's|.*beanshell.server.port.*|beanshell.server.port=12525|g' {properties_path}")
+        _ = os.popen(f"sed -i 's|.*summariser.interval.*|summariser.interval=10|g' {properties_path}")
+        _ = os.popen(f"sed -i 's|.*beanshell.server.port.*|beanshell.server.port={bean_shell_server_port}|g' {properties_path}")
         _ = os.popen(f"sed -i 's|.*beanshell.server.file.*|beanshell.server.file=../extras/startup.bsh|g' {properties_path}")
         _ = os.popen(f"sed -i 's|.*jmeter.save.saveservice.samplerData.*|jmeter.save.saveservice.samplerData=true|g' {properties_path}")
         _ = os.popen(f"sed -i 's|.*jmeter.save.saveservice.response_data.*|jmeter.save.saveservice.response_data=true|g' {properties_path}")
@@ -219,6 +221,7 @@ class Task(object):
                         if res[-1] == '0':
                             self.start_thread(self.stop_task, (self.task_id,))
                     else:
+                        self.change_init_TPS()
                         index += 1
 
                 cur_position = f1.tell()  # 记录上次读取文件的位置
@@ -358,13 +361,21 @@ class Task(object):
 
     def change_TPS(self, TPS):
         try:
-            cmd = f'java -jar {self.jmeter_path}/lib/bshclient.jar localhost 12525 {self.setprop_path} number_threads {TPS}'
+            cmd = f'java -jar {self.jmeter_path}/lib/bshclient.jar localhost {bean_shell_server_port} {self.setprop_path} throughput {TPS}'
             res = os.popen(cmd).read()
             logger.info(f'Change TPS to {TPS}, CMD: {cmd}')
             return {'code': 0, 'msg': 'Change TPS successful ~'}
         except:
             logger.error(traceback.format_exc())
             return {'code': 1, 'msg': 'Change TPS failure ~'}
+
+    def change_init_TPS(self):
+        try:
+            cmd = f'java -jar {self.jmeter_path}/lib/bshclient.jar localhost {bean_shell_server_port} {self.setprop_path} throughput {120}'
+            res = os.popen(cmd).read()
+            logger.info(f'Change TPS to {120}, CMD: {cmd}')
+        except:
+            logger.error(traceback.format_exc())
 
     def request_post(self, url, post_data):
         header = {

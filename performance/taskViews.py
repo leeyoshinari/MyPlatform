@@ -307,7 +307,7 @@ def change_tps(request):
             else:
                 host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
                 hosts = [host]
-            current_tps = int(tasks.plan.target_num * tps / 100 / len(hosts))
+            current_tps = int(tasks.plan.target_num * tps * 0.6 / len(hosts))
             post_data = {'taskId': task_id, 'tps': current_tps}
             logger.debug(f"Change TPS hosts: {hosts}")
             res_host = []
@@ -348,7 +348,6 @@ def set_message(request):
                 except TestTaskLogs.DoesNotExist:
                     TestTaskLogs.objects.create(id=primaryKey(), task_id=task_id, action=1, value=host, operator='System')
                 plans = TestPlan.objects.get(id=tasks.plan.id)
-                plans.is_running = 1
                 plans.save()
 
             if task_type == 'stop_task':
@@ -359,9 +358,8 @@ def set_message(request):
                 if tasks.running_num == 0 and TestTaskLogs.objects.filter(task_id=task_id, action=1).count() == 0:
                     tasks.status = 2
                     tasks.end_time = strfTime()
-                    durations = time.time() - toTimeStamp(tasks.start_time)
+                    durations = time.time() - toTimeStamp(str(tasks.start_time))
                     plans = TestPlan.objects.get(id=tasks.plan.id)
-                    plans.is_running = 0
                     plans.save()
                     datas = get_data_from_influx('1', task_id, host=None, start_time=tasks.start_time, end_time=strfTime())
                     if datas['code'] == 0:
@@ -391,7 +389,7 @@ def view_task_detail(request):
                 logger.info(f'query task {task_id} detail page success, operator: {username}')
                 return render(request, 'performance/task/detail.html', context={'tasks': tasks})
             else:
-                return render(request, 'performance/task/detail.html', context={})
+                return render(request, 'performance/task/detail.html', context={'tasks': []})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get task detail error ~')
