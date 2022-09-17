@@ -26,7 +26,7 @@ def post(ip, port, interface, json, headers, timeout):
 def http_request(method, ip, port, interface, json=None, headers=None, timeout=None):
     try:
         if timeout is None:
-            timeout = 3
+            timeout = 15
 
         if method == 'get':
             res = get(ip, port, interface, timeout)
@@ -38,5 +38,4 @@ def http_request(method, ip, port, interface, json=None, headers=None, timeout=N
         return res
     except:
         raise
-
 

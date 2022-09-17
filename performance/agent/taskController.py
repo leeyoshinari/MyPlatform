@@ -261,6 +261,7 @@ class Task(object):
             archive.write(jtl_path, task_id + '.jtl')
         archive.write(jmeter_log_path, task_id + '.log')
         archive.close()
+        logger.info(f'JMeter log file download success, filePath: {zip_file_path}')
         with open(zip_file_path, 'rb') as f:
             res = f.read()
         os.remove(zip_file_path)
@@ -314,7 +315,7 @@ class Task(object):
                 cmd = f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -j {log_path} >/dev/null 2>&1 &'
             res = os.popen(cmd).read()
             logger.info(f'Run JMeter success, shell: {cmd}')
-            time.sleep(3)
+            time.sleep(5)
             if self.check_status(is_run=True):
                 self.status = 1
                 self.task_id = task_id

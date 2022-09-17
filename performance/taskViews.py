@@ -281,8 +281,12 @@ def download_log(request):
             username = request.user.username
             task_id = request.GET.get('id')
             host = request.GET.get('host')
-            logger.info(f'{task_id}.zip download successful, operator: {username}')
-            return http_request('get', host, get_value_by_host('jmeterServer_'+host, 'port'), f'download/{task_id}')
+            url = f"http://{host}:{get_value_by_host('jmeterServer_'+host, 'port')}/download/{task_id}"
+            response = StreamingHttpResponse(download_file_to_bytes(url))
+            response['Content-Type'] = 'application/zip'
+            response['Content-Disposition'] = f'attachment;filename="{task_id}-log.zip"'
+            logger.info(f'{task_id}-log.zip download successful, operator: {username}')
+            return response
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='log file download failure.')
@@ -368,7 +372,6 @@ def set_message(request):
                         tasks.min_rt = min(datas['data']['min_rt'])
                         tasks.max_rt = max(datas['data']['max_rt'])
                         tasks.error = round(sum(datas['data']['err']) / total_samples * 100, 4)
-                        logger.debug(total_samples)
                     else:
                         logger.error(datas['message'])
             tasks.save()
@@ -436,7 +439,8 @@ def get_idle_server(request):
             host_info = []
             for server in servers:
                 host_dict = get_value_by_host('jmeterServer_' + server['host'])
-                if host_dict['status'] == 0:
+                host_dict = host_dict if host_dict else {}
+                if host_dict.get('status') == 0:
                     host_dict.update(get_value_by_host('Server_' + server['host']))
                     host_info.append(host_dict)
             # host_info = [
