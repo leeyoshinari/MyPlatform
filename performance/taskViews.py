@@ -18,7 +18,7 @@ from .common.getRedis import *
 from .common.request import http_request
 from common.Result import result, json_result
 from common.generator import primaryKey, strfTime, strfDeltaTime, toTimeStamp
-from .common.fileController import upload_file_by_path, download_file_to_path, zip_file, download_file_to_bytes
+from .common.fileController import upload_file_by_path, download_file_to_path, zip_file, download_file_to_bytes, delete_local_file
 import common.Request as Request
 import influxdb
 # Create your views here.
@@ -132,9 +132,12 @@ def add_to_task(request):
                         if settings.FILE_STORE_TYPE == '0':
                             zip_file_url = f'{settings.STATIC_URL}temp/{task_id}/{task_id}.zip'
                         else:
-                            zip_file_url = upload_file_by_path(zip_file_path)
+                            zip_file_url = upload_file_by_path(settings.FILE_STORE_TYPE, zip_file_path)
                         logger.info(f'zip file is written successfully, operator: {username}, zip file: {zip_file_url}')
                         task_path = f'{settings.FILE_URL}{zip_file_url}'
+                        del_file = delete_local_file(test_jmeter_path)
+                        if del_file['code'] == 1:
+                            logger.error(del_file['msg'])
                     else:
                         logger.error(f'The Thread Group has no or many Controllers, current controller No is {len(controllers)} ~')
                         if len(controllers) < 1:

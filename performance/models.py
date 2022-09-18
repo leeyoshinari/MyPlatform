@@ -11,7 +11,7 @@ class TestPlan(models.Model):
     type = models.IntegerField(default=1, verbose_name='run type, 0-Thread, 1-TPS')
     schedule = models.IntegerField(default=0, verbose_name='schedule type, 0-Manual, 1-Automatic')
     target_num = models.IntegerField(default=1, verbose_name='target num')
-    duration = models.IntegerField(default=600, verbose_name='duration (second)')
+    duration = models.IntegerField(default=1800, verbose_name='duration (second)')
     time_setting = models.CharField(null=True, max_length=8, verbose_name='time setting run')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
     variables = models.JSONField(null=True, verbose_name='variables')

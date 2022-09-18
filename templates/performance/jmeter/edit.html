@@ -1,0 +1,158 @@
+{% extends 'performance/home.html' %}
+{% load static %}
+
+{% block add_js %}
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:jmeter_home' %}">Upload JMeter</a>
+    <span>>></span>
+    <span>Edit JMeter File</span>
+{% endblock %}
+
+{% block detail %}
+    <div class="list-body">
+        <div class="row-cols">
+            <div class="label-div">
+                <label>ID:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="ID" readonly value="{{ plan.id }}" disabled>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Name:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="name" placeholder="Please input test plan name ~" value="{{ plan.name }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run type. Special thread group or special TPS.">?</span></div>
+                <label>runType:</label>
+            </div>
+            <div class="value-div">
+                <select id="run_type">
+                    {% if plan.type == 0 %}
+                        <option value="0" selected>Thread</option>
+                        <option value="1">TPS</option>
+                    {% else %}
+                        <option value="0">Thread</option>
+                        <option value="1" selected>TPS</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="It is target number of the test. When 'runType' is 'Thread', it is target number of thread group. When 'runType' is 'TPS', it is target number of TPS.">?</span></div>
+                {% if plan.type == 0 %}
+                    <label>Thread Num:</label>
+                {% else %}
+                    <label>Target TPS:</label>
+                {% endif %}
+            </div>
+            <div class="value-div">
+                <input type="text" id="target_number" placeholder="Please input target number ~" value="{{ plan.target_num }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Task run type. Manual: manual running. Automatic: set time to auto-run.">?</span></div>
+                <label>Schedule:</label>
+            </div>
+            <div class="value-div">
+                <select id="schedule">
+                    {% if plan.schedule == 0 %}
+                        <option value="0" selected>Manual</option>
+                        <option value="1">Automatic</option>
+                    {% else %}
+                        <option value="0">Manual</option>
+                        <option value="1" selected>Automatic</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols" id="time-setting" style="display: none;">
+            <div class="label-div">
+                <label>Time Setting:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="time_setting" placeholder="Please input the time of Crontab ~" value="{{ plan.time_setting }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Specify Pressure Server's room. When running, it will select server randomly from server room.">?</span></div>
+                <label>Server Room:</label>
+            </div>
+            <div class="value-div">
+                <select id="server_room">
+                    {% for s in server_rooms %}
+                        {% if plan.server_room_id == s.id %}
+                            <option value="{{ s.id }}" selected>{{ s.name }}</option>
+                        {% else %}
+                            <option value="{{ s.id }}">{{ s.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="It specifies the number of pressure servers.">?</span></div>
+                <label>Server Number:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="server-num" placeholder="Please input Server Number, default 1 ~" value="{{ plan.server_number }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Duration (seconds). It specifies Thread lifetime.">?</span></div>
+                <label>Duration:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="duration" placeholder="Please input duration (seconds) ~" value="{{ plan.duration }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Comment:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="comment" placeholder="Please input test plan comment ~" value="{{ plan.comment }}">
+            </div>
+        </div>
+    </div>
+    <div class="list-footer">
+        <div>
+            <a href="{% url 'perf:jmeter_home' %}">Cancel</a>
+            <a href="#" onclick="edit_plan('{% url 'perf:jmeter_edit' %}', '{% url 'perf:jmeter_home' %}')">Submit</a>
+        </div>
+    </div>
+{% endblock %}
+{% block define_js %}
+    <script src="{% static 'performance/js/jmeter.js' %}"></script>
+    <script type="text/javascript">
+        document.getElementById('run_type').onchange = function () {
+            let s = document.getElementById('run_type').value;
+            if (s === '0') {
+                document.getElementsByClassName('label-div')[5].getElementsByTagName('label')[0].innerText = 'Thread Num';
+            } else {
+                document.getElementsByClassName('label-div')[5].getElementsByTagName('label')[0].innerText = 'Target TPS';
+            }
+        }
+
+        document.getElementById('schedule').onchange = function () {
+            let s = document.getElementById('schedule').value;
+            if (s === '0') {
+                document.getElementById('time-setting').style.display = 'none';
+            } else {
+                document.getElementById('time-setting').style.display = '';
+            }
+        }
+    </script>
+{% endblock %}

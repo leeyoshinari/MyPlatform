@@ -21,10 +21,11 @@ from . import threadViews
 from . import controllerViews
 from . import sampleViews
 from . import headerViews
+from . import jmeterViews
 
 app_name = 'perf'
 urlpatterns = [
-    path('home', views.parse_jmx),
+    path('home', taskViews.home, name='home'),
     path('delete', views.delete, name='delete'),
     path('setStatus', views.is_valid, name='set_status'),
     path('server', planViews.get_server, name='get_server'),
@@ -74,5 +75,9 @@ urlpatterns = [
     path('header/add', headerViews.add_header, name='header_add'),
     path('header/edit', headerViews.edit_header, name='header_edit'),
     path('header/copy', headerViews.copy_header, name='header_copy'),
+
+    path('jmeter', jmeterViews.home, name='jmeter_home'),
+    path('jmeter/edit', jmeterViews.edit, name='jmeter_edit'),
+    path('jmeter/upload', jmeterViews.upload_file, name='jmeter_upload'),
 
 ] if settings.IS_PERF == 1 else []

@@ -219,5 +219,5 @@ def get_extractor(parent_node):
 
 
 if __name__ == '__main__':
-    file_path = 'C:\\Users\\lee_j\\Desktop\\test.jmx'
+    file_path = 'E:\\apache-jmeter-5.4.3\\test.jmx'
     print(read_jmeter_from_file(file_path))
