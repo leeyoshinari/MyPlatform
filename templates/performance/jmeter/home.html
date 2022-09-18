@@ -53,7 +53,7 @@
                 {% if plan.is_valid == 'true' %}
                     <a href="{% url 'perf:jmeter_edit' %}?id={{ plan.id }}">Edit</a>
                     <a href="#" onclick="set_status('plan','{{ plan.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
-                    <a href="#" onclick="add_task('{% url 'perf:task_add' %}', '{% url 'perf:task_start' %}', '{% url 'perf:task_detail' %}', {{ plan.id }})">StartTest</a>
+                    <a href="#" onclick="add_task('{% url 'perf:jmeter_add' %}', '{% url 'perf:task_start' %}', '{% url 'perf:task_detail' %}', {{ plan.id }})">StartTest</a>
                 {% else %}
                     <a href="#" onclick="set_status('plan', '{{ plan.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
                 {% endif %}

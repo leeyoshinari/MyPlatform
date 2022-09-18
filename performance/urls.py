@@ -79,5 +79,6 @@ urlpatterns = [
     path('jmeter', jmeterViews.home, name='jmeter_home'),
     path('jmeter/edit', jmeterViews.edit, name='jmeter_edit'),
     path('jmeter/upload', jmeterViews.upload_file, name='jmeter_upload'),
+    path('jmeter/start', jmeterViews.add_to_task, name='jmeter_add'),
 
 ] if settings.IS_PERF == 1 else []

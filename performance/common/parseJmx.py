@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
+import re
 import json
 import xml.etree.ElementTree as ET
+from common.customException import MyException
 
 
 def read_jmeter_from_file(file_path):
@@ -104,9 +106,12 @@ def get_controller(parent_node):
                     if controller.findall('stringProp'):
                         controller_dict.update({'comments': controller.findall('stringProp')[0].text})
                     flag += 1
-                if controller.tag == 'hashTree' and controller.findall('HTTPSamplerProxy') and flag == 1:
+                if controller.tag == 'hashTree' and flag == 1:
                     flag += 1
-                    controller_dict.update({'http_sample': get_http_sample(controller)})
+                    if controller.findall('HTTPSamplerProxy'):
+                        controller_dict.update({'http_sample': get_http_sample(controller)})
+                    else:
+                        flag = 0
 
                 if flag == 2:
                     controllers_list.append(controller_dict)
@@ -141,9 +146,9 @@ def get_http_sample(http_sample):
 
 def get_arguments(parent_node):
     """get http sample arguments"""
-    elementProps = parent_node.findall('elementProp')[0].findall('collectionProp')[0].findall('elementProp')
     arguments = {}
     try:
+        elementProps = parent_node.findall('elementProp')[0].findall('collectionProp')[0].findall('elementProp')
         for ele in elementProps:
             stringProps = ele.findall('stringProp')
             bool_prop_encode = [bool_prop.text for bool_prop in ele.findall('boolProp')
@@ -218,6 +223,93 @@ def get_extractor(parent_node):
         return {}
 
 
+def get_enabled_samples_num(jmeter_path):
+    total_num = 0
+    tree = ET.parse(jmeter_path)
+    root = tree.getroot()
+    try:
+        test_plan_hash_trees = root.findall('hashTree')
+        for test_plan_hash_tree in test_plan_hash_trees:
+            test_plans = test_plan_hash_tree.findall('TestPlan')
+            for test_plan in test_plans:
+                if test_plan.attrib['enabled'] == 'true':
+                    thread_group_hash_trees = test_plan_hash_tree.findall('hashTree')
+                    for thread_group_hash_tree in thread_group_hash_trees:
+                        thread_groups = thread_group_hash_tree.findall('ThreadGroup')
+                        for thread_group in thread_groups:
+                            if thread_group.attrib['enabled'] == 'true':
+                                controller_hash_trees = thread_group_hash_tree.findall('hashTree')
+                                for controller_hash_tree in controller_hash_trees:
+                                    flag = 0
+                                    controller_enabled = 'false'
+                                    for controller in controller_hash_tree:
+                                        if 'Controller' in controller.tag and flag == 0:
+                                            controller_enabled = controller.attrib['enabled']
+                                            flag += 1
+                                        if controller.tag == 'hashTree' and flag == 1:
+                                            flag += 1
+                                            if controller.findall('HTTPSamplerProxy') and controller_enabled == 'true':
+                                                http_sample_proxys = controller.findall('HTTPSamplerProxy')
+                                                for i in range(len(http_sample_proxys)):
+                                                    if http_sample_proxys[i].attrib['enabled'] == 'true':
+                                                        total_num += 1
+                                        if flag == 2:
+                                            flag = 0
+
+    except:
+        raise
+    return total_num
+
+
+def parse_ThreadGroup(jmeter_file, num_threads, ramp_time, duration):
+    res = re.findall('<ThreadGroup([\s\S]+?)</ThreadGroup>', jmeter_file)
+    if len(res) > 1:
+        raise MyException('Too many ThreadGroup, Please retain only one ~')
+    if len(res) == 0:
+        raise MyException('Not found ThreadGroup, Please add one ~')
+    modify_str = re.sub('num_threads">(.*?)</stringProp>', f'num_threads">{num_threads}</stringProp>', res[0])
+    modify_str = re.sub('ramp_time">(.*?)</stringProp>', f'ramp_time">{ramp_time}</stringProp>', modify_str)
+    modify_str = re.sub('duration">(.*?)</stringProp>', f'duration">{duration}</stringProp>', modify_str)
+    modify_str = re.sub('scheduler">(.*?)</boolProp>', f'scheduler">true</boolProp>', modify_str)
+    modify_str = re.sub('LoopController.loops">(.*?)</intProp>', f'LoopController.loops">-1</intProp>', modify_str)
+    return f'<ThreadGroup{modify_str}</ThreadGroup>'
+
+
+def parse_ConstantThroughputTimer(jmeter_file, enabled = 'true'):
+    res = re.findall('<ConstantThroughputTimer([\s\S]+?)</ConstantThroughputTimer>', jmeter_file)
+    if len(res) > 1:
+        raise MyException('Too many Constant Throughput Timer, Please retain only one ~')
+    if len(res) == 0:
+        ConstantThroughputTimer = '<ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" ' \
+                                  'testname="Constant Throughput Timer" enabled="' + enabled + '">\n<stringProp name="' \
+                                  'throughput">${__P(throughput, 60)}</stringProp>\n<intProp name="calcMode">2' \
+                                  '</intProp>\n</ConstantThroughputTimer>\n<hashTree/>\n'
+    else:
+        modify_str = re.sub('name="throughput">(.*?)</stringProp>', 'name="throughput">${__P(throughput, 60)}</stringProp>', res[0])
+        modify_str = re.sub('name="calcMode">(.*?)</intProp>', 'name="calcMode">2</intProp>', modify_str)
+        modify_str = re.sub('enabled="(.*?)">', f'enabled="{enabled}">', modify_str)
+        ConstantThroughputTimer = f'<ConstantThroughputTimer{modify_str}</ConstantThroughputTimer>'
+    return ConstantThroughputTimer, len(res)
+
+
+def modify_jmeter(jmeter_path, target_path, run_type, num_threads, duration):
+    with open(jmeter_path, 'r', encoding='utf-8') as f:
+        jmeter_file = f.read()
+    if run_type == 0:
+        ThreadGroup = parse_ThreadGroup(jmeter_file, num_threads, 1, duration)
+        ConstantThroughputTimer, num = parse_ConstantThroughputTimer(jmeter_file, enabled='false')
+    else:
+        ThreadGroup = parse_ThreadGroup(jmeter_file, 200, 10, duration)
+        ConstantThroughputTimer, num = parse_ConstantThroughputTimer(jmeter_file)
+    res = re.sub('<ThreadGroup([\s\S]+?)ThreadGroup>', ThreadGroup, jmeter_file)
+    if num == 0:
+        jmeter_list = res.split('<ThreadGroup')
+        res = jmeter_list[0] + ConstantThroughputTimer + '<ThreadGroup' + jmeter_list[1]
+    else:
+        res = re.sub('<ConstantThroughputTimer([\s\S]+?)</ConstantThroughputTimer>', ConstantThroughputTimer, res)
+    with open(target_path, 'w', encoding='utf-8') as f:
+        f.write(res)
+
+
 if __name__ == '__main__':
-    file_path = 'E:\\apache-jmeter-5.4.3\\test.jmx'
-    print(read_jmeter_from_file(file_path))
+    file_path = 'E:\\apache-jmeter-5.4.3\\backups\\test.jmx'

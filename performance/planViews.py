@@ -8,11 +8,9 @@ import traceback
 from django.shortcuts import render, redirect, resolve_url
 from django.conf import settings
 from django.db.models import Count
-from .models import TestPlan, ThreadGroup, TransactionController
-from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
+from .models import TestPlan, ThreadGroup, TransactionController, HTTPSampleProxy
 from shell.models import Servers, ServerRoom
 from .common.parseJmx import read_jmeter_from_byte
-from .common.generateJmx import *
 from .common.getRedis import *
 from common.Result import result
 from common.generator import primaryKey

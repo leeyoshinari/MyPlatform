@@ -23,6 +23,7 @@ class Task(object):
         self.task_id = None
         self.plan_id = None
         self.agent_num = 1
+        self.number_samples = 1
         self.pattern = 'summary\+(\d+)in.*=(\d+.\d+)/sAvg:(\d+)Min:(\d+)Max:(\d+)Err:(\d+)\(.*Active:(\d+)Started'
         self.influx_host = '127.0.0.1'
         self.influx_port = 8086
@@ -282,7 +283,7 @@ class Task(object):
         f.close()
         logger.info(f'unzip file: {source_path} to {target_path} success ~')
 
-    def run_task(self, task_id, file_path, agent_num, is_debug):
+    def run_task(self, task_id, file_path, agent_num, is_debug, number_samples):
         if self.check_status(is_run=True):
             self.kill_process()
 
@@ -319,6 +320,7 @@ class Task(object):
             if self.check_status(is_run=True):
                 self.status = 1
                 self.task_id = task_id
+                self.number_samples = number_samples
                 flag = 1
                 logger.info(f'{jmx_file_path} run successful, task id: {self.task_id}')
                 self.start_thread(self.parse_log, (os.path.join(self.file_path, self.task_id, self.task_id + '.log'),))
@@ -340,6 +342,7 @@ class Task(object):
                 if self.check_status(is_run=False):
                     self.status = 0
                     self.current_tps = 0
+                    self.number_samples = 1
                     flag = 1
                     del self.redis_client, self.influx_client
                     logger.info(f'task {task_id} stop successful ~')
@@ -375,9 +378,10 @@ class Task(object):
 
     def change_init_TPS(self):
         try:
-            cmd = f'java -jar {self.jmeter_path}/lib/bshclient.jar localhost {bean_shell_server_port} {self.setprop_path} throughput {120}'
+            tps = 120 * self.number_samples
+            cmd = f'java -jar {self.jmeter_path}/lib/bshclient.jar localhost {bean_shell_server_port} {self.setprop_path} throughput {tps}'
             res = os.popen(cmd).read()
-            logger.info(f'Change TPS to {120}, CMD: {cmd}')
+            logger.info(f'Change TPS to {tps}, CMD: {cmd}')
         except:
             logger.error(traceback.format_exc())
 

@@ -55,6 +55,7 @@ def zip_file(file_path, zip_file_path):
         archive.write(os.path.join(file_path, file), file)
     archive.close()
 
+
 def unzip_file(source_path, target_path):
     f = zipfile.ZipFile(source_path)
     f.extractall(target_path)

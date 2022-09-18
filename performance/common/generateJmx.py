@@ -40,7 +40,7 @@ def generate_thread_group(tg, num_threads, duration):
 
 def generator_throughput(number_samples):
     throughput_str = '<ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname=' \
-                     '"常数吞吐量定时器" enabled="true"><intProp name="calcMode">1</intProp><stringProp name="throu' \
+                     '"Constant Throughput Timer" enabled="true"><intProp name="calcMode">2</intProp><stringProp name="throu' \
                      'ghput">${__P(throughput, %d)}</stringProp></ConstantThroughputTimer><hashTree/>' %(number_samples*60)
     return throughput_str
 

@@ -32,11 +32,11 @@ async def run_task(request):
             return web.json_response({'code': 1, 'msg': f'Host {task.IP} is busy ~', 'data': None})
         data = await request.json()
         task_id = data.get('taskId')
-        # plan_id = data.get('planId')
+        number_samples = data.get('numberSamples')
         agent_num = data.get('agentNum')
         file_path = data.get('filePath')
         is_debug = data.get('isDebug')
-        task.start_thread(task.run_task, (task_id, file_path, agent_num, is_debug,))
+        task.start_thread(task.run_task, (task_id, file_path, agent_num, is_debug, number_samples,))
         return web.json_response({'code': 0, 'msg': '', 'data': None})
     except Exception as err:
         logger.error(traceback.format_exc())

@@ -6,7 +6,7 @@ import json
 import time
 import logging
 import traceback
-from django.shortcuts import render, redirect, resolve_url
+from django.shortcuts import render
 from django.conf import settings
 from django.db.models import Q
 from django.http import StreamingHttpResponse
@@ -19,7 +19,6 @@ from .common.request import http_request
 from common.Result import result, json_result
 from common.generator import primaryKey, strfTime, strfDeltaTime, toTimeStamp
 from .common.fileController import upload_file_by_path, download_file_to_path, zip_file, download_file_to_bytes, delete_local_file
-import common.Request as Request
 import influxdb
 # Create your views here.
 
@@ -67,9 +66,7 @@ def add_to_task(request):
     if request.method == 'POST':
         try:
             username = request.user.username
-            # task_id = request.POST.get('task_id')
             plan_id = request.POST.get('plan_id')
-            # tasks = PerformanceTestTask.objects.get(id=task_id)
             plans = TestPlan.objects.get(id=plan_id)
             task_id = str(primaryKey())
 
@@ -143,7 +140,7 @@ def add_to_task(request):
                         if len(controllers) < 1:
                             msg = 'The Thread Group has no Controllers, Please add Controller ~'
                         else:
-                            msg = 'The Thread Group has too much Controllers, Please disabled Controller ~'
+                            msg = 'The Thread Group has too many Controllers, Please disabled Controller ~'
                         return result(code=1, msg=msg)
                 else:
                     logger.error('The Test Plan can only have one enable Thread Group ~')
@@ -157,6 +154,12 @@ def add_to_task(request):
             logger.info(f'Task {tasks.id} generate success, operator: {username}')
             return result(msg=f'Start success ~', data=task_id)
         except:
+            test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
+            if os.path.exists(test_jmeter_path):
+                _ = delete_local_file(test_jmeter_path)
+            temp_file_path = os.path.join(settings.TEMP_PATH, task_id)
+            if os.path.exists(temp_file_path):
+                _ = delete_local_file(temp_file_path)
             logger.error(traceback.format_exc())
             return result(code=1, msg='Start failure ~')
 
@@ -185,6 +188,7 @@ def start_task(request):
                 'taskId': task_id,
                 'planId': tasks.plan.id,
                 'agentNum': 1,
+                'numberSamples': tasks.number_samples,
                 'filePath': tasks.path,
                 'isDebug': True
             }
@@ -321,7 +325,7 @@ def change_tps(request):
             else:
                 host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
                 hosts = [host]
-            current_tps = int(tasks.plan.target_num * tps * 0.6 / len(hosts))
+            current_tps = int(tasks.plan.target_num * tasks.number_samples * tps * 0.6/ len(hosts))
             post_data = {'taskId': task_id, 'tps': current_tps}
             logger.debug(f"Change TPS hosts: {hosts}")
             res_host = []
