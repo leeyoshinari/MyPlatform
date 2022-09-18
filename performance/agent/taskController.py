@@ -302,8 +302,7 @@ class Task(object):
             if not os.path.exists(target_file_path):
                 logger.error('Not Found file after unzip')
                 return {'code': 1, 'msg': 'Not Found file after unzip'}
-            file_list = os.listdir(target_file_path)
-            jmx_files = [file for file in file_list if file.endswith('.jmx') in file]
+            jmx_files = [file for file in os.listdir(target_file_path) if file.endswith('.jmx')]
             if not jmx_files:
                 logger.error('Not Found jmx file ~')
                 return {'code': 1, 'msg': 'Not Found jmx file, please zip file again ~'}

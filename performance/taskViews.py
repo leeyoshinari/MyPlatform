@@ -406,7 +406,7 @@ def view_task_detail(request):
                 logger.info(f'query task {task_id} detail page success, operator: {username}')
                 return render(request, 'performance/task/detail.html', context={'tasks': tasks})
             else:
-                return render(request, 'performance/task/detail.html', context={})
+                return render(request, 'performance/task/detail.html', context={'tasks': None})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get task detail error ~')
