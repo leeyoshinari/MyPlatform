@@ -1,3 +1,6 @@
 #!/bin/sh
-ps -ef|grep daphne |grep -v grep |awk '{print $2}' |xargs kill -9
-echo "stop success ~"
+pid=$(ps -ef|grep daphne |grep -v grep |awk '{print $2}' |xargs)
+if [ $pid ]; then
+	kill -9 $pid
+fi
+echo "Stop $pid success ~"
