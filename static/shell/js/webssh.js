@@ -21,7 +21,8 @@ let term = new Terminal(
     {
         cols: get_term_size().cols,
         rows: get_term_size().rows,
-        scrollback: 520,
+        convertEol: true,
+        scrollback: 5,
         useStyle: true,
         cursorBlink: true,
         theme: {
@@ -93,12 +94,15 @@ document.onclick = function () {
 
 
 function get_term_size() {
-    let init_width = 8.8;
-    let init_height = 19;
+    let x = $(window).width();
+    let y = $(window).height();
+    // let x = document.getElementById('').clientHeight;
+
+    console.log(x, y, Math.floor(1.458e-08 * x * x * x - 9.12e-05 * x * x + 0.2896 * x - 106.6), Math.floor(-1.981e-08 * y * y * y + 0.0001072 * y * y - 0.118 * y + 84.74));
 
     return {
-        cols: Math.floor($(window).width() / init_width),
-        rows: Math.floor($(window).height() / init_height),
+        cols: Math.floor(1.458e-08 * x * x * x - 9.12e-05 * x * x + 0.2896 * x - 106.6),
+        rows: Math.floor(-1.981e-08 * y * y * y + 0.0001072 * y * y - 0.118 * y + 84.74),
     }
 }
 
