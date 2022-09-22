@@ -147,7 +147,8 @@ PAGE_SIZE = 20
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 CONTEXT = get_config("context")
 STATIC_URL = f'{CONTEXT}/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -205,8 +206,8 @@ PERFORMANCE_EXPIRE = 604800  # performance test redis keys expire time, 7D
 
 # files
 # files store local path
-FILE_ROOT_PATH = os.path.join(STATICFILES_DIRS[0], 'files')
-TEMP_PATH = os.path.join(STATICFILES_DIRS[0], 'temp')
+FILE_ROOT_PATH = os.path.join(BASE_DIR, 'static', 'files')
+TEMP_PATH = os.path.join(BASE_DIR, 'static', 'temp')
 FILE_STORE_TYPE = get_config('storeType')
 FILE_URL = get_config('fileURL')
 if not os.path.exists(TEMP_PATH):

@@ -1,0 +1,1 @@
+document.getElementById("wrap").onkeyup = function (event) {};

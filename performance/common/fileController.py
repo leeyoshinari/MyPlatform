@@ -26,6 +26,10 @@ def download_file_to_bytes(url):
     return res.content
 
 
+def get_request(url):
+    return requests.get(url)
+
+
 def delete_remote_file(url):
     pass
 

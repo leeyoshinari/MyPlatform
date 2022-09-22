@@ -18,7 +18,7 @@ from .common.getRedis import *
 from .common.request import http_request
 from common.Result import result, json_result
 from common.generator import primaryKey, strfTime, strfDeltaTime, toTimeStamp
-from .common.fileController import upload_file_by_path, download_file_to_path, zip_file, download_file_to_bytes, delete_local_file
+from .common.fileController import *
 import influxdb
 # Create your views here.
 
@@ -296,7 +296,7 @@ def download_log(request):
             task_id = request.GET.get('id')
             host = request.GET.get('host')
             url = f"http://{host}:{get_value_by_host('jmeterServer_'+host, 'port')}/download/{task_id}"
-            response = StreamingHttpResponse(download_file_to_bytes(url))
+            response = StreamingHttpResponse(get_request(url))
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = f'attachment;filename="{task_id}-log.zip"'
             logger.info(f'{task_id}-log.zip download successful, operator: {username}')
@@ -427,16 +427,6 @@ def get_running_server(request):
                     host_dict.update(server_monitor_dict)
                 host_dict.update({'action': h['action']})
                 host_info.append(host_dict)
-            # host_info = [
-            #     {'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
-            #      'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
-            #      'status': 0, 'action':1, 'tps': 20}, {'host': '127.0.0.3', 'status': 1, 'action': 2, 'tps': 0},
-            #     {'host': '127.0.0.4', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
-            #      'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
-            #      'status': 2, 'action':1},
-            #     {'host': '127.0.0.5', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
-            #      'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
-            #      'status': 1, 'action':1}]
             logger.info(f'Query running servers success, operator: {username}')
             return result(msg='Get running servers success ~', data=host_info)
         except:
@@ -457,16 +447,6 @@ def get_idle_server(request):
                 if host_dict.get('status') == 0:
                     host_dict.update(get_value_by_host('Server_' + server['host']))
                     host_info.append(host_dict)
-            # host_info = [
-            #     {'host': '127.0.0.2', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
-            #      'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
-            #      'status': 0}, {'host': '127.0.0.3', 'status': 1},
-            #     {'host': '127.0.0.4', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
-            #      'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
-            #      'status': 2},
-            #     {'host': '127.0.0.5', 'port': 89, 'system': 'centos', 'cpu': 4, 'mem': 3.5, 'disk': '3G', 'nic': 'eno1',
-            #      'network_speed': 1000, 'disk_size': 3, 'mem_usage': 32, 'cpu_usage': 26, 'disk_usage': 12,
-            #      'status': 1}]
             logger.info(f'Query idle servers success, operator: {username}')
             return result(msg='Get idle servers success ~', data=host_info)
         except:
@@ -491,7 +471,6 @@ def query_data(request):
 
 
 def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=None):
-    # query_data = {'time': ['2022-08-20 23:50:00','2022-08-20 23:58:10','2022-08-21 00:00:01'], 'samples': [20, 46, 97], 'tps': [5, 7, 20], 'avg_rt': [345, 378, 567], 'min_rt': [123, 102, 120], 'max_rt': [678, 567, 969], 'err': [1, 3, 2], 'active': [150, 200, 200]}
     query_data = {'time': [], 'c_time': [], 'samples': [], 'tps': [], 'avg_rt': [], 'min_rt': [], 'max_rt': [], 'err': [], 'active': []}
     res = {'code': 0, 'data': None, 'message': 'Query InfluxDB Successful!'}
     try:
