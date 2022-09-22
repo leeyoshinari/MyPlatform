@@ -1,3 +1,6 @@
+let t = document.getElementById('terminal');
+let viewport;
+let termnal_screen;
 
 let socketURL = 'ws://' + window.location.host + '/shell/open/' ;
 let sock = new WebSocket(socketURL);
@@ -10,8 +13,8 @@ sock.onerror = function(err) {
 
 sock.onopen =function (event) {
     let storage = {
-        cols: get_term_size().cols,
-        rows: get_term_size().rows,
+        cols: 64,
+        rows: 16,
         type: 'web',
         host: document.title,
     };
@@ -19,10 +22,8 @@ sock.onopen =function (event) {
 }
 let term = new Terminal(
     {
-        cols: get_term_size().cols,
-        rows: get_term_size().rows,
         convertEol: true,
-        scrollback: 5,
+        scrollback: 500,
         useStyle: true,
         cursorBlink: true,
         theme: {
@@ -32,9 +33,15 @@ let term = new Terminal(
     }
 );
 
+const fitAddon = new FitAddon.FitAddon();
+term.loadAddon(fitAddon);
+
 // 打开 websocket 连接, 打开 web 终端
 sock.addEventListener('open', function () {
     term.open(document.getElementById('terminal'));
+    fitAddon.fit();
+    viewport = document.getElementsByClassName("xterm-viewport")[0];
+    termnal_screen = document.getElementsByClassName('xterm-screen')[0];
 });
 
 // 读取服务器端发送的数据并写入 web 终端
@@ -51,34 +58,35 @@ let data_msg = {'code': 0, 'data': null};
 let size_msg = {'code': 1, 'cols': null, 'rows': null};
 
 // 向服务器端发送数据
-term.on('data', function (data) {
+term.onKey(e => {
     if (sock.readyState === 3) {
         $.Toast('Session is already in CLOSED state ~', 'error');
     }
-    data_msg['data'] = data;
+    data_msg['data'] = e.key;
     sock.send(JSON.stringify(data_msg));
-});
-
-function set_screen_size() {
-    let termnal_screen = document.getElementsByClassName('xterm-screen')[0];
-    termnal_screen.style.width = $(window).width() + 'px';
-    termnal_screen.style.height = $(window).height() - 31 + 'px';
-}
+})
 
 setTimeout(function(){
-    set_screen_size();
-},600
+    resize_term();
+},500
 );
+
+function resize_term() {
+    let w = $(window).width() + viewport.clientWidth - viewport.offsetWidth + 'px';
+    let h = $(window).height() - 30 + 'px';
+    termnal_screen.style.width = w;
+    termnal_screen.style.height = h;
+    fitAddon.fit();
+    size_msg['cols'] = term.cols;
+    size_msg['rows'] = term.rows;
+    termnal_screen.style.width = w;
+    termnal_screen.style.height = h;
+    sock.send(JSON.stringify(size_msg));
+}
 
 // 监听浏览器窗口, 根据浏览器窗口大小修改终端大小
 $(window).resize(function () {
-    let cols = get_term_size().cols;
-    let rows = get_term_size().rows;
-    size_msg['cols'] = cols;
-    size_msg['rows'] = rows;
-    set_screen_size();
-    term.resize(cols, rows);
-    sock.send(JSON.stringify(size_msg));
+    resize_term();
 });
 
 window.onunload = function () {
@@ -91,20 +99,6 @@ document.onclick = function () {
         document.execCommand('Copy');
     }
 };
-
-
-function get_term_size() {
-    let x = $(window).width();
-    let y = $(window).height();
-    // let x = document.getElementById('').clientHeight;
-
-    console.log(x, y, Math.floor(1.458e-08 * x * x * x - 9.12e-05 * x * x + 0.2896 * x - 106.6), Math.floor(-1.981e-08 * y * y * y + 0.0001072 * y * y - 0.118 * y + 84.74));
-
-    return {
-        cols: Math.floor(1.458e-08 * x * x * x - 9.12e-05 * x * x + 0.2896 * x - 106.6),
-        rows: Math.floor(-1.981e-08 * y * y * y + 0.0001072 * y * y - 0.118 * y + 84.74),
-    }
-}
 
 function upload_file(path) {
     let fileUpload_input = document.getElementById("fileUpload-input");

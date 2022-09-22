@@ -295,10 +295,8 @@ def download_log(request):
             username = request.user.username
             task_id = request.GET.get('id')
             host = request.GET.get('host')
-            cookies = request.COOKIES
-            url = 'http://127.0.0.1:8000/tencent/performance/task/download?id=16634898712395'
-            # url = f"http://{host}:{get_value_by_host('jmeterServer_'+host, 'port')}/download/{task_id}"
-            response = StreamingHttpResponse(download_file_to_bytes(url, cookies))
+            url = f"http://{host}:{get_value_by_host('jmeterServer_'+host, 'port')}/download/{task_id}"
+            response = StreamingHttpResponse(download_file_to_bytes(url))
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = f'attachment;filename="{task_id}-log.zip"'
             logger.info(f'{task_id}-log.zip download successful, operator: {username}')
