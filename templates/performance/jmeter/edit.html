@@ -120,6 +120,23 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Task run type. Manual: manual running. Automatic: set time to auto-run.">?</span></div>
+                <label>isDebug:</label>
+            </div>
+            <div class="value-div">
+                <select id="isDebug">
+                    {% if plan.is_debug == 0 %}
+                        <option value="0" selected>No Debug Mode</option>
+                        <option value="1">Debug Mode (Only used to debug)</option>
+                    {% else %}
+                        <option value="0">No Debug Mode</option>
+                        <option value="1" selected>Debug Mode (Only used to debug)</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
                 <label>Comment:</label>
             </div>
             <div class="value-div">

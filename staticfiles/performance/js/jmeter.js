@@ -8,6 +8,7 @@ function edit_plan(url, location_url) {
     let server_num = document.getElementById('server-num').value;
     let target_number = document.getElementById('target_number').value;
     let duration = document.getElementById('duration').value;
+    let isDebug = document.getElementById('isDebug').value;
     let time_setting = document.getElementById('time_setting').value;
 
     let post_data = {
@@ -19,6 +20,7 @@ function edit_plan(url, location_url) {
         server_num: server_num,
         target_number: target_number,
         duration: duration,
+        is_debug: isDebug,
         time_setting: time_setting,
         comment: comment
     }

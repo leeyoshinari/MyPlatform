@@ -14,6 +14,7 @@ class TestPlan(models.Model):
     duration = models.IntegerField(default=1800, verbose_name='duration (second)')
     time_setting = models.CharField(null=True, max_length=8, verbose_name='time setting run')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
+    is_debug = models.IntegerField(default=0, verbose_name='0-Not debug, 1-debug')
     variables = models.JSONField(null=True, verbose_name='variables')
     server_room = models.ForeignKey(ServerRoom, default=520, on_delete=models.CASCADE, verbose_name='server room')
     server_number = models.IntegerField(default=1, verbose_name='number of pressure servers')

@@ -7,7 +7,7 @@ function add_plan(url, location_url) {
     let schedule = document.getElementById('schedule').value;
     let server_room = document.getElementById('server_room').value;
     let server_num = document.getElementById('server-num').value;
-    // let init_number = document.getElementById('init_number').value;
+    let isDebug = document.getElementById('isDebug').value;
     let target_number = document.getElementById('target_number').value;
     let duration = document.getElementById('duration').value;
     let time_setting = document.getElementById('time_setting').value;
@@ -20,7 +20,7 @@ function add_plan(url, location_url) {
         schedule: schedule,
         server_room: server_room,
         server_num: server_num,
-        // init_number: init_number,
+        is_debug: isDebug,
         target_number: target_number,
         duration: duration,
         time_setting: time_setting,
@@ -53,7 +53,7 @@ function edit_plan(url, location_url) {
     let schedule = document.getElementById('schedule').value;
     let server_room = document.getElementById('server_room').value;
     let server_num = document.getElementById('server-num').value;
-    // let init_number = document.getElementById('init_number').value;
+    let isDebug = document.getElementById('isDebug').value;
     let target_number = document.getElementById('target_number').value;
     let duration = document.getElementById('duration').value;
     let time_setting = document.getElementById('time_setting').value;
@@ -67,7 +67,7 @@ function edit_plan(url, location_url) {
         schedule: schedule,
         server_room: server_room,
         server_num: server_num,
-        // init_number: init_number,
+        is_debug: isDebug,
         target_number: target_number,
         duration: duration,
         time_setting: time_setting,

@@ -41,7 +41,7 @@ function plot_delta(myChart, task_id, url) {
     });
 }
 
-function get_running_server(task_id, url, status, url1, url2, url3, url4, url5) {
+function get_running_server(task_id, url, status, url1, url2, url3, url4, url5, plan_type) {
     $.ajax({
         type: 'get',
         url: url + '?id=' + task_id,
@@ -73,26 +73,22 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5) 
                         s += '<td></td>';
                     }
                     if (all_host[i]['network_speed']) {
-                        s += '<td>' + all_host[i]['network_speed'] + 'Mb/s</td>';
+                        s += '<td>' + all_host[i]['network_speed'] + 'Mb/s</td><td>';
                     } else {
-                        s += '<td></td>';
+                        s += '<td></td><td>';
                     }
                     if (all_host[i]['action'] === 1 && all_host[i]['status'] === 1 && status === 1) {
-                        s += '<td><a onclick="stop_test(\'' + url5 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Stop</a>' +
-                            '<a onclick="change_tps(\'' + url2 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Change TPS</a>' +
-                            '<a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
-                            '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
-                        server_num += 1;
-                    } else {
-                        if (status === 1) {
-                            s += '<td><a onclick="start_test(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Start</a>' +
-                                '<a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
-                                '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
-                        } else {
-                            s += '<td><a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
-                                '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
+                        s += '<a onclick="stop_test(\'' + url5 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Stop</a>';
+                        if (plan_type === 1) {
+                            s += '<a onclick="change_tps(\'' + url2 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Change TPS</a>';
                         }
+                        server_num += 1;
                     }
+                    if (status === 1 && all_host[i]['status'] === 0) {
+                        s += '<td><a onclick="start_test(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Start</a>';
+                    }
+                    s += '<td><a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
+                         '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
                 }
                 if (server_num > 0) {
                     document.getElementById("total-server").innerText = "(" + server_num + " Running Servers)";

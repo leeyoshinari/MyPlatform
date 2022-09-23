@@ -63,6 +63,7 @@ def edit(request):
             plan.server_number = request.POST.get('server_num')
             plan.target_num = request.POST.get('target_number')
             plan.duration = request.POST.get('duration')
+            plan.is_debug = request.POST.get('is_debug')
             plan.time_setting = request.POST.get('time_setting') if request.POST.get('schedule') == '1' else None
             plan.comment = request.POST.get('comment')
             plan.operator = username

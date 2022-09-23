@@ -190,7 +190,7 @@ def start_task(request):
                 'agentNum': 1,
                 'numberSamples': tasks.number_samples,
                 'filePath': tasks.path,
-                'isDebug': True
+                'isDebug': tasks.plan.is_debug
             }
             if host:
                 host_info = get_value_by_host('jmeterServer_'+host)

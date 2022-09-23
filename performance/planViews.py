@@ -59,14 +59,15 @@ def add(request):
             schedule = request.POST.get('schedule')
             server_room = request.POST.get('server_room')
             server_num = request.POST.get('server_num')
-            # init_number = request.POST.get('init_number')
+            is_debug = request.POST.get('is_debug')
             target_number = request.POST.get('target_number')
             duration = request.POST.get('duration')
             time_setting = request.POST.get('time_setting') if schedule == '1' else None
             comment = request.POST.get('comment')
             plans = TestPlan.objects.create(id=primaryKey(), name=name, tearDown=teardown, serialize=serialize, is_valid='true',
                             type=run_type, schedule=schedule, server_room_id=server_room, server_number=server_num,
-                            target_num=target_number,time_setting=time_setting, duration=duration, comment=comment, operator=username)
+                            target_num=target_number,time_setting=time_setting, duration=duration,
+                            is_debug=is_debug, comment=comment, operator=username)
             logger.info(f'Test plan {name} is save success, id is {plans.id}, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -91,6 +92,7 @@ def edit(request):
             plan.server_room_id = request.POST.get('server_room')
             plan.server_number = request.POST.get('server_num')
             plan.target_num = request.POST.get('target_number')
+            plan.is_debug = request.POST.get('is_debug')
             plan.duration = request.POST.get('duration')
             plan.time_setting = request.POST.get('time_setting') if request.POST.get('schedule') == '1' else None
             plan.comment = request.POST.get('comment')

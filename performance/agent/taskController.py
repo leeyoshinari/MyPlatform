@@ -309,7 +309,7 @@ class Task(object):
             jmx_file_path = os.path.join(target_file_path, jmx_files[0])
             log_path = os.path.join(target_file_path, task_id + '.log')
             jtl_file_path = os.path.join(target_file_path, task_id + '.jtl')
-            if is_debug:
+            if is_debug == 1:
                 cmd = f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -l {jtl_file_path} -j {log_path} >/dev/null 2>&1 &'
             else:
                 cmd = f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -j {log_path} >/dev/null 2>&1 &'

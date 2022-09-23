@@ -168,7 +168,7 @@
 
         plot(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}');
         get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
-                '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}');
+                '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}', {{ tasks.plan.type }});
         {% if tasks.status == 1 %}
             let timer = setInterval(function () {
                 plot_delta(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}')
@@ -176,7 +176,7 @@
 
             let query_server_timer = setInterval(function () {
                 get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
-                '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}')
+                '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}', {{ tasks.plan.type }})
             }, 15000);
 
             document.getElementById('show-server').addEventListener('click', function () {
