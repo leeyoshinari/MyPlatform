@@ -90,8 +90,11 @@ $(window).resize(function () {
 });
 
 window.onunload = function () {
-    data_msg['code'] = 2;
-    sock.send(JSON.stringify(data_msg));
+    let mymessage = confirm("Are you sure leave ?");
+    if (mymessage === true) {
+        data_msg['code'] = 2;
+        sock.send(JSON.stringify(data_msg));
+    }
 };
 
 document.onclick = function () {

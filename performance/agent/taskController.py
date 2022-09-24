@@ -21,6 +21,7 @@ class Task(object):
         self.status = 0     # 0 idle, 1 busy, -1 pending
         self.current_tps = 0
         self.task_id = None
+        self.task_key = None
         self.plan_id = None
         self.agent_num = 1
         self.number_samples = 1
@@ -203,8 +204,6 @@ class Task(object):
                 line = f1.readline().strip()
                 if 'Summariser: summary +' in line:
                     logger.info(f'JMeter run log - {self.task_id} - {line}')
-                    # data = {'samples': 0, 'tps': 0, 'rt': 0, 'min': 0, 'max': 0, 'err': 0, 'active': 0}
-                    # data = [0, 0, 0, 0, 0, 0, 0]
                     if index > 1:   # 前两次结果不写入，等待summary输出频率稳定
                         if flag:
                             self.redis_client.set(self.task_id, self.agent_num, ex=self.key_expire)
@@ -221,9 +220,18 @@ class Task(object):
                         self.influx_client.write_points(line)  # write to database
                         if res[-1] == '0':
                             self.start_thread(self.stop_task, (self.task_id,))
+                        index += 1
+                        last_time = time.time()
                     else:
                         self.change_init_TPS()
                         index += 1
+
+                if index > 10 and time.time() - last_time > 300:
+                    self.status = 0
+
+                if self.status == 0:
+                    self.start_thread(self.stop_task, (self.task_id,))
+                    break
 
                 cur_position = f1.tell()  # 记录上次读取文件的位置
                 if cur_position == position:
@@ -233,16 +241,18 @@ class Task(object):
                     position = cur_position
                     time.sleep(0.2)
 
-                if self.status == 0:
-                    break
-
     def write_to_redis(self, data):
         total_num = int(self.redis_client.get(self.task_id))
-        if self.redis_client.llen(f'task_{self.task_id}') == total_num:
-            res = self.redis_client.lrange(f'task_{self.task_id}', 0, total_num - 1)
-            self.redis_client.ltrim(f'task_{self.task_id}', total_num + 1, total_num + 1)  # remove all
+        if self.redis_client.llen(self.task_key) == total_num:
+            res = self.redis_client.lrange(self.task_key, 0, total_num - 1)
+            self.redis_client.ltrim(self.task_key, total_num + 1, total_num + 1)  # remove all
             self.write_to_influx(res)
-        _ = self.redis_client.lpush(f'task_{self.task_id}', str(data))
+        _ = self.redis_client.lpush(self.task_key, str(data))
+        if self.redis_client.llen(self.task_key) == total_num:
+            res = self.redis_client.lrange(self.task_key, 0, total_num - 1)
+            self.redis_client.ltrim(self.task_key, total_num + 1, total_num + 1)  # remove all
+            self.write_to_influx(res)
+        self.redis_client.expire(self.task_key, 300)
 
     def save_file(self, files):
         pass
@@ -319,6 +329,7 @@ class Task(object):
             if self.check_status(is_run=True):
                 self.status = 1
                 self.task_id = task_id
+                self.task_key = f"task_{task_id}"
                 self.number_samples = number_samples
                 flag = 1
                 logger.info(f'{jmx_file_path} run successful, task id: {self.task_id}')

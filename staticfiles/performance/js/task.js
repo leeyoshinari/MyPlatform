@@ -85,9 +85,9 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5, 
                         server_num += 1;
                     }
                     if (status === 1 && all_host[i]['status'] === 0) {
-                        s += '<td><a onclick="start_test(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Start</a>';
+                        s += '<a onclick="start_test(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Start</a>';
                     }
-                    s += '<td><a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
+                    s += '<a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
                          '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
                 }
                 if (server_num > 0) {
