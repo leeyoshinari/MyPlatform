@@ -3,11 +3,13 @@
 # Author: leeyoshinari
 
 import os
+import json
 import logging
 import traceback
 from django.shortcuts import render, redirect
 from django.http import StreamingHttpResponse
 from django.conf import settings
+from django.core import serializers
 from django.forms.models import model_to_dict
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
@@ -160,11 +162,16 @@ def create_group(request):
         try:
             username = request.user.username
             group_name = request.POST.get('GroupName')
-            group = Group.objects.create(name=group_name)
-            users = User.objects.filter(is_staff=1)
-            for user in users:
-                user.groups.add(group.id)
-            logger.info(f'create group {group_name} success, operator: {username}')
+            group_id = request.POST.get('GroupId')
+            group_type = request.POST.get('GroupType')
+            if group_type == 'add':
+                group = Group.objects.create(name=group_name)
+                users = User.objects.filter(is_staff=1)
+                for user in users:
+                    user.groups.add(group.id)
+            if group_type == 'delete':
+                group = Group.objects.get(id=group_id).delete()
+            logger.info(f'{group_type} group {group_name} success, operator: {username}')
             return result(msg='Create group success ~')
         except:
             logger.error(traceback.format_exc())
@@ -177,8 +184,13 @@ def create_room(request):
             username = request.user.username
             room_name = request.POST.get('roomName')
             room_type = request.POST.get('roomType')
-            room = ServerRoom.objects.create(id=primaryKey(), name=room_name, type=room_type, operator=username)
-            logger.info(f'create server room {room_name} success, operator: {username}')
+            operate_type = request.POST.get('operateType')
+            room_id = request.POST.get('roomId')
+            if operate_type == 'add':
+                room = ServerRoom.objects.create(id=primaryKey(), name=room_name, type=room_type, operator=username)
+            if operate_type == 'delete':
+                room = ServerRoom.objects.get(id=room_id).delete()
+            logger.info(f'{operate_type} server room {room_name} success, operator: {username}')
             return result(msg='Create server room success ~')
         except:
             logger.error(traceback.format_exc())
@@ -204,9 +216,10 @@ def search_server(request):
         try:
             group_name = request.GET.get('group')
             server_name = request.GET.get('server')
+            server_room = request.GET.get('room')
             group_name = group_name.replace('%', '').replace('+', '').strip()
             server_name = server_name.replace('%', '').replace('+', '').strip()
-            if not group_name and not server_name:
+            if not group_name and not server_name and not server_room:
                 return redirect('shell:index')
 
             if group_name:
@@ -214,15 +227,20 @@ def search_server(request):
             else:
                 groups = request.user.groups.all()
 
-            if server_name:
+            if server_name and server_room:
+                servers = Servers.objects.filter(group__in=groups, room__name__contains=server_room).filter(Q(name__contains=server_name) | Q(host__contains=server_name)).order_by('-id')
+            elif server_room:
+                servers = Servers.objects.filter(group__in=groups, room__name__contains=server_room).order_by('-id')
+            elif server_name:
                 servers = Servers.objects.filter(group__in=groups).filter(Q(name__contains=server_name) | Q(host__contains=server_name)).order_by('-id')
             else:
                 servers = Servers.objects.filter(group__in=groups).order_by('-id')
             username = request.user.username
             is_staff = request.user.is_staff
+            rooms = ServerRoom.objects.all().order_by('-create_time')
             logger.info(f'search server success. operator: {username}')
             return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': 0, 'isMonitor': settings.IS_MONITOR,
-                                                                'is_staff': is_staff, 'page_size': 200, 'total_page': 0})
+                                                                'rooms': rooms, 'is_staff': is_staff, 'page_size': 200, 'total_page': 0})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -355,3 +373,28 @@ def stop_monitor(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='stop monitor failure, please try again ~ ')
+
+
+def get_all_group(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            groups = Group.objects.all().order_by('-id')
+            logger.info(f'Get All Groups success, operator: {username}')
+            return result(data=json.loads(serializers.serialize('json', groups)))
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get Groups error ~')
+
+
+def get_all_room(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            rooms = ServerRoom.objects.all().order_by('-id')
+            logger.info(f'Get All Groups success, operator: {username}')
+            return result(data=json.loads(serializers.serialize('json', rooms)))
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get Groups error ~')
+

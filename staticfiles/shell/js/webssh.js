@@ -6,20 +6,6 @@ let socketURL = 'ws://' + window.location.host + '/shell/open/' ;
 let sock = new WebSocket(socketURL);
 console.log("websocket connect success ~");
 
-sock.onerror = function(err) {
-    console.log(err);
-    $.Toast('Session Connect Error ~ ', 'error');
-}
-
-sock.onopen =function (event) {
-    let storage = {
-        cols: 64,
-        rows: 16,
-        type: 'web',
-        host: document.title,
-    };
-    sock.send(JSON.stringify(storage));
-}
 let term = new Terminal(
     {
         convertEol: true,
@@ -32,19 +18,28 @@ let term = new Terminal(
         }
     }
 );
-
 const fitAddon = new FitAddon.FitAddon();
 term.loadAddon(fitAddon);
 
-// 打开 websocket 连接, 打开 web 终端
+sock.onerror = function(err) {
+    console.log(err);
+    $.Toast('Session Connect Error ~ ', 'error');
+}
+
 sock.addEventListener('open', function () {
     term.open(document.getElementById('terminal'));
     fitAddon.fit();
+    let storage = {
+        cols: term.cols,
+        rows: term.rows,
+        type: 'web',
+        host: document.title,
+    };
+    sock.send(JSON.stringify(storage));
     viewport = document.getElementsByClassName("xterm-viewport")[0];
     termnal_screen = document.getElementsByClassName('xterm-screen')[0];
 });
 
-// 读取服务器端发送的数据并写入 web 终端
 sock.addEventListener('message', function (recv) {
     term.write(recv.data);
 });
@@ -57,14 +52,13 @@ sock.onclose = function (e) {
 let data_msg = {'code': 0, 'data': null};
 let size_msg = {'code': 1, 'cols': null, 'rows': null};
 
-// 向服务器端发送数据
-term.onKey(e => {
+term.onData(data => {
     if (sock.readyState === 3) {
         $.Toast('Session is already in CLOSED state ~', 'error');
     }
-    data_msg['data'] = e.key;
+    data_msg['data'] = data;
     sock.send(JSON.stringify(data_msg));
-})
+});
 
 setTimeout(function(){
     resize_term();
@@ -89,19 +83,23 @@ $(window).resize(function () {
     resize_term();
 });
 
-window.onunload = function () {
-    let mymessage = confirm("Are you sure leave ?");
-    if (mymessage === true) {
-        data_msg['code'] = 2;
-        sock.send(JSON.stringify(data_msg));
-    }
+window.onbeforeunload = function(event) {
+    event.returnValue = "Are you sure leave ?";
+};
+window.onunload = function (event) {
+    data_msg['code'] = 2;
+    sock.send(JSON.stringify(data_msg));
 };
 
-document.onclick = function () {
-    if (window.getSelection) {
-        document.execCommand('Copy');
-    }
-};
+// document.onclick = function () {
+//     let selection = window.getSelection();
+//     console.log(selection);
+//     console.log(window.getSelection);
+//     if (window.getSelection) {
+//         console.log(111111);
+//         document.execCommand('Copy');
+//     }
+// };
 
 function upload_file(path) {
     let fileUpload_input = document.getElementById("fileUpload-input");

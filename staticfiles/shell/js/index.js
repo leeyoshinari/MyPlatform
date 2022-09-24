@@ -32,11 +32,12 @@ function edit_server(server) {
 document.getElementById('searchServer').addEventListener('click', function () {
     let groupName = document.getElementById('groupName').value;
     let serverName = document.getElementById('serverName').value;
-    let to_url = document.getElementById('location').value;
-    if (!serverName && !groupName) {
+    let serverRoom = document.getElementById("ServerRoom").value;
+    let to_url = document.getElementById('searchServer').name;
+    if (!serverName && !groupName && !serverRoom) {
         window.location.href = to_url;
     } else {
-        window.location.href = to_url + 'search/server?group=' + groupName + '&server=' + serverName;
+        window.location.href = to_url + 'search/server?group=' + groupName + '&server=' + serverName + '&room=' + serverRoom;
     }
 })
 
@@ -259,19 +260,23 @@ document.getElementById('createGroup').addEventListener('click', function () {
 
     submit_a.onclick = function() {
         let GroupName = document.getElementById("group_name_2").value;
+        let group_operator = document.getElementById("group_operator").value;
+        let group_id = document.getElementById("group_id").value;
 
-        if (!GroupName) {
-            $.Toast('Please select group name ~ ', 'error');
+        if (group_operator === 'add' && !GroupName) {
+            $.Toast('Please input group name ~ ', 'error');
             return;
         }
 
         let post_data = {
             GroupName: GroupName,
+            GroupId: group_id,
+            GroupType: group_operator
         }
         $.ajax({
             type: 'POST',
             async: false,
-            url: 'create/group',
+            url: submit_a.name,
             data: post_data,
             dataType: 'json',
             success: function (data) {
@@ -310,28 +315,31 @@ document.getElementById('createRoom').addEventListener('click', function () {
     }
 
     submit_a.onclick = function() {
+        let room_operator = document.getElementById("room_operator").value;
         let RoomName = document.getElementById("room_name").value;
         let room_type = document.getElementById("room_type").value;
+        let room_id = document.getElementById("room_id").value;
 
-        if (!RoomName) {
-            $.Toast('Please select group name ~ ', 'error');
+        if (room_operator === 'add' && !RoomName) {
+            $.Toast('Please input server room name ~ ', 'error');
             return;
         }
 
         let post_data = {
             roomName: RoomName,
-            roomType: room_type
+            roomType: room_type,
+            operateType: room_operator,
+            roomId: room_id
         }
         $.ajax({
             type: 'POST',
             async: false,
-            url: 'create/room',
+            url: submit_a.name,
             data: post_data,
             dataType: 'json',
             success: function (data) {
                 if (data['code'] !== 0) {
                     $.Toast(data['msg'], 'error');
-                    return;
                 } else {
                     $.Toast(data['msg'], 'success');
                     modal.style.display = "none";
@@ -462,3 +470,56 @@ function server_modal(data) {
     }
 }
 
+document.getElementById("group_operator").onchange = function () {
+    let operate_type = document.getElementById("group_operator").value;
+    if (operate_type === 'add') {
+        document.getElementById("group_input").style.display = 'block';
+        document.getElementById("group_select").style.display = 'none';
+    } else {
+        $.ajax({
+            type: 'GET',
+            url: document.getElementById("group_id").name,
+            success: function (data) {
+                if (data['code'] === 0) {
+                    let s = '';
+                    for (let i=0; i<data['data'].length; i++) {
+                        s += '<option value="' + data['data'][i]['pk'] + '">' + data['data'][i]['fields']['name'] + '</option>';
+                    }
+                    document.getElementById("group_id").innerHTML = s;
+                    document.getElementById("group_input").style.display = 'none';
+                    document.getElementById("group_select").style.display = 'block';
+                } else {
+                    $.Toast(data['msg'], 'error');
+                }
+            }
+        })
+
+    }
+}
+
+document.getElementById("room_operator").onchange = function () {
+    let room_operator = document.getElementById("room_operator").value;
+    if (room_operator === 'add') {
+        document.getElementById("room_input").style.display = 'block';
+        document.getElementById("room_type_select").style.display = 'block';
+        document.getElementById("room_id_select").style.display = 'none';
+    } else {
+        $.ajax({
+            type: 'GET',
+            url: document.getElementById("room_id").name,
+            success: function (data) {
+                if (data['code'] === 0) {
+                    let s = '';
+                    let room_type = ['Used to Applications', 'Used to Middleware', 'Used to Pressure Test'];
+                    for (let i=0; i<data['data'].length; i++) {
+                        s += '<option value="' + data['data'][i]['pk'] + '">' + data['data'][i]['fields']['name'] + ' - ' + room_type[data['data'][i]['fields']['type']] + '</option>';
+                    }
+                    document.getElementById("room_id").innerHTML = s;
+                    document.getElementById("room_input").style.display = 'none';
+                    document.getElementById("room_type_select").style.display = 'none';
+                    document.getElementById("room_id_select").style.display = 'block';
+                }
+            }
+        })
+    }
+}

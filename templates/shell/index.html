@@ -13,11 +13,13 @@
             <button id="addServer">Add Server</button>
         </div>
         <div style="width: 60%;">
+            <label>ServerRoom: </label>
+            <input id="ServerRoom" type="text" placeholder="Server Room Name ~">
             <label>Group: </label>
             <input id="groupName" type="text" placeholder="Group Name ~">
             <label>Server: </label>
             <input id="serverName" type="text" placeholder="Server Name or Server IP ~">
-            <button id="searchServer">Search</button>
+            <button id="searchServer" name="{% url 'shell:index' %}">Search</button>
         </div>
     </div>
     <table id="layout-table" border="1" cellspacing="0" cellpadding="6">
@@ -210,16 +212,35 @@
             <div class="modal-body">
                 <div class="modal-col">
                     <div class="label">
+                        <label>Operation: </label>
+                    </div>
+                    <div class="input">
+                        <select id="group_operator">
+                            <option value="add">Add Group</option>
+                            <option value="delete">Delete Group</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-col" id="group_input">
+                    <div class="label">
                         <label>GroupName：</label>
                     </div>
                     <div class="input">
                         <input id="group_name_2" type="text" placeholder="Please input group name ~">
                     </div>
                 </div>
+                <div class="modal-col" id="group_select" style="display: none;">
+                    <div class="label">
+                        <label>GroupName：</label>
+                    </div>
+                    <div class="input">
+                        <select id="group_id" name="{% url 'shell:get_group' %}"></select>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <a class="cancel">Cancel</a>
-                <a class="submit">Submit</a>
+                <a class="submit" name="{% url 'shell:create_group' %}">Submit</a>
             </div>
         </div>
     </div>
@@ -232,13 +253,24 @@
             <div class="modal-body">
                 <div class="modal-col">
                     <div class="label">
+                        <label>Operation: </label>
+                    </div>
+                    <div class="input">
+                        <select id="room_operator">
+                            <option value="add">Add Server Room</option>
+                            <option value="delete">Delete Server Room</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-col" id="room_input">
+                    <div class="label">
                         <label>Name：</label>
                     </div>
                     <div class="input">
                         <input id="room_name" type="text" placeholder="Please input server room name ~">
                     </div>
                 </div>
-                <div class="modal-col">
+                <div class="modal-col" id="room_type_select">
                     <div class="label">
                         <label>Type: </label>
                      </div>
@@ -250,17 +282,24 @@
                         </select>
                     </div>
                 </div>
+                <div class="modal-col" id="room_id_select" style="display: none;">
+                    <div class="label">
+                        <label>ServerRoom: </label>
+                     </div>
+                    <div class="input">
+                        <select id="room_id" name="{% url 'shell:get_room' %}"></select>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <a class="cancel">Cancel</a>
-                <a class="submit">Submit</a>
+                <a class="submit" name="{% url 'shell:create_room' %}">Submit</a>
             </div>
         </div>
     </div>
     <div class="modal_cover">
         <div class="modal_gif"></div>
     </div>
-    <input type="text" id="location" value="{% url 'shell:index' %}" style="display: none;">
     <script type="text/javascript">
     $(function () {
         PagingManage($("#paging"), {{ total_page }}, {{ page }}, '{% url 'shell:index' %}?pageSize=' + {{ page_size }} + '&page=')
