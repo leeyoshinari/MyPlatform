@@ -260,6 +260,7 @@ document.getElementById('createGroup').addEventListener('click', function () {
 
     submit_a.onclick = function() {
         let GroupName = document.getElementById("group_name_2").value;
+        let GroupKey = document.getElementById("group_identifier_2").value;
         let group_operator = document.getElementById("group_operator").value;
         let group_id = document.getElementById("group_id").value;
 
@@ -267,11 +268,16 @@ document.getElementById('createGroup').addEventListener('click', function () {
             $.Toast('Please input group name ~ ', 'error');
             return;
         }
+        if (group_operator === 'add' && !GroupKey) {
+            $.Toast('Please input group unique identifier ~ ', 'error');
+            return;
+        }
 
         let post_data = {
             GroupName: GroupName,
             GroupId: group_id,
-            GroupType: group_operator
+            GroupType: group_operator,
+            GroupKey: GroupKey
         }
         $.ajax({
             type: 'POST',
@@ -474,6 +480,7 @@ document.getElementById("group_operator").onchange = function () {
     let operate_type = document.getElementById("group_operator").value;
     if (operate_type === 'add') {
         document.getElementById("group_input").style.display = 'block';
+        document.getElementById("group_identifier").style.display = 'block';
         document.getElementById("group_select").style.display = 'none';
     } else {
         $.ajax({
@@ -487,6 +494,7 @@ document.getElementById("group_operator").onchange = function () {
                     }
                     document.getElementById("group_id").innerHTML = s;
                     document.getElementById("group_input").style.display = 'none';
+                    document.getElementById("group_identifier").style.display = 'none';
                     document.getElementById("group_select").style.display = 'block';
                 } else {
                     $.Toast(data['msg'], 'error');

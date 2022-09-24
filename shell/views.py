@@ -13,9 +13,10 @@ from django.core import serializers
 from django.forms.models import model_to_dict
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
+from django.db.models.deletion import ProtectedError
 from common.Result import result
 from common.generator import primaryKey
-from .models import Servers, ServerRoom
+from .models import Servers, ServerRoom, GroupIdentifier
 from .channel.ssh import get_server_info, UploadAndDownloadFile, deploy_mon, stop_mon
 
 
@@ -163,16 +164,27 @@ def create_group(request):
             username = request.user.username
             group_name = request.POST.get('GroupName')
             group_id = request.POST.get('GroupId')
+            group_key = request.POST.get('GroupKey')
             group_type = request.POST.get('GroupType')
             if group_type == 'add':
                 group = Group.objects.create(name=group_name)
                 users = User.objects.filter(is_staff=1)
                 for user in users:
                     user.groups.add(group.id)
+                try:
+                    identifier = GroupIdentifier.objects.get(key=group_key)
+                    Group.objects.get(id=group.id).delete()
+                    logger.error(f"{identifier.key} has existed, operator: {username}")
+                    return result(code=1, msg=f"{identifier.key} has existed, Group Name is {identifier.group.name}")
+                except GroupIdentifier.DoesNotExist:
+                    identifier = GroupIdentifier.objects.create(group_id=group.id, key=group_key)
             if group_type == 'delete':
                 group = Group.objects.get(id=group_id).delete()
             logger.info(f'{group_type} group {group_name} success, operator: {username}')
             return result(msg='Create group success ~')
+        except ProtectedError:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Cannot delete Group because it is referenced')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='System error ~')
@@ -192,6 +204,9 @@ def create_room(request):
                 room = ServerRoom.objects.get(id=room_id).delete()
             logger.info(f'{operate_type} server room {room_name} success, operator: {username}')
             return result(msg='Create server room success ~')
+        except ProtectedError:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Cannot delete Server Room because it is referenced')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='System error ~')

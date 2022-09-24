@@ -18,6 +18,16 @@ class ServerRoom(models.Model):
     class Meta:
         db_table = 'server_room'
 
+
+class GroupIdentifier(models.Model):
+    id = models.IntegerField(primary_key=True, verbose_name='primary key')
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name='group id')
+    key = models.CharField(max_length=32, verbose_name='group unique identifier')
+    objects = models.Manager()
+    class Meta:
+        db_table = 'group_identifier'
+
+
 class Servers(models.Model):
     id = models.CharField(max_length=16, primary_key=True, verbose_name='primary key')
     group = models.ForeignKey(Group, on_delete=models.PROTECT, verbose_name='group id')
