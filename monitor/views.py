@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.db.models import Q
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
-from shell.models import Servers
+from shell.models import Servers, GroupIdentifier
 from common.Email import sendEmail
 from common.Result import result
 from .server.request import Request
@@ -150,10 +150,12 @@ def register_first(request):
         datas = json.loads(request.body)
         try:
             servers = Servers.objects.get(host=datas['host'])
-            monitor_server.agent_setter(request.body)
+            identifier = GroupIdentifier.objects.get(group_id=servers.group_id)
+            datas.update({'roomId': servers.room.id, 'groupKey': identifier.key})
+            monitor_server.agent_setter(datas)
             return result(msg='registered successfully!', data={'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
                                         'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD,
-                                        'database': settings.INFLUX_DATABASE, 'roomId': servers.room.id})
+                                        'database': settings.INFLUX_DATABASE, 'roomId': servers.room.id, 'groupKey': identifier.key})
         except Servers.DoesNotExist:
             logger.error(f"Host: {datas['host']} is not set in 'shell->server'")
             return result(code=1, msg=f"Host: {datas['host']} is not set in 'shell->server'")

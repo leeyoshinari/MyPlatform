@@ -17,13 +17,6 @@ class Process(object):
         # self._agents = {'host': [], 'port': [], 'system': [], 'cpu': [], 'mem': [], 'time': [], 'disk': [], 'nic': [],
         #                 'network_speed': [], 'disk_size': [], 'mem_usage': [], 'cpu_usage': [], 'disk_usage': []}
 
-        # data expiration time
-        # conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
-        #                                settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
-        # conn.query(f'alter retention policy "autogen" on "{settings.INFLUX_DATABASE}" duration '
-        #            f'{settings.INFLUX_EXPIRY_TIME}d REPLICATION 1 SHARD DURATION {settings.INFLUX_SHARD_DURATION} default;')
-        # logger.info(f'InfuxDb data expiration time is {settings.INFLUX_EXPIRY_TIME} days')
-
     def agent_setter(self, value):
         logger.debug(f'The client registration data is {value}')
         key = 'Server_' + value['host']

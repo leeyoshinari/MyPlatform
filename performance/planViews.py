@@ -52,18 +52,19 @@ def add(request):
     if request.method == 'POST':
         try:
             username = request.user.username
-            name = request.POST.get('name')
-            teardown = request.POST.get('teardown')
-            serialize = request.POST.get('serialize')
-            run_type = request.POST.get('run_type')
-            schedule = request.POST.get('schedule')
-            server_room = request.POST.get('server_room')
-            server_num = request.POST.get('server_num')
-            is_debug = request.POST.get('is_debug')
-            target_number = request.POST.get('target_number')
-            duration = request.POST.get('duration')
-            time_setting = request.POST.get('time_setting') if schedule == '1' else None
-            comment = request.POST.get('comment')
+            data = json.loads(request.body)
+            name = data.get('name')
+            teardown = data.get('teardown')
+            serialize = data.get('serialize')
+            run_type = data.get('run_type')
+            schedule = data.get('schedule')
+            server_room = data.get('server_room')
+            server_num = data.get('server_num')
+            is_debug = data.get('is_debug')
+            target_number = data.get('target_number')
+            duration = data.get('duration')
+            time_setting = data.get('time_setting') if schedule == '1' else []
+            comment = data.get('comment')
             plans = TestPlan.objects.create(id=primaryKey(), name=name, tearDown=teardown, serialize=serialize, is_valid='true',
                             type=run_type, schedule=schedule, server_room_id=server_room, server_number=server_num,
                             target_num=target_number,time_setting=time_setting, duration=duration,
@@ -82,20 +83,22 @@ def edit(request):
     if request.method == 'POST':
         try:
             username = request.user.username
-            plan_id = request.POST.get('plan_id')
+            data = json.loads(request.body)
+            plan_id = data.get('plan_id')
             plan = TestPlan.objects.get(id=plan_id)
-            plan.name = request.POST.get('name')
-            plan.tearDown = request.POST.get('teardown')
-            plan.serialize = request.POST.get('serialize')
-            plan.type = request.POST.get('run_type')
-            plan.schedule = request.POST.get('schedule')
-            plan.server_room_id = request.POST.get('server_room')
-            plan.server_number = request.POST.get('server_num')
-            plan.target_num = request.POST.get('target_number')
-            plan.is_debug = request.POST.get('is_debug')
-            plan.duration = request.POST.get('duration')
-            plan.time_setting = request.POST.get('time_setting') if request.POST.get('schedule') == '1' else None
-            plan.comment = request.POST.get('comment')
+            plan.name = data.get('name')
+            plan.tearDown = data.get('teardown')
+            plan.serialize = data.get('serialize')
+            plan.type = data.get('run_type')
+            plan.schedule = data.get('schedule')
+            plan.server_room_id = data.get('server_room')
+            plan.server_number = data.get('server_num')
+            plan.target_num = data.get('target_number')
+            plan.is_debug = data.get('is_debug')
+            plan.duration = data.get('duration')
+            if data.get('schedule') == '1':
+                plan.time_setting = data.get('time_setting')
+            plan.comment = data.get('comment')
             plan.operator = username
             plan.save()
             logger.info(f'Test plan {plan_id} is edited success, operator: {username}')

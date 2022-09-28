@@ -10,7 +10,26 @@ function add_plan(url, location_url) {
     let isDebug = document.getElementById('isDebug').value;
     let target_number = document.getElementById('target_number').value;
     let duration = document.getElementById('duration').value;
-    let time_setting = document.getElementById('time_setting').value;
+
+    let time_setting = [];
+    if (schedule === '1') {
+        let time_settings = document.getElementById("add-timing").getElementsByClassName("value-div");
+        if (time_settings.length < 1) {
+            $.Toast('Please set timing ~', 'warning');
+            return;
+        }
+        let datas = '[';
+        for (let i = 0; i < time_settings.length; i++) {
+            let values = time_settings[i].getElementsByTagName("input");
+            if (run_type === '1') {
+                datas += '{"timing": "' + values[0].value + '", "value": ' + values[1].value + '},';
+            } else {
+                datas += '{"timing": "' + values[0].value + '"},';
+            }
+        }
+        datas = datas.substr(0, datas.length - 1) + ']';
+        let time_setting = JSON.parse(datas);
+    }
 
     let post_data = {
         name: name,
@@ -30,8 +49,9 @@ function add_plan(url, location_url) {
     $.ajax({
         type: 'post',
         url: url,
-        data: post_data,
+        data: JSON.stringify(post_data),
         dataType: 'json',
+        contentType: 'application/json; charset=utf-8',
         success: function (data) {
             if(data['code'] === 0) {
                 $.Toast(data['msg'], 'success');
@@ -56,7 +76,26 @@ function edit_plan(url, location_url) {
     let isDebug = document.getElementById('isDebug').value;
     let target_number = document.getElementById('target_number').value;
     let duration = document.getElementById('duration').value;
-    let time_setting = document.getElementById('time_setting').value;
+
+    let time_setting = [];
+    if (schedule === '1') {
+        let time_settings = document.getElementById("add-timing").getElementsByClassName("value-div");
+        if (time_settings.length < 1) {
+            $.Toast('Please set timing ~', 'warning');
+            return;
+        }
+        let datas = '[';
+        for (let i = 0; i < time_settings.length; i++) {
+            let values = time_settings[i].getElementsByTagName("input");
+            if (run_type === '1') {
+                datas += '{"timing": "' + values[0].value + '", "value": ' + values[1].value + '},';
+            } else {
+                datas += '{"timing": "' + values[0].value + '"},';
+            }
+        }
+        datas = datas.substr(0, datas.length - 1) + ']';
+        time_setting = JSON.parse(datas);
+    }
 
     let post_data = {
         plan_id: plan_id,
@@ -77,8 +116,9 @@ function edit_plan(url, location_url) {
     $.ajax({
         type: 'post',
         url: url,
-        data: post_data,
+        data: JSON.stringify(post_data),
         dataType: 'json',
+        contentType: 'application/json; charset=utf-8',
         success: function (data) {
             if(data['code'] === 0) {
                 $.Toast(data['msg'], 'success');
@@ -272,4 +312,25 @@ function start_task(url, task_id, status_url, detail_url) {
             $('.modal_gif').css("display", "none");
         }
     })
+}
+
+function add_timing() {
+    let c = document.getElementById('add-timing');
+    let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Time: </label>' +
+            '<input type="datetime-local" step="1" min="2022-09-27 08:20:21" style="width: 26%;" value="">' +
+            '<label style="margin-left: 3%;">TPS: </label><input type="text" placeholder="Please input TPS ~" ' +
+            'style="width: 26%;" value=""></div>';
+    if (document.getElementById('run_type').value === '0') {
+        s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Time: </label>' +
+            '<input type="datetime-local" step="1" min="2022-09-27 08:20:21" style="width: 26%;" value="">';
+    }
+    c.appendChild(document.createRange().createContextualFragment(s));
+}
+
+function del_timing () {
+    let c = document.getElementById('add-timing');
+    let div = c.getElementsByTagName('div');
+    if(div.length > 0) {
+        c.removeChild(div[div.length - 1]);
+    }
 }

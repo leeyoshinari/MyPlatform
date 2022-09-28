@@ -12,7 +12,7 @@ class TestPlan(models.Model):
     schedule = models.IntegerField(default=0, verbose_name='schedule type, 0-Manual, 1-Automatic')
     target_num = models.IntegerField(default=1, verbose_name='target num')
     duration = models.IntegerField(default=1800, verbose_name='duration (second)')
-    time_setting = models.CharField(null=True, max_length=8, verbose_name='time setting run')
+    time_setting = models.JSONField(null=True, verbose_name='time setting run')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
     is_debug = models.IntegerField(default=0, verbose_name='0-Not debug, 1-debug')
     variables = models.JSONField(null=True, verbose_name='variables')

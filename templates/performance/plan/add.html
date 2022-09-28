@@ -82,8 +82,11 @@
                 <label>Time Setting:</label>
             </div>
             <div class="value-div">
-                <input type="text" id="time_setting" placeholder="Please input the time of Crontab ~">
+                <button onclick="add_timing();">Add Timing + </button>
+                <button onclick="del_timing();">Del Timing - </button>
+                <button onclick="preview_timing();"> Preview </button>
             </div>
+            <div id="add-timing"></div>
         </div>
         <div class="row-cols">
             <div class="label-div">
@@ -160,8 +163,10 @@
             let s = document.getElementById('run_type').value;
             if (s === '0') {
                 document.getElementsByClassName('label-div')[4].getElementsByTagName('label')[0].innerText = 'Thread Num';
+                document.getElementById('add-timing').innerHTML = '';
             } else {
                 document.getElementsByClassName('label-div')[4].getElementsByTagName('label')[0].innerText = 'Target TPS';
+                document.getElementById('add-timing').innerHTML = '';
             }
         }
 
