@@ -12,23 +12,33 @@ function add_plan(url, location_url) {
     let duration = document.getElementById('duration').value;
 
     let time_setting = [];
+    let current_time = Date.now() + 1800000;
+    let s_t = Date.now();
     if (schedule === '1') {
         let time_settings = document.getElementById("add-timing").getElementsByClassName("value-div");
         if (time_settings.length < 1) {
             $.Toast('Please set timing ~', 'warning');
             return;
         }
-        let datas = '[';
-        for (let i = 0; i < time_settings.length; i++) {
+        for (let i=0; i<time_settings.length; i++) {
             let values = time_settings[i].getElementsByTagName("input");
+            s_t = new Date(values[0].value).getTime();
+            if (s_t < current_time) {
+                if (i === 0) {
+                    $.Toast('Please set time after 30 seconds.', 'error');
+                    return;
+                } else {
+                    $.Toast('Please notice order.', 'error');
+                    return;
+                }
+            }
+            current_time = s_t;
             if (run_type === '1') {
-                datas += '{"timing": "' + values[0].value + '", "value": ' + values[1].value + '},';
+                time_setting.push({"timing": values[0].value, "value": values[1].value});
             } else {
-                datas += '{"timing": "' + values[0].value + '"},';
+                time_setting.push({"timing": values[0].value, "value": target_number});
             }
         }
-        datas = datas.substr(0, datas.length - 1) + ']';
-        let time_setting = JSON.parse(datas);
     }
 
     let post_data = {
@@ -78,23 +88,33 @@ function edit_plan(url, location_url) {
     let duration = document.getElementById('duration').value;
 
     let time_setting = [];
+    let current_time = Date.now() + 1800000;
+    let s_t = Date.now();
     if (schedule === '1') {
         let time_settings = document.getElementById("add-timing").getElementsByClassName("value-div");
         if (time_settings.length < 1) {
             $.Toast('Please set timing ~', 'warning');
             return;
         }
-        let datas = '[';
-        for (let i = 0; i < time_settings.length; i++) {
+        for (let i=0; i<time_settings.length; i++) {
             let values = time_settings[i].getElementsByTagName("input");
+            s_t = new Date(values[0].value).getTime();
+            if (s_t < current_time) {
+                if (i === 0) {
+                    $.Toast('Please set time after 30 seconds.', 'error');
+                    return;
+                } else {
+                    $.Toast('Please notice order.', 'error');
+                    return;
+                }
+            }
+            current_time = s_t;
             if (run_type === '1') {
-                datas += '{"timing": "' + values[0].value + '", "value": ' + values[1].value + '},';
+                time_setting.push({"timing": values[0].value, "value": values[1].value});
             } else {
-                datas += '{"timing": "' + values[0].value + '"},';
+                time_setting.push({"timing": values[0].value, "value": target_number});
             }
         }
-        datas = datas.substr(0, datas.length - 1) + ']';
-        time_setting = JSON.parse(datas);
     }
 
     let post_data = {
@@ -315,14 +335,15 @@ function start_task(url, task_id, status_url, detail_url) {
 }
 
 function add_timing() {
+    let current_date = get_current_date();
     let c = document.getElementById('add-timing');
     let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Time: </label>' +
-            '<input type="datetime-local" step="1" min="2022-09-27 08:20:21" style="width: 26%;" value="">' +
+            '<input type="datetime-local" step="1" min="' + current_date + '" style="width: 26%;" value="">' +
             '<label style="margin-left: 3%;">TPS: </label><input type="text" placeholder="Please input TPS ratio (%)" ' +
             'style="width: 26%;" value=""></div>';
     if (document.getElementById('run_type').value === '0') {
         s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Time: </label>' +
-            '<input type="datetime-local" step="1" min="2022-09-27 08:20:21" style="width: 26%;" value="">';
+            '<input type="datetime-local" step="1" min="' + current_date + '" style="width: 26%;" value="">';
     }
     c.appendChild(document.createRange().createContextualFragment(s));
 }

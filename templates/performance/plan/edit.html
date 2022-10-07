@@ -127,7 +127,7 @@
                 {% for timing in plan.time_setting %}
                     <div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;">
                         <label>Time:</label>
-                        <input type="datetime-local" step="1" min="2022-09-27 08:20:21" style="width: 26%;" value="{{ timing.timing }}">
+                        <input type="datetime-local" step="1" min="{{ current_time }}" style="width: 26%;" value="{{ timing.timing }}">
                         {% if plan.type == 1 %}
                             <label style="margin-left: 3%;">TPS:</label>
                             <input type="text" placeholder="Please input TPS ratio (%)" style="width: 26%;" value="{{ timing.value }}">

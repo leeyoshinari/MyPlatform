@@ -65,3 +65,6 @@ def is_valid(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Set failure ~')
+
+
+# def auto_run_task():

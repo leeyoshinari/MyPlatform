@@ -13,7 +13,7 @@ from shell.models import Servers, ServerRoom
 from .common.parseJmx import read_jmeter_from_byte
 from .common.getRedis import *
 from common.Result import result
-from common.generator import primaryKey
+from common.generator import primaryKey, strfTime
 import common.Request as Request
 # Create your views here.
 
@@ -111,7 +111,8 @@ def edit(request):
             plan_id = request.GET.get('id')
             plans = TestPlan.objects.get(id=plan_id)
             server_rooms = ServerRoom.objects.filter(type=2).order_by('-create_time')
-            return render(request, 'performance/plan/edit.html', context={'plan': plans, 'server_rooms': server_rooms})
+            return render(request, 'performance/plan/edit.html', context={'plan': plans, 'server_rooms': server_rooms,
+                                                                          'current_time': strfTime()})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get test plan failure ~')

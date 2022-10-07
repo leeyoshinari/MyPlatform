@@ -1,15 +1,24 @@
 function preview_timing() {
-    let modal = document.getElementsByClassName('myModal')[0];
-    let close_a = document.getElementsByClassName("close")[0];
-    modal.style.display = "block";
-
     let x = [];
     let y = [];
+    let current_time = Date.now() + 1800000;
+    let s_t = Date.now();
     let test_type = document.getElementById('run_type').value;
     let target_number = parseInt(document.getElementById('target_number').value);
     let values_div = document.getElementById('add-timing').getElementsByClassName('value-div');
     for (let i=0; i<values_div.length; i++) {
         let input_tag = values_div[i].getElementsByTagName('input');
+        s_t = new Date(input_tag[0].value).getTime();
+        if (s_t < current_time) {
+            if (i === 0) {
+                $.Toast('Please set time after 30 seconds.', 'error');
+                return;
+            } else {
+                $.Toast('Please notice order.', 'error');
+                return;
+            }
+        }
+        current_time = s_t;
         x.push(input_tag[0].value.replace('T', ' '));
         if (test_type === '1') {
             y.push(parseInt(input_tag[1].value) * target_number / 100);
@@ -19,12 +28,9 @@ function preview_timing() {
     }
 
     if (test_type === '1') {
-        x.unshift(get_delta_minute(x[0], -600));
+        x.unshift(date_to_date(x[0], -600));
         y.unshift(2);
-    }
-
-    if (test_type === '1') {
-        x.push(get_delta_minute(x.slice(-1)[0], 600));
+        x.push(date_to_date(x.slice(-1)[0], 600));
         y.push(0);
     }
 
@@ -32,6 +38,10 @@ function preview_timing() {
     if (test_type === '1') {
         title = 'TPS';
     }
+
+    let modal = document.getElementsByClassName('myModal')[0];
+    let close_a = document.getElementsByClassName("close")[0];
+    modal.style.display = "block";
 
     preview(title, x, y);
 
@@ -107,32 +117,4 @@ function preview(title, x, y) {
 
     myChart.clear();
     myChart.setOption(option);
-}
-
-function get_delta_minute(current_date, delta_second) {
-    let timestamp = new Date(current_date).getTime();
-    timestamp = timestamp + delta_second * 1000;
-    let D = new Date(timestamp);
-    let hours = D.getHours();
-    let minutes = D.getMinutes();
-    let seconds = D.getSeconds();
-    let month = D.getMonth() + 1;
-    let strDate = D.getDate();
-
-    if (month >= 1 && month <= 9) {
-        month = "0" + month;
-    }
-    if (strDate >= 0 && strDate <= 9) {
-        strDate = "0" + strDate;
-    }
-    if (hours >= 0 && hours <= 9) {
-        hours = "0" + hours;
-    }
-    if (minutes >= 0 && minutes <= 9) {
-        minutes = "0" + minutes;
-    }
-    if (seconds >= 0 && seconds <= 9) {
-        seconds = "0" + seconds;
-    }
-    return D.getFullYear() + '-' + month + '-' + strDate + ' ' + hours + ':' + minutes + ':' + seconds;
 }

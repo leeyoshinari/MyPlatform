@@ -87,7 +87,10 @@ def add_to_task(request):
                         http_samples_proxy = ''
                         samples = HTTPSampleProxy.objects.filter(controller_id=controllers[0].id, is_valid='true').order_by('id')
                         number_of_samples = len(samples)
-                        throughput = generator_throughput(number_of_samples)
+                        if plans.type == 1:
+                            throughput = generator_throughput(number_of_samples)
+                        else:
+                            throughput = ''
                         if len(samples) > 0:
                             for sample in samples:
                                 if sample.assert_content:
