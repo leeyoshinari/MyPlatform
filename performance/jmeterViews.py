@@ -54,18 +54,20 @@ def edit(request):
     if request.method == 'POST':
         try:
             username = request.user.username
-            plan_id = request.POST.get('plan_id')
+            data = json.loads(request.body)
+            plan_id = data.get('plan_id')
             plan = TestPlan.objects.get(id=plan_id)
-            plan.name = request.POST.get('name')
-            plan.type = request.POST.get('run_type')
-            plan.schedule = request.POST.get('schedule')
-            plan.server_room_id = request.POST.get('server_room')
-            plan.server_number = request.POST.get('server_num')
-            plan.target_num = request.POST.get('target_number')
-            plan.duration = request.POST.get('duration')
-            plan.is_debug = request.POST.get('is_debug')
-            plan.time_setting = request.POST.get('time_setting') if request.POST.get('schedule') == '1' else None
-            plan.comment = request.POST.get('comment')
+            plan.name = data.get('name')
+            plan.type = data.get('run_type')
+            plan.schedule = data.get('schedule')
+            plan.server_room_id = data.get('server_room')
+            plan.server_number = data.get('server_num')
+            plan.target_num = data.get('target_number')
+            plan.duration = data.get('duration')
+            plan.is_debug = data.get('is_debug')
+            if data.get('schedule') == '1':
+                plan.time_setting = data.get('time_setting')
+            plan.comment = data.get('comment')
             plan.operator = username
             plan.save()
             logger.info(f'Test plan {plan_id} is edited success, operator: {username}')
@@ -155,7 +157,7 @@ def add_to_task(request):
                 number_of_samples = get_enabled_samples_num(source_jmeter_path)     # get number of http samples
                 jmeter_file_path = os.path.join(test_jmeter_path, task_id + '.jmx')
                 # modify jmx file
-                modify_jmeter(source_jmeter_path, jmeter_file_path, plans.type, plans.target_num, plans.duration)
+                modify_jmeter(source_jmeter_path, jmeter_file_path, plans.type, plans.target_num, plans.duration, number_of_samples)
                 os.remove(source_jmeter_path)       # remove source jmx file
                 os.remove(jmeter_zip_file_path)
                 # write zip file to temp path

@@ -19,7 +19,6 @@ function edit_server(server) {
         url: 'get/server?id=' + server,
         success: function (data) {
             if (data['code'] === 0) {
-                $.Toast(data['msg'], 'success');
                 server_modal(data['data']);
             } else {
                 $.Toast(data['msg'], 'error');
@@ -61,7 +60,7 @@ document.getElementById('addServer').addEventListener('click', function () {
 
     submit_a.onclick = function() {
         let GroupName = document.getElementById("GroupName").value;
-        let ServerRoom = document.getElementById("ServerRoom").value;
+        let ServerRoom = document.getElementById("Server-room").value;
         let ServerName = document.getElementById('ServerName').value;
         let ServerIP = document.getElementById('ServerIP').value;
         let Port = document.getElementById('Port').value;
@@ -376,7 +375,7 @@ function server_modal(data) {
             opt.selected = true;
         }
     }
-    opts = document.getElementById("ServerRoom").options;
+    opts = document.getElementById("Server-room").options;
     for(let opt of opts) {
         if(opt.value === data['room']) {
             opt.selected = true;

@@ -318,7 +318,7 @@ function add_timing() {
     let c = document.getElementById('add-timing');
     let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Time: </label>' +
             '<input type="datetime-local" step="1" min="2022-09-27 08:20:21" style="width: 26%;" value="">' +
-            '<label style="margin-left: 3%;">TPS: </label><input type="text" placeholder="Please input TPS ~" ' +
+            '<label style="margin-left: 3%;">TPS: </label><input type="text" placeholder="Please input TPS ratio (%)" ' +
             'style="width: 26%;" value=""></div>';
     if (document.getElementById('run_type').value === '0') {
         s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Time: </label>' +

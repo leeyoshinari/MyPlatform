@@ -102,8 +102,8 @@
                         <label>ServerRoom: </label>
                      </div>
                     <div class="input">
-                        <select id="ServerRoom">
-                            <option value="" selected></option>
+                        <select id="Server-room">
+                            <option value=""></option>
                             {% for room in rooms %}
                                 <option value="{{ room.id }}">{{ room.name }} - {{ room.type|get_value_from_list:'room_type' }}</option>
                             {% endfor %}
@@ -186,6 +186,7 @@
                                 <option value="{{ group.id }}">{{ group.name }}</option>
                             {% endfor %}
                         </select>
+                    </div>
                     </div>
                 </div>
                 <div class="modal-col">

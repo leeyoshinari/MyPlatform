@@ -1,10 +1,7 @@
 function save_group(url, location_url, plan_id) {
     let planid = document.getElementById('planid').value;
     let name = document.getElementById('name').value;
-    let num_threads = document.getElementById('num_threads').value;
     let ramp_time = document.getElementById('ramp_time').value;
-    let scheduler = document.getElementById('scheduler').value;
-    let duration = document.getElementById('duration').value;
     let comment = document.getElementById('comment').value;
     let file_path = document.getElementById('file_path').name;
     let variable_names = document.getElementById('variable_names').value;
@@ -15,10 +12,7 @@ function save_group(url, location_url, plan_id) {
     let post_data = {
         plan_id: planid,
         name: name,
-        num_threads: num_threads,
         ramp_time: ramp_time,
-        scheduler: scheduler,
-        duration: duration,
         file_path: file_path,
         variable_names: variable_names,
         delimiter: delimiter,
@@ -47,10 +41,7 @@ function edit_group(url, location_url, plan_id) {
     let group_id = document.getElementById('ID').value;
     let planid = document.getElementById('planid').value;
     let name = document.getElementById('name').value;
-    let num_threads = document.getElementById('num_threads').value;
     let ramp_time = document.getElementById('ramp_time').value;
-    let scheduler = document.getElementById('scheduler').value;
-    let duration = document.getElementById('duration').value;
     let comment = document.getElementById('comment').value;
     let file_path = document.getElementById('file_path').name;
     let variable_names = document.getElementById('variable_names').value;
@@ -62,10 +53,7 @@ function edit_group(url, location_url, plan_id) {
         id: group_id,
         plan_id: planid,
         name: name,
-        num_threads: num_threads,
         ramp_time: ramp_time,
-        scheduler: scheduler,
-        duration: duration,
         file_path: file_path,
         variable_names: variable_names,
         delimiter: delimiter,

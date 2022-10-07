@@ -167,8 +167,7 @@ def parse_jmx_to_database(res, username):
                                     variables=plan['arguments'], is_valid=plan.get('enabled'), operator=username)
             for tg in plan['thread_group']:
                 thread = ThreadGroup.objects.create(id=primaryKey(), plan_id=testPlan.id, name=tg.get('testname'),
-                                    is_valid=tg.get('enabled'), ramp_time=tg.get('ramp_time'),
-                                    duration=tg.get('duration'), comment=tg.get('comments'), operator=username)
+                                    is_valid=tg.get('enabled'), ramp_time=tg.get('ramp_time'), comment=tg.get('comments'), operator=username)
                 for ctl in tg['controller']:
                     controller = TransactionController.objects.create(id=primaryKey(), thread_group_id=thread.id,
                                     name=ctl.get('testname'), is_valid=ctl.get('enabled'), comment=ctl.get('comments'),

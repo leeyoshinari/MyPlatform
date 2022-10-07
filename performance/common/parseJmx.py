@@ -275,32 +275,32 @@ def parse_ThreadGroup(jmeter_file, num_threads, ramp_time, duration):
     return f'<ThreadGroup{modify_str}</ThreadGroup>'
 
 
-def parse_ConstantThroughputTimer(jmeter_file, enabled = 'true'):
+def parse_ConstantThroughputTimer(jmeter_file, number_of_samples, enabled = 'true'):
     res = re.findall('<ConstantThroughputTimer([\s\S]+?)</ConstantThroughputTimer>', jmeter_file)
     if len(res) > 1:
         raise MyException('Too many Constant Throughput Timer, Please retain only one ~')
     if len(res) == 0:
         ConstantThroughputTimer = '<ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" ' \
-                                  'testname="Constant Throughput Timer" enabled="' + enabled + '">\n<stringProp name="' \
-                                  'throughput">${__P(throughput, 60)}</stringProp>\n<intProp name="calcMode">2' \
-                                  '</intProp>\n</ConstantThroughputTimer>\n<hashTree/>\n'
+                                  'testname="Constant Throughput Timer" enabled="%s">\n<stringProp name="' \
+                                  'throughput">${__P(throughput, %d)}</stringProp>\n<intProp name="calcMode">2' \
+                                  '</intProp>\n</ConstantThroughputTimer>\n<hashTree/>\n' %(enabled, number_of_samples*60)
     else:
-        modify_str = re.sub('name="throughput">(.*?)</stringProp>', 'name="throughput">${__P(throughput, 60)}</stringProp>', res[0])
+        modify_str = re.sub('name="throughput">(.*?)</stringProp>', 'name="throughput">${__P(throughput, %d)}</stringProp>' %(number_of_samples*60), res[0])
         modify_str = re.sub('name="calcMode">(.*?)</intProp>', 'name="calcMode">2</intProp>', modify_str)
         modify_str = re.sub('enabled="(.*?)">', f'enabled="{enabled}">', modify_str)
         ConstantThroughputTimer = f'<ConstantThroughputTimer{modify_str}</ConstantThroughputTimer>'
     return ConstantThroughputTimer, len(res)
 
 
-def modify_jmeter(jmeter_path, target_path, run_type, num_threads, duration):
+def modify_jmeter(jmeter_path, target_path, run_type, num_threads, duration, number_of_samples):
     with open(jmeter_path, 'r', encoding='utf-8') as f:
         jmeter_file = f.read()
     if run_type == 0:
         ThreadGroup = parse_ThreadGroup(jmeter_file, num_threads, 1, duration)
-        ConstantThroughputTimer, num = parse_ConstantThroughputTimer(jmeter_file, enabled='false')
+        ConstantThroughputTimer, num = parse_ConstantThroughputTimer(jmeter_file, number_of_samples, enabled='false')
     else:
         ThreadGroup = parse_ThreadGroup(jmeter_file, 200, 10, duration)
-        ConstantThroughputTimer, num = parse_ConstantThroughputTimer(jmeter_file)
+        ConstantThroughputTimer, num = parse_ConstantThroughputTimer(jmeter_file, number_of_samples)
     res = re.sub('<ThreadGroup([\s\S]+?)ThreadGroup>', ThreadGroup, jmeter_file)
     if num == 0:
         jmeter_list = res.split('<ThreadGroup')

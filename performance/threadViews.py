@@ -57,11 +57,7 @@ def add_group(request):
             username = request.user.username
             name = request.POST.get('name')
             plan_id = request.POST.get('plan_id')
-            # num_threads = request.POST.get('num_threads')
             ramp_time = request.POST.get('ramp_time')
-            # scheduler = request.POST.get('scheduler')
-            duration = request.POST.get('duration')
-            duration = duration if duration else None
             comment = request.POST.get('comment')
             file_path = request.POST.get('file_path')
             if file_path:
@@ -73,9 +69,8 @@ def add_group(request):
                     'share_mode': request.POST.get('share_mode')}
             else:
                 file_dict = None
-            group = ThreadGroup.objects.create(id=primaryKey(), name=name, ramp_time=ramp_time,
-                                duration=duration, comment=comment, is_valid='true', plan_id=plan_id,
-                                file=file_dict, operator=username)
+            group = ThreadGroup.objects.create(id=primaryKey(), name=name, ramp_time=ramp_time, comment=comment,
+                                               is_valid='true', plan_id=plan_id, file=file_dict, operator=username)
             logger.info(f'Thread Group {name} {group.id} is save success, operator: {username}')
             return result(msg='Save success ~')
         except:
@@ -83,8 +78,7 @@ def add_group(request):
             return result(code=1, msg='Save failure ~')
     else:
         plan_id = request.GET.get('id')
-        plan_id = int(plan_id) if plan_id else plan_id
-        plans = TestPlan.objects.all().order_by('-create_time')
+        plans = TestPlan.objects.filter(is_file=0).order_by('-create_time')
         return render(request, 'performance/threadGroup/add.html', context={'plan_id': plan_id, 'plans': plans, 'share_mode': share_mode})
 
 
@@ -95,11 +89,7 @@ def edit_group(request):
             group_id = request.POST.get('id')
             name = request.POST.get('name')
             plan_id = request.POST.get('plan_id')
-            # num_threads = request.POST.get('num_threads')
             ramp_time = request.POST.get('ramp_time')
-            # scheduler = request.POST.get('scheduler')
-            duration = request.POST.get('duration')
-            duration = duration if duration else None
             comment = request.POST.get('comment')
             file_path = request.POST.get('file_path')
             if file_path:
@@ -115,7 +105,6 @@ def edit_group(request):
             groups.name = name
             groups.plan_id = plan_id
             groups.ramp_time = ramp_time
-            groups.duration = duration
             groups.comment = comment
             groups.file = file_dict
             groups.operator = username
@@ -128,7 +117,7 @@ def edit_group(request):
     else:
         group_id = request.GET.get('id')
         groups = ThreadGroup.objects.get(id=group_id)
-        plans = TestPlan.objects.all().order_by('-create_time')
+        plans = TestPlan.objects.filter(is_file=0).order_by('-create_time')
         return render(request, 'performance/threadGroup/edit.html', context={'groups': groups, 'plans': plans, 'share_mode': share_mode})
 
 

@@ -68,16 +68,16 @@ body{
     position: absolute;
     width: 100px;
     z-index: 99;
-    height: 100px;
+    height: 120px;
     /* 水平垂直居中 */
-    left: 45%;
-    top: 45%;
+    left: 44%;
+    top: 41%;
     transform: translate(-50%,-50%);
     /* 超出高度右侧出现垂直滚动条 */
     overflow:auto;
     overflow-x:hidden;
     background: url("loading.gif") no-repeat;
-    background-size: 80px 80px;
+    background-size: 80px 108px;
 }
 
 #progressBar {

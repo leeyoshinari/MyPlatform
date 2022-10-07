@@ -48,38 +48,11 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Number of Threads (users). This is a reference, and can not modify. When running test task, it will be set.">?</span></div>
-                <label>Num Threads:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="num_threads" value="${num_threads}" readonly disabled>
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Ramp-up period (seconds).">?</span></div>
                 <label>Ramp Time:</label>
             </div>
             <div class="value-div">
                 <input type="text" id="ramp_time" placeholder="Please input ramp time ~" value="{{ groups.ramp_time }}">
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Scheduler default is 'true', can not modify. It specifies Thread lifetime. true: need to set duration; false: thread groups run forever.">?</span></div>
-                <label>Scheduler: </label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="scheduler" value="true" readonly disabled>
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Duration (seconds).">?</span></div>
-                <label>Duration:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="duration" placeholder="Please input duration ~" value="{{ groups.duration }}">
             </div>
         </div>
         <div class="row-cols">

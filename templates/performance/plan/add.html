@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block add_js %}
+    <script src="{% static 'performance/js/echarts.common.js' %}"></script>
 {% endblock %}
 
 {% block navigate %}
@@ -155,9 +156,20 @@
             <a href="#" onclick="add_plan('{% url 'perf:plan_add' %}', '{% url 'perf:plan_home' %}')">Submit</a>
         </div>
     </div>
+    <div class="myModal">
+        <div class="modal-content" style="width: 42%;">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="preview" style="width: 100%; height: 200px;"></div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block define_js %}
     <script src="{% static 'performance/js/plan.js' %}"></script>
+    <script src="{% static 'performance/js/preview.js' %}"></script>
     <script type="text/javascript">
         document.getElementById('run_type').onchange = function () {
             let s = document.getElementById('run_type').value;

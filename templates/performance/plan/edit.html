@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block add_js %}
+    <script src="{% static 'performance/js/echarts.common.js' %}"></script>
 {% endblock %}
 
 {% block navigate %}
@@ -129,7 +130,7 @@
                         <input type="datetime-local" step="1" min="2022-09-27 08:20:21" style="width: 26%;" value="{{ timing.timing }}">
                         {% if plan.type == 1 %}
                             <label style="margin-left: 3%;">TPS:</label>
-                            <input type="text" placeholder="Please input TPS ~" style="width: 26%;" value="{{ timing.value }}">
+                            <input type="text" placeholder="Please input TPS ratio (%)" style="width: 26%;" value="{{ timing.value }}">
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -211,9 +212,20 @@
             <a href="#" onclick="edit_plan('{% url 'perf:plan_edit' %}', '{% url 'perf:plan_home' %}')">Submit</a>
         </div>
     </div>
+    <div class="myModal">
+        <div class="modal-content" style="width: 42%;">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="preview" style="width: 100%; height: 200px;"></div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block define_js %}
     <script src="{% static 'performance/js/plan.js' %}"></script>
+    <script src="{% static 'performance/js/preview.js' %}"></script>
     <script type="text/javascript">
         document.getElementById('run_type').onchange = function () {
             let s = document.getElementById('run_type').value;
