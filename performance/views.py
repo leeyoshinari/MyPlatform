@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
+import time
 import logging
 import traceback
 from django.db.models.deletion import ProtectedError
 from .models import TestPlan, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
+from .taskViews import start_test
 from common.Result import result
-from common.generator import primaryKey, strfTime
+from common.generator import toTimeStamp
 # Create your views here.
 
 
@@ -58,7 +60,6 @@ def is_valid(request):
                 res = HTTPSampleProxy.objects.get(id=set_id)
             res.is_valid = is_valid
             res.operator = username
-            res.update_time = strfTime()
             res.save()
             logger.info(f'{set_type} {set_id} status is set to {is_valid} success, operator: {username}')
             return result(msg='Set success ~')
@@ -67,4 +68,13 @@ def is_valid(request):
             return result(code=1, msg='Set failure ~')
 
 
-# def auto_run_task():
+def auto_run_task():
+    try:
+        tasks = PerformanceTestTask.objects.filter(plan__schedule=1, status=0)
+        for task in tasks:
+            scheduler = task.plan.schedule
+            if toTimeStamp(scheduler[0]['timing']) < time.time():
+                start_test(task.id, None, 'admin')
+                logger.info(f'Task {task.id} - {task.plan.name} start success, operator: admin.')
+    except:
+        logger.error(traceback.format_exc())

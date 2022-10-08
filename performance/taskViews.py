@@ -67,6 +67,11 @@ def add_to_task(request):
         try:
             username = request.user.username
             plan_id = request.POST.get('plan_id')
+            tasks = PerformanceTestTask.objects.filter(plan_id=plan_id, plan__schedule=1, status__lte=1)
+            if len(tasks) > 0:
+                logger.info(f'Plan {plan_id} has generated task, operator: {username}')
+                return result(code=1, msg='There has been task, please check it ~')
+
             plans = TestPlan.objects.get(id=plan_id)
             task_id = str(primaryKey())
 
@@ -155,7 +160,10 @@ def add_to_task(request):
             tasks = PerformanceTestTask.objects.create(id=task_id, plan_id=plan_id, ratio=1, status=0, number_samples=number_of_samples,
                                                        server_room_id=plans.server_room_id, path=task_path, operator=username)
             logger.info(f'Task {tasks.id} generate success, operator: {username}')
-            return result(msg=f'Start success ~', data=task_id)
+            if plans.schedule == 0:
+                return result(msg=f'Start success ~', data={'taskId': task_id, 'flag': 1})
+            else:
+                return result(msg=f'Add to test task success ~', data={'flag': 0})
         except:
             test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
             if os.path.exists(test_jmeter_path):
@@ -182,49 +190,53 @@ def delete_task(request):
 
 def start_task(request):
     if request.method == 'POST':
-        try:
-            username = request.user.username
-            task_id = request.POST.get('task_id')
-            host = request.POST.get('host')
-            tasks = PerformanceTestTask.objects.get(id=task_id)
-            post_data = {
-                'taskId': task_id,
-                'planId': tasks.plan.id,
-                'agentNum': 1,
-                'numberSamples': tasks.number_samples,
-                'filePath': tasks.path,
-                'isDebug': tasks.plan.is_debug
-            }
-            if host:
-                host_info = get_value_by_host('jmeterServer_'+host)
-                if host_info and host_info['status'] == 0:
-                    res = http_request('post', host, host_info['port'], 'runTask', json=post_data)
-                    response_data = json.loads(res.content.decode())
-                    if response_data['code'] == 0:
-                        logger.info(f'Task {task_id} is starting, host: {host}, operator: {username}')
-                        return result(msg=f'Task {task_id} is starting, please wait a minute ~ ~')
-                    else:
-                        logger.error(f'Task {task_id} run task failure, host: {host}, operator: {username}')
-                        return result(code=1, msg=response_data['msg'])
+        username = request.user.username
+        task_id = request.POST.get('task_id')
+        host = request.POST.get('host')
+        return start_test(task_id, host, username)
+
+
+def start_test(task_id, host, username):
+    try:
+        tasks = PerformanceTestTask.objects.get(id=task_id)
+        post_data = {
+            'taskId': task_id,
+            'planId': tasks.plan.id,
+            'agentNum': 1,
+            'numberSamples': tasks.number_samples,
+            'filePath': tasks.path,
+            'isDebug': tasks.plan.is_debug
+        }
+        if host:
+            host_info = get_value_by_host('jmeterServer_'+host)
+            if host_info and host_info['status'] == 0:
+                res = http_request('post', host, host_info['port'], 'runTask', json=post_data)
+                response_data = json.loads(res.content.decode())
+                if response_data['code'] == 0:
+                    logger.info(f'Task {task_id} is starting, host: {host}, operator: {username}')
+                    return result(msg=f'Task {task_id} is starting, please wait a minute ~ ~')
                 else:
-                    logger.error(f'Agent {host} is not registered or busy ~')
-                    return result(code=1, msg=f'Host {host} is not registered or busy ~')
+                    logger.error(f'Task {task_id} run task failure, host: {host}, operator: {username}')
+                    return result(code=1, msg=response_data['msg'])
             else:
-                registered_servers = get_all_host()
-                idle_servers = [s['host'] for s in registered_servers if s['status'] == 0]
-                available_servers = Servers.objects.values('host').filter(room_id=tasks.server_room_id, host__in=idle_servers)
-                logger.debug(available_servers.query)
-                if len(available_servers) < tasks.plan.server_number:
-                    logger.warning(f'There is not enough servers to run performance test, operator: {username}')
-                    return result(code=1, msg='There is not enough servers to run performance test ~')
-                for h in available_servers:
-                    res = http_request('post', h['host'], get_value_by_host('jmeterServer_' + h['host'], 'port'), 'runTask', json=post_data)
-                    # response_data = json.loads(res.content.decode())
-                logger.info(f'Task {task_id} is starting, operator: {username}')
-                return result(msg=f'Task {task_id} is starting, please wait a minute ~', data=task_id)
-        except:
-            logger.error(traceback.format_exc())
-            return result(code=1, msg=f'Task {task_id} started failure ~')
+                logger.error(f'Agent {host} is not registered or busy ~')
+                return result(code=1, msg=f'Host {host} is not registered or busy ~')
+        else:
+            registered_servers = get_all_host()
+            idle_servers = [s['host'] for s in registered_servers if s['status'] == 0]
+            available_servers = Servers.objects.values('host').filter(room_id=tasks.server_room_id, host__in=idle_servers)
+            logger.debug(available_servers.query)
+            if len(available_servers) < tasks.plan.server_number:
+                logger.warning(f'There is not enough servers to run performance test, operator: {username}')
+                return result(code=1, msg='There is not enough servers to run performance test ~')
+            for h in available_servers:
+                res = http_request('post', h['host'], get_value_by_host('jmeterServer_' + h['host'], 'port'), 'runTask', json=post_data)
+                # response_data = json.loads(res.content.decode())
+            logger.info(f'Task {task_id} is starting, operator: {username}')
+            return result(msg=f'Task {task_id} is starting, please wait a minute ~', data=task_id)
+    except:
+        logger.error(traceback.format_exc())
+        return result(code=1, msg=f'Task {task_id} started failure ~')
 
 
 def stop_task(request):

@@ -143,6 +143,11 @@ def add_to_task(request):
         try:
             username = request.user.username
             plan_id = request.POST.get('plan_id')
+            tasks = PerformanceTestTask.objects.filter(plan_id=plan_id, plan__schedule=1, status__lte=1)
+            if len(tasks) > 0:
+                logger.info(f'Plan {plan_id} has generated task, operator: {username}')
+                return result(code=1, msg='There has been task, please check it ~')
+
             plans = TestPlan.objects.get(id=plan_id)
             task_id = str(primaryKey())
             if plans.is_valid == 'true':
@@ -184,7 +189,10 @@ def add_to_task(request):
             tasks = PerformanceTestTask.objects.create(id=task_id, plan_id=plan_id, ratio=1, status=0, number_samples=number_of_samples,
                                                        server_room_id=plans.server_room_id, path=task_path, operator=username)
             logger.info(f'Task {tasks.id} generate success, operator: {username}')
-            return result(msg=f'Start success ~', data=task_id)
+            if plans.schedule == 0:
+                return result(msg=f'Start success ~', data={'taskId': task_id, 'flag': 1})
+            else:
+                return result(msg=f'Add to test task success ~', data={'flag': 0})
         except MyException as err:
             test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
             if os.path.exists(test_jmeter_path):

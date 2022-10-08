@@ -140,8 +140,14 @@ function add_task(url, start_url, location_url, plan_id) {
         dataType: 'json',
         success: function (data) {
             if(data['code'] === 0) {
+                if(data['data']['flag'] === 0) {
+                    $.Toast(data['msg'], 'success');
+                    $('.modal_cover').css("display", "none");
+                    $('.modal_gif').css("display", "none");
+                    return;
+                }
                 let post_data = {
-                    task_id: data['data']}
+                    task_id: data['data']['taskId']}
                 $.ajax({
                     type: 'post',
                     url: start_url,

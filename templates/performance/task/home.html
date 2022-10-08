@@ -16,15 +16,16 @@
 {% endblock %}
 {% block table_head %}
     <tr class="table_style">
-        <th width="15%">Plan Name</th>
+        <th width="13%">Plan Name</th>
         <th width="10%">Server Room</th>
         <th width="9%">Status</th>
+        <th width="9%">Schedule</th>
         <th width="9%"># Samples</th>
         <th width="10%">Average(RT)</th>
         <th width="8%">TPS(/s)</th>
         <th width="8%">Error(%)</th>
-        <th width="9%">Operator</th>
-        <th width="22%">Actions</th>
+        <th width="8%">Operator</th>
+        <th width="16%">Actions</th>
     </tr>
 {% endblock %}
 
@@ -34,16 +35,21 @@
             <td title="{{ task.plan.comment }}"><a href="{% url 'perf:plan_home' %}?keyWord={{ task.plan.name }}">{{ task.plan.name }}</a></td>
             <td>{{ task.server_room.name }}</td>
             <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
+            <td style="text-align: center;">{{ task.plan.schedule | get_value_from_list:'plan_schedule' }}</td>
             <td style="text-align: center;">{{ task.samples }}</td>
             <td style="text-align: center;">{{ task.average_rt }} ms</td>
             <td style="text-align: center;">{{ task.tps }}</td>
             <td style="text-align: center;">{{ task.error }} %</td>
             <td style="text-align: center;">{{ task.operator }}</td>
             <td>
-                {% if task.status == 0 %}
+                {% if task.status == 0 and task.plan.schedule == 0 %}
                     <a href="#" onclick="start_task('{% url 'perf:task_start' %}', {{ task.id }}, '{% url 'perf:task_status' %}', '{% url 'perf:task_detail' %}')">Start</a>
                 {% else %}
-                    <a href="{% url 'perf:task_detail' %}?id={{ task.id }}">View</a>
+                    {% if task.plan.schedule == 0 %}
+                        <a href="{% url 'perf:task_detail' %}?id={{ task.id }}">View</a>
+                    {% else %}
+                        <a href="#">View</a>
+                    {% endif %}
                     {% if task.status == 1 %}
                         <a href="#" onclick="stop_task('{% url 'perf:task_stop' %}?id={{ task.id }}')">Stop</a>
                     {% endif %}
