@@ -24,7 +24,7 @@ function edit_plan(url, location_url) {
             s_t = new Date(values[0].value).getTime();
             if (s_t < current_time) {
                 if (i === 0) {
-                    $.Toast('Please set time after 30 seconds.', 'error');
+                    $.Toast('Please set time after 30 minutes.', 'error');
                     return;
                 } else {
                     $.Toast('Please notice order.', 'error');
@@ -35,7 +35,7 @@ function edit_plan(url, location_url) {
             if (run_type === '1') {
                 time_setting.push({"timing": values[0].value, "value": values[1].value});
             } else {
-                time_setting.push({"timing": values[0].value, "value": target_number});
+                time_setting.push({"timing": values[0].value});
             }
         }
     }
@@ -223,15 +223,21 @@ function start_task(url, task_id, status_url, detail_url) {
 function add_timing() {
     let current_date = get_current_date();
     let c = document.getElementById('add-timing');
-    let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Time: </label>' +
+    if (document.getElementById('run_type').value === '0') {
+        if (c.getElementsByTagName('div').length < 1) {
+            let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>StartTime: </label>' +
+                '<input type="datetime-local" step="1" min="' + current_date + '" style="width: 26%;" value="">';
+            c.appendChild(document.createRange().createContextualFragment(s));
+        } else {
+            $.Toast('Only need to set one start time ~', 'success');
+        }
+    } else {
+        let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Time: </label>' +
             '<input type="datetime-local" step="1" min="' + current_date + '" style="width: 26%;" value="">' +
             '<label style="margin-left: 3%;">TPS: </label><input type="text" placeholder="Please input TPS ratio (%)" ' +
             'style="width: 26%;" value=""></div>';
-    if (document.getElementById('run_type').value === '0') {
-        s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Time: </label>' +
-            '<input type="datetime-local" step="1" min="' + current_date + '" style="width: 26%;" value="">';
+        c.appendChild(document.createRange().createContextualFragment(s));
     }
-    c.appendChild(document.createRange().createContextualFragment(s));
 }
 
 function del_timing () {

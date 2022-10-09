@@ -3,6 +3,7 @@
 # Author: leeyoshinari
 
 import os
+import time
 import configparser
 import logging.handlers
 
@@ -65,3 +66,6 @@ def get_ip():
         IP = '127.0.0.1'
 
     return IP
+
+def toTimeStamp(strf_time, delta = 0):
+    return time.mktime(time.strptime(strf_time, '%Y-%m-%d %H:%M:%S')) + delta

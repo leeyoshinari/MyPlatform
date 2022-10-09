@@ -14,8 +14,8 @@ def strfTime():
 
 
 def strfDeltaTime(delta = 0):
-    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() - delta))
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() + delta))
 
 
-def toTimeStamp(strf_time):
-    return time.mktime(time.strptime(strf_time, '%Y-%m-%d %H:%M:%S'))
+def toTimeStamp(strf_time, delta = 0):
+    return time.mktime(time.strptime(strf_time, '%Y-%m-%d %H:%M:%S')) + delta

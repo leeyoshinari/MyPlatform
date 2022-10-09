@@ -205,7 +205,10 @@ def start_test(task_id, host, username):
             'agentNum': 1,
             'numberSamples': tasks.number_samples,
             'filePath': tasks.path,
-            'isDebug': tasks.plan.is_debug
+            'isDebug': tasks.plan.is_debug,
+            'schedule': tasks.plan.schedule,
+            'type': tasks.plan.type,
+            'timeSetting': tasks.plan.time_setting
         }
         if host:
             host_info = get_value_by_host('jmeterServer_'+host)

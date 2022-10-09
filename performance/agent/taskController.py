@@ -11,7 +11,7 @@ import requests
 import redis
 import zipfile
 import influxdb
-from common import get_config, logger, get_ip
+from common import get_config, logger, get_ip, toTimeStamp
 
 bean_shell_server_port = 12525
 
@@ -385,6 +385,11 @@ class Task(object):
         except:
             logger.error(traceback.format_exc())
             return {'code': 1, 'msg': 'Change TPS failure ~'}
+
+    def auto_change_tps(self, time_setting):
+        scheduler = []
+        for i in range(1, len(time_setting)):
+            scheduler.append({'timing': toTimeStamp(time_setting[i]['timing']), 'value': time_setting[i]['value']})
 
     def change_init_TPS(self):
         try:

@@ -11,7 +11,7 @@ function preview_timing() {
         s_t = new Date(input_tag[0].value).getTime();
         if (s_t < current_time) {
             if (i === 0) {
-                $.Toast('Please set time after 30 seconds.', 'error');
+                $.Toast('Please set time after 30 minutes.', 'error');
                 return;
             } else {
                 $.Toast('Please notice order.', 'error');

@@ -108,7 +108,7 @@ class PerformanceTestTask(models.Model):
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE, verbose_name='plan id')
     number_samples = models.IntegerField(default=1, verbose_name='number of http samples')
     ratio = models.FloatField(verbose_name='ratio, target_num * ratio')
-    status = models.IntegerField(verbose_name='status, 0-pending run, 1-running, 2-stopped, 3-failure')
+    status = models.IntegerField(verbose_name='status, 0-pending run, 1-running, 2-stopped, 3-failure, 4-cancel')
     samples = models.IntegerField(default=0, verbose_name='# Samples')
     average_rt = models.FloatField(default=0, verbose_name='Average Response Time (ms)')
     tps = models.FloatField(default=0, verbose_name='TPS (/s)')

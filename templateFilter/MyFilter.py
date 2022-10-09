@@ -45,7 +45,7 @@ def get_value_from_list(v1, v2):
         if v2 == 'plan_schedule':
             return ['Manual', 'Automatic'][v1]
         if v2 == 'task_status':
-            return ['Pending', 'Running', 'Stopped', 'Failure'][v1]
+            return ['Pending', 'Running', 'Stopped', 'Failure', 'Cancel'][v1]
         if v2 == 'task_color':
             return ['gray', 'blue', 'green', 'red'][v1]
         if v2 == 'room_type':

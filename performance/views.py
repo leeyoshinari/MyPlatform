@@ -73,8 +73,11 @@ def auto_run_task():
         tasks = PerformanceTestTask.objects.filter(plan__schedule=1, status=0)
         for task in tasks:
             scheduler = task.plan.schedule
-            if toTimeStamp(scheduler[0]['timing']) < time.time():
+            if task.plan.type == 0 and toTimeStamp(scheduler[0]['timing']) < time.time():
                 start_test(task.id, None, 'admin')
-                logger.info(f'Task {task.id} - {task.plan.name} start success, operator: admin.')
+                logger.info(f'Task {task.id} - {task.plan.name} start success, type: Thread, operator: admin.')
+            if task.plan.type == 1 and toTimeStamp(scheduler[0]['timing'], delta=-600) < time.time():
+                start_test(task.id, None, 'admin')
+                logger.info(f'Task {task.id} - {task.plan.name} start success, type: TPS, operator: admin.')
     except:
         logger.error(traceback.format_exc())
