@@ -75,7 +75,7 @@ def auto_run_task():
             tasks = PerformanceTestTask.objects.filter(plan__schedule=1, status=0)
             logger.info(f'Total auto test task is {len(tasks)}')
             for task in tasks:
-                scheduler = task.plan.schedule
+                scheduler = task.plan.time_setting
                 if task.plan.type == 0 and -30 <= toTimeStamp(scheduler[0]['timing']) - time.time() <= 10:
                     start_test(task.id, None, 'admin')
                     logger.info(f'Task {task.id} - {task.plan.name} start success, type: Thread, operator: admin.')
