@@ -348,15 +348,15 @@ class Task(object):
                 flag = 1
                 logger.info(f'{jmx_file_path} run successful, task id: {self.task_id}')
                 self.start_thread(self.parse_log, (os.path.join(self.file_path, self.task_id, self.task_id + '.log'),))
+                if data.get('schedule') == 1 and data.get('type') == 1:
+                    self.start_thread(self.auto_change_tps, (data.get('timeSetting'), data.get('targetNum'),))
+                self.start_thread(self.force_stop_test, (data.get('duration'), data.get('schedule'), data.get('type'),))
             else:
                 flag = 0
                 logger.error(f'{jmx_file_path} run failure, task id: {task_id}')
         except:
             flag = 0
             logger.error(traceback.format_exc())
-        if data.get('schedule') == 1 and data.get('type') == 1:
-            self.start_thread(self.auto_change_tps, (data.get('timeSetting'), data.get('targetNum'),))
-        self.start_thread(self.force_stop_test, (data.get('duration'), data.get('schedule'), data.get('type'),))
         if flag == 1:
             _ = self.send_message('run_task', flag)
 
