@@ -10,6 +10,16 @@ function edit_plan(url, location_url) {
     let duration = document.getElementById('duration').value;
     let isDebug = document.getElementById('isDebug').value;
 
+    if (!duration) {
+        $.Toast('Please set duration ~', 'error');
+        return;
+    }
+    if (!target_number) {
+        if (run_type === '1') {$.Toast('Please set target TPS ~', 'error');}
+        if (run_type === '0') {$.Toast('Please set Thread Num ~', 'error');}
+        return;
+    }
+
     let time_setting = [];
     let current_time = Date.now() + 1800000;
     let s_t = Date.now();
@@ -30,6 +40,10 @@ function edit_plan(url, location_url) {
                     $.Toast('Please notice order.', 'error');
                     return;
                 }
+            }
+            if (s_t > new Date(time_settings[0].getElementsByTagName('input')[0].value).getTime() + parseInt(duration) * 1000) {
+                $.Toast(values[0].value.replace('T', ' ') + ' is beyond duration ' + duration + ' Seconds ~', 'error');
+                return;
             }
             current_time = s_t;
             if (run_type === '1') {

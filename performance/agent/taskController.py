@@ -25,6 +25,7 @@ class Task(object):
         self.plan_id = None
         self.agent_num = 1
         self.number_samples = 1
+        self.start_time = 0
         self.pattern = 'summary\+(\d+)in.*=(\d+.\d+)/sAvg:(\d+)Min:(\d+)Max:(\d+)Err:(\d+)\(.*Active:(\d+)Started'
         self.influx_host = '127.0.0.1'
         self.influx_port = 8086
@@ -162,6 +163,16 @@ class Task(object):
         except:
             logger.error(traceback.format_exc())
 
+    def force_stop_test(self, duration, schedule, run_type):
+        stop_time = self.start_time + duration
+        if schedule == 1 and run_type == 1:
+            stop_time += 600
+        while self.status == 1:
+            if stop_time < time.time():
+                self.stop_task(self.task_id)
+            else:
+                time.sleep(1)
+
     def send_message(self, task_type, flag):
         try:
             url = f'http://{get_config("address")}/performance/task/register/getMessage'
@@ -220,6 +231,7 @@ class Task(object):
                         self.influx_client.write_points(line)  # write to database
                         if res[-1] == '0':
                             self.start_thread(self.stop_task, (self.task_id,))
+                            break
                         index += 1
                         last_time = time.time()
                     else:
@@ -293,10 +305,11 @@ class Task(object):
         f.close()
         logger.info(f'unzip file: {source_path} to {target_path} success ~')
 
-    def run_task(self, task_id, file_path, agent_num, is_debug, number_samples):
+    def run_task(self, data):
         if self.check_status(is_run=True):
             self.kill_process()
 
+        task_id = data.get('taskId')
         #flag = 0    # 0-run task fail, 1-run task success
         try:
             self.connect_redis()
@@ -304,10 +317,10 @@ class Task(object):
             if self.redis_client.get(task_id):
                 self.agent_num = int(self.redis_client.get(task_id)) + 1
             else:
-                self.agent_num = agent_num
+                self.agent_num = 1
             local_file_path = os.path.join(self.file_path, task_id + '.zip')
             target_file_path = os.path.join(self.file_path, task_id)
-            self.download_file_to_path(file_path, local_file_path)
+            self.download_file_to_path(data.get('filePath'), local_file_path)
             self.unzip_file(local_file_path, target_file_path)
             if not os.path.exists(target_file_path):
                 logger.error('Not Found file after unzip')
@@ -319,7 +332,7 @@ class Task(object):
             jmx_file_path = os.path.join(target_file_path, jmx_files[0])
             log_path = os.path.join(target_file_path, task_id + '.log')
             jtl_file_path = os.path.join(target_file_path, task_id + '.jtl')
-            if is_debug == 1:
+            if data.get('isDebug') == 1:
                 cmd = f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -l {jtl_file_path} -j {log_path} >/dev/null 2>&1 &'
             else:
                 cmd = f'nohup {self.jmeter_executor} -n -t {jmx_file_path} -j {log_path} >/dev/null 2>&1 &'
@@ -330,7 +343,8 @@ class Task(object):
                 self.status = 1
                 self.task_id = task_id
                 self.task_key = f"task_{task_id}"
-                self.number_samples = number_samples
+                self.number_samples = data.get('numberSamples')
+                self.start_time = time.time()
                 flag = 1
                 logger.info(f'{jmx_file_path} run successful, task id: {self.task_id}')
                 self.start_thread(self.parse_log, (os.path.join(self.file_path, self.task_id, self.task_id + '.log'),))
@@ -340,6 +354,9 @@ class Task(object):
         except:
             flag = 0
             logger.error(traceback.format_exc())
+        if data.get('schedule') == 1 and data.get('type') == 1:
+            self.start_thread(self.auto_change_tps, (data.get('timeSetting'), data.get('targetNum'),))
+        self.start_thread(self.force_stop_test, (data.get('duration'), data.get('schedule'), data.get('type'),))
         if flag == 1:
             _ = self.send_message('run_task', flag)
 
@@ -386,10 +403,18 @@ class Task(object):
             logger.error(traceback.format_exc())
             return {'code': 1, 'msg': 'Change TPS failure ~'}
 
-    def auto_change_tps(self, time_setting):
+    def auto_change_tps(self, time_setting, target_num):
         scheduler = []
         for i in range(1, len(time_setting)):
             scheduler.append({'timing': toTimeStamp(time_setting[i]['timing']), 'value': time_setting[i]['value']})
+
+        while scheduler:
+            s = scheduler[0]
+            if s['timing'] < time.time():
+                _ = self.change_TPS(int(target_num * self.number_samples * s['value'] * 0.6 / self.agent_num))
+                scheduler.pop(0)
+            time.sleep(0.1)
+
 
     def change_init_TPS(self):
         try:

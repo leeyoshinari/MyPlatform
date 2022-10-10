@@ -4,7 +4,17 @@ function preview_timing() {
     let current_time = Date.now() + 1800000;
     let s_t = Date.now();
     let test_type = document.getElementById('run_type').value;
+    let duration = document.getElementById('duration').value;
     let target_number = parseInt(document.getElementById('target_number').value);
+    if (!duration) {
+        $.Toast('Please set duration ~', 'error');
+        return;
+    }
+    if (!target_number) {
+        if (test_type === '1') {$.Toast('Please set target TPS ~', 'error');}
+        if (test_type === '0') {$.Toast('Please set Thread Num ~', 'error');}
+        return;
+    }
     let values_div = document.getElementById('add-timing').getElementsByClassName('value-div');
     for (let i=0; i<values_div.length; i++) {
         let input_tag = values_div[i].getElementsByTagName('input');
@@ -18,6 +28,10 @@ function preview_timing() {
                 return;
             }
         }
+        if (s_t > new Date(values_div[0].getElementsByTagName('input')[0].value).getTime() + parseInt(duration) * 1000) {
+            $.Toast(input_tag[0].value.replace('T', ' ') + ' is beyond duration ' + duration + ' Seconds ~', 'error');
+            return;
+        }
         current_time = s_t;
         x.push(input_tag[0].value.replace('T', ' '));
         if (test_type === '1') {
@@ -30,7 +44,7 @@ function preview_timing() {
     if (test_type === '1') {
         x.unshift(date_to_date(x[0], -600));
         y.unshift(2);
-        x.push(date_to_date(x.slice(-1)[0], 600));
+        x.push(timestamp_to_date(new Date(values_div[0].getElementsByTagName('input')[0].value).getTime() + parseInt(duration) * 1000));
         y.push(0);
     }
 

@@ -71,13 +71,20 @@ def is_valid(request):
 def auto_run_task():
     try:
         tasks = PerformanceTestTask.objects.filter(plan__schedule=1, status=0)
+        logger.info(f'Total auto test task is {len(tasks)}')
         for task in tasks:
             scheduler = task.plan.schedule
-            if task.plan.type == 0 and toTimeStamp(scheduler[0]['timing']) < time.time():
+            if task.plan.type == 0 and -30 <= toTimeStamp(scheduler[0]['timing']) - time.time() <= 10:
                 start_test(task.id, None, 'admin')
                 logger.info(f'Task {task.id} - {task.plan.name} start success, type: Thread, operator: admin.')
-            if task.plan.type == 1 and toTimeStamp(scheduler[0]['timing'], delta=-600) < time.time():
+            if task.plan.type == 1 and -60 <= toTimeStamp(scheduler[0]['timing'], delta=-600) - time.time() <= 10:
                 start_test(task.id, None, 'admin')
                 logger.info(f'Task {task.id} - {task.plan.name} start success, type: TPS, operator: admin.')
+            if task.plan.type == 0 and toTimeStamp(scheduler[0]['timing']) - time.time() < -60:
+                task.status = 4
+                task.save()
+            if task.plan.type == 1 and toTimeStamp(scheduler[0]['timing'], delta=-600) - time.time() < -60:
+                task.status = 4
+                task.save()
     except:
         logger.error(traceback.format_exc())
