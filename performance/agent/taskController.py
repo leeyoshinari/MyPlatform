@@ -13,7 +13,7 @@ import zipfile
 import influxdb
 from common import get_config, logger, get_ip, toTimeStamp
 
-bean_shell_server_port = 12525
+bean_shell_server_port = 15225
 
 class Task(object):
     def __init__(self):
@@ -219,16 +219,17 @@ class Task(object):
                         if flag:
                             self.redis_client.set(self.task_id, self.agent_num, ex=self.key_expire)
                             flag = False
+                        c_time = line.split(',')[0].strip()
                         res = re.findall(self.pattern, line.replace(' ', ''))[0]
                         logger.debug(res)
                         self.current_tps = res[1]
                         data = list(map(float, res))
                         self.write_to_redis(data)
-                        line = [{'measurement': 'performance_jmeter_task',
+                        lines = [{'measurement': 'performance_jmeter_task',
                                  'tags': {'task': str(self.task_id), 'host': self.IP},
-                                 'fields': {'c_time': time.strftime("%Y-%m-%d %H:%M:%S"), 'samples': data[0], 'tps': data[1],
-                                            'avg_rt': data[2], 'min_rt': data[3], 'max_rt': data[4], 'err': data[5], 'active': data[6]}}]
-                        self.influx_client.write_points(line)  # write to database
+                                 'fields': {'c_time': c_time, 'samples': data[0], 'tps': data[1], 'avg_rt': data[2],
+                                            'min_rt': data[3], 'max_rt': data[4], 'err': data[5], 'active': data[6]}}]
+                        self.influx_client.write_points(lines)  # write to database
                         if res[-1] == '0':
                             self.start_thread(self.stop_task, (self.task_id,))
                             break

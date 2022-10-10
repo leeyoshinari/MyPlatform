@@ -160,8 +160,7 @@ function add_task(url, start_url, location_url, plan_id) {
                     $('.modal_gif').css("display", "none");
                     return;
                 }
-                let post_data = {
-                    task_id: data['data']['taskId']}
+                let post_data = {task_id: data['data']['taskId']}
                 $.ajax({
                     type: 'post',
                     url: start_url,
