@@ -101,6 +101,57 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5, 
     })
 }
 
+
+function get_used_server(task_id, url, url1) {
+    $.ajax({
+        type: 'get',
+        url: url + '?id=' + task_id,
+        success: function (data) {
+            if (data['code'] === 0) {
+                let s = "";
+                let all_host = data['data'];
+                let server_num = 0;
+                let trs = document.getElementById('tbody').getElementsByClassName('running');
+                let trs_length = trs.length;
+                for(let i=0; i<trs_length; i++) {
+                    trs[0].remove();
+                }
+                for(let i=0; i<all_host.length; i++) {
+                    s += '<tr class="running"><td>' + all_host[i]['host'] + '</td><td>' + all_host[i]['tps'] + '</td>';
+                    if (all_host[i]['cpu']) {
+                        s += '<td>' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
+                    } else {
+                        s += '<td></td>';
+                    }
+                    if (all_host[i]['mem']) {
+                        s += '<td>' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
+                    } else {
+                        s += '<td></td>';
+                    }
+                    if (all_host[i]['disk']) {
+                        s += '<td>' + all_host[i]['disk'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
+                    } else {
+                        s += '<td></td>';
+                    }
+                    if (all_host[i]['network_speed']) {
+                        s += '<td>' + all_host[i]['network_speed'] + 'Mb/s</td><td>';
+                    } else {
+                        s += '<td></td><td>';
+                    }
+                    s += '<a onclick="download_log(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a></td></tr>';
+                    server_num += 1;
+                }
+                if (server_num > 0) {
+                    document.getElementById("total-server").innerText = "(" + server_num + " Servers)";
+                }
+                document.getElementById('tbody').innerHTML = s + document.getElementById('tbody').innerHTML;
+            } else {
+                $.Toast(data['message'], 'error');
+            }
+        }
+    })
+}
+
 function get_idle_server(room_id, url, task_id, url1) {
     $.ajax({
         type: 'get',

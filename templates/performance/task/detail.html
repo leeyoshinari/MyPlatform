@@ -167,8 +167,12 @@
         let myChart = echarts.init(figure);
 
         plot(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}');
-        get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
+        {% if tasks.status > 1 %}
+            get_used_server({{ tasks.id }}, '{% url 'perf:get_used_server' %}', '{% url 'perf:task_download_log' %}');
+        {% else %}
+            get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
                 '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}', {{ tasks.plan.type }});
+        {% endif %}
         {% if tasks.status == 1 %}
             let timer = setInterval(function () {
                 plot_delta(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}')

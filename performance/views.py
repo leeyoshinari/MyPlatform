@@ -11,6 +11,7 @@ from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from .taskViews import start_test
 from common.Result import result
 from common.generator import toTimeStamp
+from common.multiThread import start_thread
 # Create your views here.
 
 
@@ -69,6 +70,12 @@ def is_valid(request):
 
 
 def auto_run_task():
+    while True:
+        start_thread(query_auto_task, ())
+        time.sleep(30)
+
+
+def query_auto_task():
     try:
         tasks = PerformanceTestTask.objects.filter(plan__schedule=1, status=0)
         logger.info(f'Total auto test task is {len(tasks)}')
@@ -88,3 +95,6 @@ def auto_run_task():
                 task.save()
     except:
         logger.error(traceback.format_exc())
+
+
+auto_run_task()
