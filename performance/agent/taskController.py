@@ -406,8 +406,9 @@ class Task(object):
 
     def auto_change_tps(self, time_setting, target_num):
         scheduler = []
-        for i in range(1, len(time_setting)):
-            scheduler.append({'timing': toTimeStamp(time_setting[i]['timing']), 'value': time_setting[i]['value']})
+        for s in time_setting:
+            scheduler.append({'timing': toTimeStamp(s['timing']), 'value': s['value']})
+        logger.info(f"{scheduler} - target:{target_num} - number_samples: {self.number_samples} - agent_num: {self.agent_num}")
 
         while scheduler:
             s = scheduler[0]
@@ -440,13 +441,6 @@ if __name__ == '__main__':
     RedisPort = 6369
     RedisPassword = 'leeyoshi'
     RedisDB = 1
-    # t = Task()
     r = redis.Redis(host=RedisHost, port=RedisPort, password=RedisPassword, db=RedisDB, decode_responses=True)
-    # r.lpush('123', '[1,2,3]')
-    # r.ltrim('123', 3, 3)
-    # r.expire('123', 5)
-    # r.lpush('123', '[1,2,3]')
-    # print(r.lrange('123', 0, 4))
-    # print(r.llen('123'))
     print(r.get('123'))
 

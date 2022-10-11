@@ -46,10 +46,10 @@
                     {% if task.status == 0 and task.plan.schedule == 0 %}
                         <a href="#" onclick="start_task('{% url 'perf:task_start' %}', {{ task.id }}, '{% url 'perf:task_status' %}', '{% url 'perf:task_detail' %}')">Start</a>
                     {% else %}
-                        {% if task.plan.schedule == 0 %}
-                            <a href="{% url 'perf:task_detail' %}?id={{ task.id }}">View</a>
-                        {% else %}
+                        {% if task.status == 0 and task.plan.schedule == 1 %}
                             <a href="#">View</a>
+                        {% else %}
+                            <a href="{% url 'perf:task_detail' %}?id={{ task.id }}">View</a>
                         {% endif %}
                         {% if task.status == 1 %}
                             <a href="#" onclick="stop_task('{% url 'perf:task_stop' %}?id={{ task.id }}')">Stop</a>
