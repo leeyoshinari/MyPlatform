@@ -163,7 +163,7 @@ def add_to_task(request):
                 number_of_samples = get_enabled_samples_num(source_jmeter_path)     # get number of http samples
                 jmeter_file_path = os.path.join(test_jmeter_path, task_id + '.jmx')
                 # modify jmx file
-                modify_jmeter(source_jmeter_path, jmeter_file_path, plans.type, plans.target_num, plans.duration, number_of_samples)
+                modify_jmeter(source_jmeter_path, jmeter_file_path, plans.type, plans.schedule, plans.target_num, plans.duration, number_of_samples)
                 os.remove(source_jmeter_path)       # remove source jmx file
                 os.remove(jmeter_zip_file_path)
                 # write zip file to temp path

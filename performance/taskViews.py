@@ -82,7 +82,7 @@ def add_to_task(request):
                 thread_groups = ThreadGroup.objects.filter(plan_id=plans.id, is_valid='true')
                 if len(thread_groups) == 1:
                     num_threads = 200 if plans.type == 1 else plans.target_num
-                    thread_group = generate_thread_group(thread_groups[0], num_threads, duration)
+                    thread_group = generate_thread_group(thread_groups[0], num_threads, duration, plans.schedule)
                     cookie_manager = generate_cookie(thread_groups[0].cookie)
                     csv_data_set = generator_csv(thread_groups[0].file)
                     logger.info(f'Write Thread Group success, , operator: {username}')

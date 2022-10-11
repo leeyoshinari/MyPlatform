@@ -292,7 +292,8 @@ def parse_ConstantThroughputTimer(jmeter_file, number_of_samples, enabled = 'tru
     return ConstantThroughputTimer, len(res)
 
 
-def modify_jmeter(jmeter_path, target_path, run_type, num_threads, duration, number_of_samples):
+def modify_jmeter(jmeter_path, target_path, run_type, schedule, num_threads, duration, number_of_samples):
+    if schedule == 1: duration += 600
     with open(jmeter_path, 'r', encoding='utf-8') as f:
         jmeter_file = f.read()
     if run_type == 0:
