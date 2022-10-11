@@ -407,7 +407,7 @@ class Task(object):
     def auto_change_tps(self, time_setting, target_num):
         scheduler = []
         for s in time_setting:
-            scheduler.append({'timing': toTimeStamp(s['timing']), 'value': s['value']})
+            scheduler.append({'timing': toTimeStamp(s['timing']), 'value': float(s['value'])})
         logger.info(f"{scheduler} - target:{target_num} - number_samples: {self.number_samples} - agent_num: {self.agent_num}")
 
         while scheduler:

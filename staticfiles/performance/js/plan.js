@@ -32,7 +32,9 @@ function add_plan(url, location_url) {
         }
         for (let i=0; i<time_settings.length; i++) {
             let values = time_settings[i].getElementsByTagName("input");
-            s_t = new Date(values[0].value).getTime();
+            let timing = values[0].value.replace('T', ' ');
+            if (timing.length === 16) {timing = timing + ':00';}
+            s_t = new Date(timing).getTime();
             if (s_t < current_time) {
                 if (i === 0) {
                     $.Toast('Please set time after 30 minutes.', 'error');
@@ -43,14 +45,14 @@ function add_plan(url, location_url) {
                 }
             }
             if (s_t > new Date(time_settings[0].getElementsByTagName('input')[0].value).getTime() + parseInt(duration) * 1000) {
-                $.Toast(values[0].value.replace('T', ' ') + ' is beyond duration ' + duration + ' Seconds ~', 'error');
+                $.Toast(timing + ' is beyond duration ' + duration + ' Seconds ~', 'error');
                 return;
             }
             current_time = s_t;
             if (run_type === '1') {
-                time_setting.push({"timing": values[0].value.replace('T', ' '), "value": values[1].value});
+                time_setting.push({"timing": timing, "value": values[1].value});
             } else {
-                time_setting.push({"timing": values[0].value.replace('T', ' ')});
+                time_setting.push({"timing": timing});
             }
         }
     }
@@ -122,7 +124,9 @@ function edit_plan(url, location_url) {
         }
         for (let i=0; i<time_settings.length; i++) {
             let values = time_settings[i].getElementsByTagName("input");
-            s_t = new Date(values[0].value).getTime();
+            let timing = values[0].value.replace('T', ' ');
+            if (timing.length === 16) {timing = timing + ':00';}
+            s_t = new Date(timing).getTime();
             if (s_t < current_time) {
                 if (i === 0) {
                     $.Toast('Please set time after 30 seconds.', 'error');
@@ -133,14 +137,14 @@ function edit_plan(url, location_url) {
                 }
             }
             if (s_t > new Date(time_settings[0].getElementsByTagName('input')[0].value).getTime() + parseInt(duration) * 1000) {
-                $.Toast(values[0].value.replace('T', ' ') + ' is beyond duration ' + duration + ' Seconds ~', 'error');
+                $.Toast(timing + ' is beyond duration ' + duration + ' Seconds ~', 'error');
                 return;
             }
             current_time = s_t;
             if (run_type === '1') {
-                time_setting.push({"timing": values[0].value.replace('T', ' '), "value": values[1].value});
+                time_setting.push({"timing": timing, "value": values[1].value});
             } else {
-                time_setting.push({"timing": values[0].value.replace('T', ' '), "value": target_number});
+                time_setting.push({"timing": timing});
             }
         }
     }
