@@ -85,9 +85,11 @@ def auto_run_task():
                 if task.plan.type == 0 and toTimeStamp(scheduler[0]['timing']) - time.time() < -60:
                     task.status = 4
                     task.save()
+                    logger.info(f'Modify task {task.id} status to Cancel ~')
                 if task.plan.type == 1 and toTimeStamp(scheduler[0]['timing'], delta=-600) - time.time() < -60:
                     task.status = 4
                     task.save()
+                    logger.info(f'Modify task {task.id} status to Cancel ~')
         except:
             logger.error(traceback.format_exc())
         time.sleep(30)

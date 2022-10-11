@@ -47,9 +47,9 @@ function edit_plan(url, location_url) {
             }
             current_time = s_t;
             if (run_type === '1') {
-                time_setting.push({"timing": values[0].value, "value": values[1].value});
+                time_setting.push({"timing": values[0].value.replace('T', ' '), "value": values[1].value});
             } else {
-                time_setting.push({"timing": values[0].value});
+                time_setting.push({"timing": values[0].value.replace('T', ' ')});
             }
         }
     }
