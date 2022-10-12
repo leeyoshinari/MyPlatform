@@ -1,7 +1,7 @@
 function preview_timing() {
     let x = [];
     let y = [];
-    let current_time = Date.now() + 1800000;
+    let current_time = 0;
     let s_t = Date.now();
     let test_type = document.getElementById('run_type').value;
     let duration = document.getElementById('duration').value;
@@ -20,13 +20,8 @@ function preview_timing() {
         let input_tag = values_div[i].getElementsByTagName('input');
         s_t = new Date(input_tag[0].value).getTime();
         if (s_t < current_time) {
-            if (i === 0) {
-                $.Toast('Please set time after 30 minutes.', 'error');
-                return;
-            } else {
-                $.Toast('Please notice order.', 'error');
-                return;
-            }
+            $.Toast('Please pay attention to the order of time.', 'error');
+            return;
         }
         if (s_t > new Date(values_div[0].getElementsByTagName('input')[0].value).getTime() + parseInt(duration) * 1000) {
             $.Toast(input_tag[0].value.replace('T', ' ') + ' is beyond duration ' + duration + ' Seconds ~', 'error');

@@ -408,7 +408,6 @@ class Task(object):
         scheduler = []
         for s in time_setting:
             scheduler.append({'timing': toTimeStamp(s['timing']), 'value': float(s['value'])})
-        logger.info(f"{scheduler} - target:{target_num} - number_samples: {self.number_samples} - agent_num: {self.agent_num}")
 
         while scheduler:
             s = scheduler[0]
@@ -416,14 +415,13 @@ class Task(object):
                 _ = self.change_TPS(int(target_num * self.number_samples * s['value'] * 0.6 / self.agent_num))
                 scheduler.pop(0)
             time.sleep(0.1)
+        logger.info(f'Task {self.task_id} auto change TPS is completed ~')
 
 
     def change_init_TPS(self):
         try:
             tps = 120 * self.number_samples
-            cmd = f'java -jar {self.jmeter_path}/lib/bshclient.jar localhost {bean_shell_server_port} {self.setprop_path} throughput {tps}'
-            res = os.popen(cmd).read()
-            logger.info(f'Change TPS to {tps}, CMD: {cmd}')
+            _ = self.change_TPS(tps)
         except:
             logger.error(traceback.format_exc())
 

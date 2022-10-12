@@ -40,7 +40,7 @@ function add_plan(url, location_url) {
                     $.Toast('Please set time after 30 minutes.', 'error');
                     return;
                 } else {
-                    $.Toast('Please notice order.', 'error');
+                    $.Toast('Please pay attention to the order of time.', 'error');
                     return;
                 }
             }
@@ -132,7 +132,7 @@ function edit_plan(url, location_url) {
                     $.Toast('Please set time after 30 seconds.', 'error');
                     return;
                 } else {
-                    $.Toast('Please notice order.', 'error');
+                    $.Toast('Please pay attention to the order of time.', 'error');
                     return;
                 }
             }

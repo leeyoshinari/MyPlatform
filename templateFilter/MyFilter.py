@@ -47,7 +47,7 @@ def get_value_from_list(v1, v2):
         if v2 == 'task_status':
             return ['Pending', 'Running', 'Stopped', 'Failure', 'Cancel'][v1]
         if v2 == 'task_color':
-            return ['gray', 'blue', 'green', 'red'][v1]
+            return ['gray', 'blue', 'darkorange', 'red', 'gold'][v1]
         if v2 == 'room_type':
             return ['Used to Applications', 'Used to Middleware', 'Used to Pressure Test'][v1]
     except:

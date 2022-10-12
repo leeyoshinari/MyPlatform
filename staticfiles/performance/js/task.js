@@ -47,8 +47,12 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5, 
         url: url + '?id=' + task_id,
         success: function (data) {
             if (data['code'] === 0) {
+                if (data['data']['status'] > 1) {
+                    window.location.reload();
+                    return;
+                }
                 let s = "";
-                let all_host = data['data'];
+                let all_host = data['data']['host_info'];
                 let server_num = 0;
                 let trs = document.getElementById('tbody').getElementsByClassName('running');
                 let trs_length = trs.length;

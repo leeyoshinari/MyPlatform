@@ -1,5 +1,6 @@
 {% extends 'performance/home.html' %}
 {% load static %}
+{% load myFilter %}
 
 {% block add_js %}
     <script src="{% static 'performance/js/echarts.common.js' %}"></script>
@@ -17,6 +18,7 @@
         <div>
             <h3>Test Plan Name:
                 <span><a href="{% url 'perf:plan_home' %}?keyWord={{ tasks.plan.name }}">{{ tasks.plan.name }}</a></span>
+                <span style="margin-left: 10%; color: {{ tasks.status | get_value_from_list:'task_color' }}">{{ tasks.status | get_value_from_list:'task_status' }}</span>
             </h3>
             <span style="float: right; margin-right: 30px; width: 110px;">
                 <a target="_blank" href="{{ tasks.path }}">Download File</a>

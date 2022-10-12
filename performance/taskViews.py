@@ -438,6 +438,7 @@ def get_running_server(request):
             username = request.user.username
             task_id = request.GET.get('id')
             hosts = TestTaskLogs.objects.values('value', 'action').filter(task_id=task_id, action=1)
+            task = PerformanceTestTask.objects.values('status').get(id=task_id)
             host_info = []
             for h in hosts:
                 jmeter_server_dict = get_value_by_host('jmeterServer_' + h['value'])
@@ -448,7 +449,7 @@ def get_running_server(request):
                 host_dict.update({'action': h['action']})
                 host_info.append(host_dict)
             logger.info(f'Query running servers success, operator: {username}')
-            return result(msg='Get running servers success ~', data=host_info)
+            return result(msg='Get running servers success ~', data={'host_info': host_info, 'status': task['status']})
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get running servers failure ~')
@@ -503,9 +504,11 @@ def query_data(request):
             host = request.GET.get('host')
             delta = request.GET.get('delta')
             start_time = request.GET.get('startTime')
-            tasks = PerformanceTestTask.objects.get(id=task_id)
-            start_time = start_time if start_time else tasks.start_time
-            end_time = tasks.end_time
+            end_time = request.GET.get('endTime')
+            if not start_time:
+                tasks = PerformanceTestTask.objects.get(id=task_id)
+                start_time = tasks.start_time
+                end_time = tasks.end_time
             return json_result(get_data_from_influx(delta, task_id, host=host, start_time=start_time, end_time=end_time))
         except:
             logger.error(traceback.format_exc())
