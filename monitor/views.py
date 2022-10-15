@@ -119,6 +119,9 @@ def visualize(request):
             rooms = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
             keys = monitor_server.get_all_keys()
             hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
+            if hosts:
+                logger.error(f'You have no servers to view, please check permission ~')
+                return render(request, '404.html')
             logger.info(f'Access visualization page, operaotr: {username}')
             return render(request, 'monitor/visualize.html', context={'ip': hosts, 'groups': groups,'rooms': rooms, 'starttime': starttime,
                 'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec_host': spec_host, 'spec_group': spec_group, 'spec_room': spec_room})

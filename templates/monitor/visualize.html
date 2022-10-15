@@ -130,6 +130,7 @@
     // let gc = document.getElementById('container2');
     // let table2 = document.getElementById('gc');
     plot_init(specific_host);
+    change_room(1);
 
     function refresh_server_list(data) {
         let total_cpu = 0;
@@ -187,17 +188,16 @@
                     if (data['code'] === 1) {
                         $.Toast(data['message'], 'success');
                         specific_host = host;
+                        plot(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
+                            data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['jvm'], data['post_data']['disk'],
+                            data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['disk_d'], data['post_data']['rec'],
+                            data['post_data']['trans'], data['post_data']['net'], data['post_data']['tcp'], data['post_data']['retrans'],
+                            data['post_data']['port_tcp'], data['post_data']['close_wait'], data['post_data']['time_wait'], data['flag']);
+                        document.getElementById('start-time').value = data['post_data']['time'];
+                        document.getElementById('endtime').value = date_to_date(data['post_data']['time'], 28800);
                     } else {
                         $.Toast(data['message'], 'error');
-                        return;
                     }
-                    plot(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
-                        data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['jvm'], data['post_data']['disk'],
-                        data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['disk_d'], data['post_data']['rec'],
-                        data['post_data']['trans'], data['post_data']['net'], data['post_data']['tcp'], data['post_data']['retrans'],
-                        data['post_data']['port_tcp'], data['post_data']['close_wait'], data['post_data']['time_wait'], data['flag']);
-                    document.getElementById('start-time').value = data['post_data']['time'];
-                    document.getElementById('endtime').value = date_to_date(data['post_data']['time'], 28800);
                     $('.modal_cover').css("display", "none");
                     $('.modal_gif').css("display", "none");
                 }
@@ -234,7 +234,6 @@
                         }
                     } else {
                         $.Toast(data['message'], 'error');
-                        return;
                     }
                 }
             });
@@ -277,11 +276,13 @@
         })
     }
 
-    function change_room() {
+    function change_room(is_modal=1) {
         let group_id = document.getElementById('group').value;
         let room_id = document.getElementById('room').value;
-        $('.modal_cover').css("display", "block");
-        $('.modal_gif').css("display", "block");
+        if (is_modal === 1) {
+            $('.modal_cover').css("display", "block");
+            $('.modal_gif').css("display", "block");
+        }
         $.ajax({
             type: 'get',
             url: '{% url 'monitor:change_room' %}?group=' + group_id + '&room=' + room_id,
@@ -292,10 +293,16 @@
                 } else {
                     $.Toast(data['msg'], 'error');
                 }
-                $('.modal_cover').css("display", "none");
-                $('.modal_gif').css("display", "none");
+                if (is_modal === 1) {
+                    $('.modal_cover').css("display", "none");
+                    $('.modal_gif').css("display", "none");
+                }
             }
         })
     }
+
+    let server_timer = setInterval(function () {
+        change_room(0);
+    }, 10000);
 </script>
 {% endblock %}
