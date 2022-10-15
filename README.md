@@ -40,11 +40,11 @@
 
 2、进入目录 `cd MyPlatform`，修改配置文件`config.conf`；
 
-3、数据初始化，依次执行下面命令；<br>
-**注意：`config.conf` 中的 `isMonitor` 必须为0，否则数据初始化存在小问题；数据初始化完成后可再修改为1**
+3、数据库初始化，依次执行下面命令；<br>
 ```shell script
 python3 manage.py migrate
-python3 manage.py makemigrations
+python3 manage.py makemigrations shell
+python3 manage.py makemigrations performance
 python3 manage.py migrate
 ```
 
@@ -53,12 +53,12 @@ python3 manage.py migrate
 python3 manage.py createsuperuser
 ```
 
-5、数据初始化，不初始化会导致上次jmeter文件报错；
+5、数据初始化，不初始化会导致上传jmeter文件报错；
 ```shell script
 python3 manage.py loaddata initdata.json
 ```
 
-6、处理admin页面的静态文件；
+6、处理所有静态文件；
 ```shell script
 python3 manage.py collectstatic
 ```

@@ -1,4 +1,4 @@
-function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, mem, mem_available, IO, disk_r, disk_w, disk_d, net, rec, trans, tcp, retrans) {
+function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, IO, disk_r, disk_w, disk_d, rec, trans, net, tcp, retrans, port_tcp, close_wait, time_wait, is_jvm) {
     // Quick sort
     /*let cpu_sorted = quickSort(cpu);
     let IO_sorted = quickSort(IO);
@@ -31,23 +31,10 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
     rec_sorted.sort(function (a, b) {return a - b});
     trans_sorted.sort(function (a, b) {return a - b});
 
-    let start_time = Date.parse(new Date(x_label[0]));
-    let end_time = Date.parse(new Date(x_label[x_label.length - 1]));
-    let dur = ((end_time - start_time) / 3600000).toFixed(2);
-    let duration = dur + 'h';
-    if (dur < 1) {
-        dur = ((end_time - start_time) / 60000).toFixed(2);
-        duration = dur + 'm';
-        if (dur < 1) {
-            dur = ((end_time - start_time) / 1000).toFixed(2);
-            duration = dur + 's';
-        }
-    }
-
     option = {
         title: [
             {
-                text: 'CPU(%), Max: ' + cpu_sorted.slice(-1)[0].toFixed(2) + '%, 90%Line CPU: ' + cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2) + '%, 90%Line IOWait: ' + iowait_sorted[parseInt(0.9 * iowait_sorted.length)].toFixed(2) + '%, Duration: ' + duration,
+                text: 'CPU(%), Max: ' + cpu_sorted.slice(-1)[0].toFixed(2) + '%, 90%Line CPU: ' + cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2) + '%, 90%Line IOWait: ' + iowait_sorted[parseInt(0.9 * iowait_sorted.length)].toFixed(2) + '%',
                 x: 'center',
                 y: 5,
                 textStyle: {
@@ -55,7 +42,7 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
                 }
             },
             {
-                text: 'Memory(G), Min Available: ' + findMin(mem_available).toFixed(2) + 'G, Min Free: ' + findMin(mem).toFixed(2) + 'G, Duration: ' + duration,
+                text: 'Memory(G), Min Available: ' + findMin(mem_available).toFixed(2) + 'G, Min Free: ' + findMin(mem).toFixed(2) + 'G',
                 x: 'center',
                 y: 350,
                 textStyle: {
@@ -63,7 +50,7 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
                 }
             },
             {
-                text: 'IO, Max IO: ' + IO_sorted.slice(-1)[0].toFixed(2) + '%, Avg Read: ' + average(disk_r_sorted).toFixed(2) + 'MB/s, Avg Write: ' + average(disk_w_sorted).toFixed(2) + 'MB/s, Duration: ' + duration,
+                text: 'IO, Max IO: ' + IO_sorted.slice(-1)[0].toFixed(2) + '%, Avg Read: ' + average(disk_r_sorted).toFixed(2) + 'MB/s, Avg Write: ' + average(disk_w_sorted).toFixed(2) + 'MB/s',
                 x: 'center',
                 y: 700,
                 textStyle: {
@@ -71,7 +58,7 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
                 }
             },
             {
-                text: 'NetWork, Max Net: ' + net_sorted.slice(-1)[0].toFixed(2) + '%, Avg Recv: ' + average(rec_sorted).toFixed(2) + 'MB/s, Avg Trans: ' + average(trans_sorted).toFixed(2) + 'MB/s, Duration: ' + duration,
+                text: 'NetWork, Max Net: ' + net_sorted.slice(-1)[0].toFixed(2) + '%, Avg Recv: ' + average(rec_sorted).toFixed(2) + 'MB/s, Avg Trans: ' + average(trans_sorted).toFixed(2) + 'MB/s',
                 x: 'center',
                 y: 1050,
                 textStyle: {
@@ -79,7 +66,7 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
                 }
             },
             {
-                text: 'TCP, Max TCP: ' + findMax(tcp) + ', TCP Retrans: '+ findMax(retrans) + ', Duration: ' + duration,
+                text: 'TCP, Max System-TCP: ' + findMax(tcp) + ', Max Port-TCP: '+ findMax(port_tcp),
                 x: 'center',
                 y: 1400,
                 textStyle: {
@@ -128,10 +115,10 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
             }
         },
 
-        color: ['red', 'blue', 'orange', 'red', 'blue', 'blue', 'orange', 'red', 'orange', 'red', 'red', 'blue'],
+        color: ['red', 'blue', 'red', 'orange', 'blue', 'blue', 'orange', 'red', 'orange', 'red', 'red', 'blue', 'orange', 'gray', 'green'],
         legend: [
             {
-                data: ['CPU', 'IOWait', 'Usr'],
+                data: ['CPU', 'IOWait'],
                 x: 'center',
                 y: 25,
                 icon: 'line'
@@ -155,7 +142,7 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
                 icon: 'line'
             },
             {
-                data: ['TCP', 'TCP Retrans'],
+                data: ['TCP', 'TCP Retrans', 'Port-TCP', 'Time-Wait', 'Close-Wait'],
                 x: 'center',
                 y: 1425,
                 icon: 'line'
@@ -255,51 +242,51 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
                 gridIndex: 0,
                 name: 'CPU(%)',
                 type: 'value',
-                max: 100
+                // max: 100
             },
             {gridIndex: 0},
             {
                 gridIndex: 1,
                 name: 'Memory(G)',
                 type: 'value',
-                max: Math.max(findMax(mem) + 1, findMax(mem_available) + 1).toFixed(2)
+                // max: Math.max(findMax(mem) + 1, findMax(mem_available) + 1).toFixed(2)
             },
             {gridIndex: 1},
             {
                 gridIndex: 2,
                 name: 'Speed(MB/s)',
                 type: 'value',
-                max: Math.max(disk_r_sorted.slice(-1)[0], disk_w_sorted.slice(-1)[0]).toFixed(2)
+                // max: Math.max(disk_r_sorted.slice(-1)[0], disk_w_sorted.slice(-1)[0]).toFixed(2)
             },
             {
                 gridIndex: 2,
                 name: 'IO(%)',
                 type: 'value',
-                max: IO_sorted.slice(-1)[0].toFixed(2)
+                // max: IO_sorted.slice(-1)[0].toFixed(2)
             },
             {
                 gridIndex: 3,
                 name: 'Speed(MB/s)',
                 type: 'value',
-                max: Math.max(rec_sorted.slice(-1)[0], trans_sorted.slice(-1)[0]).toFixed(2)
+                // max: Math.max(rec_sorted.slice(-1)[0], trans_sorted.slice(-1)[0]).toFixed(2)
             },
             {
                 gridIndex: 3,
                 name: 'Net(%)',
                 type: 'value',
-                max: net_sorted.slice(-1)[0].toFixed(2)
+                // max: net_sorted.slice(-1)[0].toFixed(2)
             },
             {
                 gridIndex: 4,
                 name: 'TCP',
                 type: 'value',
-                max: (findMax(tcp) * 1.02).toFixed(1)
+                // max: (findMax(tcp) * 1.02).toFixed(1)
             },
             {
                 gridIndex: 4,
                 name: 'TCP Retrans',
                 type: 'value',
-                max: (findMax(retrans) * 1.2)
+                // max: (findMax(retrans) * 1.2)
             }
         ],
         series: [
@@ -327,18 +314,18 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
                 },
                 data: iowait
             },
-            {
-                name: 'Usr',
-                type: 'line',
-                xAxisIndex: 0,
-                yAxisIndex: 0,
-                showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'orange'
-                },
-                data: usr_cpu
-            },
+            // {
+            //     name: 'Usr',
+            //     type: 'line',
+            //     xAxisIndex: 0,
+            //     yAxisIndex: 0,
+            //     showSymbol: false,
+            //     lineStyle: {
+            //         width: 1,
+            //         color: 'orange'
+            //     },
+            //     data: usr_cpu
+            // },
             {
                 name: 'Available',
                 type: 'line',
@@ -359,9 +346,21 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
                 showSymbol: false,
                 lineStyle: {
                     width: 1,
-                    color: 'blue'
+                    color: 'orange'
                 },
                 data: mem
+            },
+            {
+                name: 'JVM',
+                type: 'line',
+                xAxisIndex: 1,
+                yAxisIndex: 2,
+                showSymbol: false,
+                lineStyle: {
+                    width: 1,
+                    color: 'blue'
+                },
+                data: []
             },
             {
                 name: 'rMB/s',
@@ -451,48 +450,61 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
                 name: 'TCP Retrans',
                 type: 'line',
                 xAxisIndex: 4,
-                yAxisIndex: 9,
+                yAxisIndex: 8,
                 showSymbol: false,
                 lineStyle: {
                     width: 1,
                     color: 'blue'
                 },
                 data: retrans
+            },
+            {
+                name: 'Port-TCP',
+                type: 'line',
+                xAxisIndex: 4,
+                yAxisIndex: 9,
+                showSymbol: false,
+                lineStyle: {
+                    width: 1,
+                    color: 'orange'
+                },
+                data: port_tcp
+            },
+            {
+                name: 'Time-Wait',
+                type: 'line',
+                xAxisIndex: 4,
+                yAxisIndex: 9,
+                showSymbol: false,
+                lineStyle: {
+                    width: 1,
+                    color: 'gray'
+                },
+                data: time_wait
+            },
+            {
+                name: 'Close-Wait',
+                type: 'line',
+                xAxisIndex: 4,
+                yAxisIndex: 9,
+                showSymbol: false,
+                lineStyle: {
+                    width: 1,
+                    color: 'green'
+                },
+                data: close_wait
             }
         ]
     };
 
+    if (is_jvm === 1){
+        option['title'][1].text = 'Memory(G), Min Available: ' + findMin(mem_available).toFixed(2) + 'G, Min Free: ' + findMin(mem).toFixed(2) + 'G, Max JVM: ' + findMax(jvm).toFixed(2) + 'G';
+        option['legend'][1].data = ['Available', 'Free', 'JVM'];
+        option['series'][4].data = jvm;
+    }
+
     myChart.clear();
     myChart.setOption(option);
-
-    tables1.rows[1].cells[1].innerHTML = cpu_sorted[parseInt(0.75 * cpu_sorted.length)].toFixed(2);
-    tables1.rows[2].cells[1].innerHTML = cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2);
-    tables1.rows[3].cells[1].innerHTML = cpu_sorted[parseInt(0.95 * cpu_sorted.length)].toFixed(2);
-    tables1.rows[4].cells[1].innerHTML = cpu_sorted[parseInt(0.99 * cpu_sorted.length)].toFixed(2);
-    tables1.rows[1].cells[2].innerHTML = disk_r_sorted[parseInt(0.75 * disk_r_sorted.length)].toFixed(2);
-    tables1.rows[2].cells[2].innerHTML = disk_r_sorted[parseInt(0.9 * disk_r_sorted.length)].toFixed(2);
-    tables1.rows[3].cells[2].innerHTML = disk_r_sorted[parseInt(0.95 * disk_r_sorted.length)].toFixed(2);
-    tables1.rows[4].cells[2].innerHTML = disk_r_sorted[parseInt(0.99 * disk_r_sorted.length)].toFixed(2);
-    tables1.rows[1].cells[3].innerHTML = disk_w_sorted[parseInt(0.75 * disk_w_sorted.length)].toFixed(2);
-    tables1.rows[2].cells[3].innerHTML = disk_w_sorted[parseInt(0.9 * disk_w_sorted.length)].toFixed(2);
-    tables1.rows[3].cells[3].innerHTML = disk_w_sorted[parseInt(0.95 * disk_w_sorted.length)].toFixed(2);
-    tables1.rows[4].cells[3].innerHTML = disk_w_sorted[parseInt(0.99 * disk_w_sorted.length)].toFixed(2);
-    tables1.rows[1].cells[4].innerHTML = IO_sorted[parseInt(0.75 * IO_sorted.length)].toFixed(2);
-    tables1.rows[2].cells[4].innerHTML = IO_sorted[parseInt(0.9 * IO_sorted.length)].toFixed(2);
-    tables1.rows[3].cells[4].innerHTML = IO_sorted[parseInt(0.95 * IO_sorted.length)].toFixed(2);
-    tables1.rows[4].cells[4].innerHTML = IO_sorted[parseInt(0.99 * IO_sorted.length)].toFixed(2);
-    tables1.rows[1].cells[5].innerHTML = rec_sorted[parseInt(0.75 * rec_sorted.length)].toFixed(2);
-    tables1.rows[2].cells[5].innerHTML = rec_sorted[parseInt(0.9 * rec_sorted.length)].toFixed(2);
-    tables1.rows[3].cells[5].innerHTML = rec_sorted[parseInt(0.95 * rec_sorted.length)].toFixed(2);
-    tables1.rows[4].cells[5].innerHTML = rec_sorted[parseInt(0.99 * rec_sorted.length)].toFixed(2);
-    tables1.rows[1].cells[6].innerHTML = trans_sorted[parseInt(0.75 * trans_sorted.length)].toFixed(2);
-    tables1.rows[2].cells[6].innerHTML = trans_sorted[parseInt(0.9 * trans_sorted.length)].toFixed(2);
-    tables1.rows[3].cells[6].innerHTML = trans_sorted[parseInt(0.95 * trans_sorted.length)].toFixed(2);
-    tables1.rows[4].cells[6].innerHTML = trans_sorted[parseInt(0.99 * trans_sorted.length)].toFixed(2);
-    tables1.rows[1].cells[7].innerHTML = net_sorted[parseInt(0.75 * net_sorted.length)].toFixed(2);
-    tables1.rows[2].cells[7].innerHTML = net_sorted[parseInt(0.9 * net_sorted.length)].toFixed(2);
-    tables1.rows[3].cells[7].innerHTML = net_sorted[parseInt(0.95 * net_sorted.length)].toFixed(2);
-    tables1.rows[4].cells[7].innerHTML = net_sorted[parseInt(0.99 * net_sorted.length)].toFixed(2);
 
     myChart.on('dataZoom', function (param) {
         let start_index = myChart.getOption().dataZoom[0].startValue;
@@ -501,7 +513,12 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
         let mem_zoom = mem.slice(start_index, end_index);
         let mem_a_zoom = mem_available.slice(start_index, end_index);
         let tcp_zoom = tcp.slice(start_index, end_index);
-        let retrans_zoom = retrans.slice(start_index, end_index);
+        let port_tcp_zoom = port_tcp.slice(start_index, end_index);
+        let mem_title = 'Memory(G), Min Available:: ' + findMin(mem_a_zoom).toFixed(2) + 'G, Min Free:: ' + findMin(mem_zoom).toFixed(2) + 'G';
+        if(is_jvm === 1) {
+            let jvm_zoom = jvm.size(start_index, end_index);
+            mem_title += ', Max JVM: ' + findMax(jvm_zoom).toFixed(2) + 'G';
+        }
 
         // Bubble Sort
         let cpu_sorted = cpu.slice(start_index, end_index);
@@ -529,55 +546,13 @@ function plot_system(myChart, tables1, tables2, x_label, cpu, iowait, usr_cpu, m
         let net_sorted = quickSort(net.slice(start_index, end_index));
         let rec_sorted = quickSort(rec.slice(start_index, end_index));
         let trans_sorted = quickSort(trans.slice(start_index, end_index));*/
-
-        let start_time = Date.parse(new Date(x_label[start_index]));
-        let end_time = Date.parse(new Date(x_label[end_index]));
-        let dur = ((end_time - start_time) / 3600000).toFixed(2);
-        let duration = dur + 'h';
-        if (dur < 1) {
-            dur = ((end_time - start_time) / 60000).toFixed(2);
-            duration = dur + 'm';
-            if (dur < 1) {
-                dur = ((end_time - start_time) / 1000).toFixed(2);
-                duration = dur + 's';
-            }
-        }
         myChart.setOption({
             title: [
-                {text: 'CPU(%), Max: ' + cpu_sorted.slice(-1)[0].toFixed(2) + '%, 90%Line CPU: ' + cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2) + '%, 90%Line IOWait: ' + iowait_sorted[parseInt(0.9 * iowait_sorted.length)].toFixed(2) + '%, Duration: ' + duration, x: 'center', y: 5, textStyle: {fontSize: 13}},
-                {text: 'Memory(G), Min Available:: ' + findMin(mem_a_zoom).toFixed(2) + 'G, Min Free:: ' + findMin(mem_zoom).toFixed(2) + 'G, Duration: ' + duration, x: 'center', y: 350, textStyle: {fontSize: 13}},
-                {text: 'IO, Max IO: ' + IO_sorted.slice(-1)[0].toFixed(2) + '%, Avg Read: ' + average(disk_r_sorted).toFixed(2) + 'MB/s, Avg Write: ' + average(disk_w_sorted).toFixed(2) + 'MB/s, Duration: ' + duration, x: 'center', y: 700, textStyle: {fontSize: 13}},
-                {text: 'NetWork, Max Net: ' + net_sorted.slice(-1)[0].toFixed(2) + '%, Avg Recv: ' + average(rec_sorted).toFixed(2) + 'MB/s, Avg Trans: ' + average(trans_sorted).toFixed(2) + 'MB/s, Duration: ' + duration, x: 'center', y: 1050, textStyle: {fontSize: 13}},
-                {text: 'TCP, Max TCP: ' + findMax(tcp_zoom) + ', TCP Retrans: '+ findMax(retrans_zoom) + ', Duration: ' + duration, x: 'center', y: 1400, textStyle: {fontSize: 13}}]});
-
-        tables1.rows[1].cells[1].innerHTML = cpu_sorted[parseInt(0.75 * cpu_sorted.length)].toFixed(2);
-        tables1.rows[2].cells[1].innerHTML = cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2);
-        tables1.rows[3].cells[1].innerHTML = cpu_sorted[parseInt(0.95 * cpu_sorted.length)].toFixed(2);
-        tables1.rows[4].cells[1].innerHTML = cpu_sorted[parseInt(0.99 * cpu_sorted.length)].toFixed(2);
-        tables1.rows[1].cells[2].innerHTML = disk_r_sorted[parseInt(0.75 * disk_r_sorted.length)].toFixed(2);
-        tables1.rows[2].cells[2].innerHTML = disk_r_sorted[parseInt(0.9 * disk_r_sorted.length)].toFixed(2);
-        tables1.rows[3].cells[2].innerHTML = disk_r_sorted[parseInt(0.95 * disk_r_sorted.length)].toFixed(2);
-        tables1.rows[4].cells[2].innerHTML = disk_r_sorted[parseInt(0.99 * disk_r_sorted.length)].toFixed(2);
-        tables1.rows[1].cells[3].innerHTML = disk_w_sorted[parseInt(0.75 * disk_w_sorted.length)].toFixed(2);
-        tables1.rows[2].cells[3].innerHTML = disk_w_sorted[parseInt(0.9 * disk_w_sorted.length)].toFixed(2);
-        tables1.rows[3].cells[3].innerHTML = disk_w_sorted[parseInt(0.95 * disk_w_sorted.length)].toFixed(2);
-        tables1.rows[4].cells[3].innerHTML = disk_w_sorted[parseInt(0.99 * disk_w_sorted.length)].toFixed(2);
-        tables1.rows[1].cells[4].innerHTML = IO_sorted[parseInt(0.75 * IO_sorted.length)].toFixed(2);
-        tables1.rows[2].cells[4].innerHTML = IO_sorted[parseInt(0.9 * IO_sorted.length)].toFixed(2);
-        tables1.rows[3].cells[4].innerHTML = IO_sorted[parseInt(0.95 * IO_sorted.length)].toFixed(2);
-        tables1.rows[4].cells[4].innerHTML = IO_sorted[parseInt(0.99 * IO_sorted.length)].toFixed(2);
-        tables1.rows[1].cells[5].innerHTML = rec_sorted[parseInt(0.75 * rec_sorted.length)].toFixed(2);
-        tables1.rows[2].cells[5].innerHTML = rec_sorted[parseInt(0.9 * rec_sorted.length)].toFixed(2);
-        tables1.rows[3].cells[5].innerHTML = rec_sorted[parseInt(0.95 * rec_sorted.length)].toFixed(2);
-        tables1.rows[4].cells[5].innerHTML = rec_sorted[parseInt(0.99 * rec_sorted.length)].toFixed(2);
-        tables1.rows[1].cells[6].innerHTML = trans_sorted[parseInt(0.75 * trans_sorted.length)].toFixed(2);
-        tables1.rows[2].cells[6].innerHTML = trans_sorted[parseInt(0.9 * trans_sorted.length)].toFixed(2);
-        tables1.rows[3].cells[6].innerHTML = trans_sorted[parseInt(0.95 * trans_sorted.length)].toFixed(2);
-        tables1.rows[4].cells[6].innerHTML = trans_sorted[parseInt(0.99 * trans_sorted.length)].toFixed(2);
-        tables1.rows[1].cells[7].innerHTML = net_sorted[parseInt(0.75 * net_sorted.length)].toFixed(2);
-        tables1.rows[2].cells[7].innerHTML = net_sorted[parseInt(0.9 * net_sorted.length)].toFixed(2);
-        tables1.rows[3].cells[7].innerHTML = net_sorted[parseInt(0.95 * net_sorted.length)].toFixed(2);
-        tables1.rows[4].cells[7].innerHTML = net_sorted[parseInt(0.99 * net_sorted.length)].toFixed(2);
+                {text: 'CPU(%), Max: ' + cpu_sorted.slice(-1)[0].toFixed(2) + '%, 90%Line CPU: ' + cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2) + '%, 90%Line IOWait: ' + iowait_sorted[parseInt(0.9 * iowait_sorted.length)].toFixed(2) + '%', x: 'center', y: 5, textStyle: {fontSize: 13}},
+                {text: mem_title, x: 'center', y: 350, textStyle: {fontSize: 13}},
+                {text: 'IO, Max IO: ' + IO_sorted.slice(-1)[0].toFixed(2) + '%, Avg Read: ' + average(disk_r_sorted).toFixed(2) + 'MB/s, Avg Write: ' + average(disk_w_sorted).toFixed(2) + 'MB/s', x: 'center', y: 700, textStyle: {fontSize: 13}},
+                {text: 'NetWork, Max Net: ' + net_sorted.slice(-1)[0].toFixed(2) + '%, Avg Recv: ' + average(rec_sorted).toFixed(2) + 'MB/s, Avg Trans: ' + average(trans_sorted).toFixed(2) + 'MB/s', x: 'center', y: 1050, textStyle: {fontSize: 13}},
+                {text: 'TCP, Max System-TCP: ' + findMax(tcp_zoom) + ', Max Port-TCP: '+ findMax(port_tcp_zoom), x: 'center', y: 1400, textStyle: {fontSize: 13}}]});
     });
 }
 
@@ -627,4 +602,55 @@ function quickSort(arr){
         }
     }
     return quickSort(left).concat(temp,quickSort(right));
+}
+function date_to_date(current_date, delta=0) {
+    let timestamp = new Date(current_date).getTime();
+    let D = new Date(timestamp + delta * 1000);
+    return format_date(D);
+}
+
+function format_date(D) {
+    let hours = D.getHours();
+    let minutes = D.getMinutes();
+    let seconds = D.getSeconds();
+    let month = D.getMonth() + 1;
+    let strDate = D.getDate();
+
+    if (month >= 1 && month <= 9) {month = "0" + month;}
+    if (strDate >= 0 && strDate <= 9) {strDate = "0" + strDate;}
+    if (hours >= 0 && hours <= 9) {hours = "0" + hours;}
+    if (minutes >= 0 && minutes <= 9) {minutes = "0" + minutes;}
+    if (seconds >= 0 && seconds <= 9) {seconds = "0" + seconds;}
+    return D.getFullYear() + '-' + month + '-' + strDate + ' ' + hours + ':' + minutes + ':' + seconds;
+}
+
+function plot_delta(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, IO, disk_r, disk_w, disk_d, rec, trans, net, tcp, retrans, port_tcp, close_wait, time_wait, is_jvm) {
+    options = myChart.getOption();
+    for(let i=0; i<x_label.length; i++) {
+        options.xAxis[0].data.push(x_label[i]);
+        options.series[0].data.push(cpu[i]);
+        options.series[1].data.push(iowait[i]);
+        options.series[2].data.push(mem_available[i]);
+        options.series[3].data.push(mem[i]);
+        options.series[5].data.push(disk_r[i]);
+        options.series[6].data.push(disk_w[i]);
+        options.series[7].data.push(IO[i]);
+        options.series[8].data.push(rec[i]);
+        options.series[9].data.push(trans[i]);
+        options.series[10].data.push(net[i]);
+        options.series[11].data.push(tcp[i]);
+        options.series[12].data.push(retrans[i]);
+        options.series[13].data.push(port_tcp[i]);
+        options.series[14].data.push(time_wait[i]);
+        options.series[15].data.push(close_wait[i]);
+        if (is_jvm === 1) {
+            options.series[4].data.push(jvm[i]);
+        }
+    }
+    cpu_sorted = [...options.series[0].data];
+    iowait_sorted = [...options.series[1].data];
+    cpu_sorted.sort(function (a, b) {return a - b});
+    iowait_sorted.sort(function (a, b) {return a - b});
+    options.title[0].text = 'CPU(%), Max: ' + cpu_sorted.slice(-1)[0].toFixed(2) + '%, 90%Line CPU: ' + cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2) + '%, 90%Line IOWait: ' + iowait_sorted[parseInt(0.9 * iowait_sorted.length)].toFixed(2) + '%';
+    myChart.setOption(options);
 }

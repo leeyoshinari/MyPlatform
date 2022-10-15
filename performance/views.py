@@ -95,4 +95,4 @@ def auto_run_task():
         time.sleep(30)
 
 
-start_thread(auto_run_task, ())
+# start_thread(auto_run_task, ())

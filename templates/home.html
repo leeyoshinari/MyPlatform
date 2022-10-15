@@ -42,7 +42,7 @@
         <ul>
             <li>
                 <a href="{% url 'shell:index' %}">
-                    <img src="{% static 'img/shell_icon.jpg' %}" width="100px", height="100px"/>
+                    <img src="{% static 'img/shell_icon.png' %}" width="100px", height="100px"/>
                     <h4>Shell</h4>
                 </a>
             </li>
@@ -70,6 +70,12 @@
                     </a>
                 </li>
             {% endif %}
+            <li>
+                <a href="{% url 'course' %}">
+                    <img src="{% static 'img/course.png' %}" width="100px", height="100px"/>
+                    <h4>Course</h4>
+                </a>
+            </li>
         </ul>
     </div>
 </div>

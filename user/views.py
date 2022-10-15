@@ -90,3 +90,12 @@ def home(request):
         return render(request, 'home.html', context={'username': username, 'is_monitor': settings.IS_MONITOR,
                                                      'is_mitm': settings.IS_MITMPROXY, 'is_staff': is_staff,
                                                      'is_perf': settings.IS_PERF})
+
+
+def course(request):
+    if request.method == 'GET':
+        lang = request.GET.get('_lang')
+        if lang == 'zh':
+            return render(request, 'course.html')
+        else:
+            return render(request, 'course_en.html')

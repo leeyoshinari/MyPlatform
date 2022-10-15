@@ -4,26 +4,21 @@
 import time
 import logging
 import traceback
-import influxdb
 from django.conf import settings
+from common.generator import strfDeltaTime
 
 logger = logging.getLogger('django')
 
-def draw_data_from_db(roomId, host, port=None, pid=None, startTime=None, endTime=None, system=None, disk=None):
+def draw_data_from_db(room, group, host, startTime=None, endTime=None):
     """
     Get data from InfluxDB, and visualize
     :param host: client IP, required
-    :param port: port, visualize port data; optional, choose one from port, pid and system
-    :param pid: pid, visualize pid data; optional, choose one from port, pid and system
     :param startTime: Start time; optional
     :param endTime: end time; optional
-    :param system: visualize system data; optional, choose one from port, pid and system
-    :param disk: disk number; optional
     :return:
     """
     post_data = {
-        'types': 'system',
-        'roomId': roomId,
+        'time': '',
         'cpu_time': [],
         'cpu': [],
         'iowait': [],
@@ -31,121 +26,73 @@ def draw_data_from_db(roomId, host, port=None, pid=None, startTime=None, endTime
         'mem': [],
         'mem_available': [],
         'jvm': [],
-        'io_time': [],
-        'io': [],
+        'disk': [],
         'disk_r': [],
         'disk_w': [],
         'disk_d': [],
         'rec': [],
         'trans': [],
-        'nic': [],
+        'net': [],
         'tcp': [],
+        'retrans': [],
+        'port_tcp': [],
         'close_wait': [],
         'time_wait': [],
-        'retrans': [],
-        'disk': disk}
+    }
 
     res = {'code': 1, 'flag': 1, 'message': 'Successful!'}
 
-    connection = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
-                                         settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
-
     try:
-        if startTime and endTime:     # If there is a start time and an end time
-            pass
-        elif startTime is None and endTime is None:  # If the start time and end time do not exist, use the default time.
-            startTime = '2020-05-20 20:20:20'
-            endTime = time.strftime('%Y-%m-%d %H:%M:%S')
-        else:   # If the end time does not exist, the current time is used
-            endTime = time.strftime('%Y-%m-%d %H:%M:%S')
+        if not startTime:     # If there is a start time and an end time
+            startTime = strfDeltaTime(600)
 
         s_time = time.time()
-        if port:
-            sql = f"select cpu, wait_cpu, mem, tcp, jvm, rKbs, wKbs, iodelay, close_wait, time_wait from \"{roomId}\" " \
-                  f"where host='{host}' and type='{port}' and time>='{startTime}' and time<'{endTime}' tz('Asia/Shanghai')"
-            logger.info(f'Execute sql: {sql}')
-            datas = connection.query(sql)
-            if datas:
-                post_data['types'] = 'port'
-                for data in datas.get_points():
-                    post_data['cpu_time'].append(data['time'][:19].replace('T', ' '))
-                    post_data['cpu'].append(data['cpu'])
-                    post_data['iowait'].append(data['wait_cpu'])
-                    post_data['mem'].append(data['mem'])
-                    post_data['tcp'].append(data['tcp'])
-                    post_data['jvm'].append(data['jvm'])
-                    post_data['io'].append(data['iodelay'])
-                    post_data['disk_r'].append(data['rKbs'])
-                    post_data['disk_w'].append(data['wKbs'])
-                    post_data['close_wait'].append(data['close_wait'])
-                    post_data['time_wait'].append(data['time_wait'])
-            else:
-                res['message'] = f'No monitoring data of the port {port} is found, ' \
-                                 f'please check the port or time setting.'
-                res['code'] = 0
-
-            if disk:
-                sql = f"select rec, trans, net from \"{roomId}\" where host='{host}' and type='system' and " \
-                      f"time>='{startTime}' and time<'{endTime}' tz('Asia/Shanghai')"
-                logger.info(f'Execute sql: {sql}')
-                datas = connection.query(sql)
-                if datas:
-                    for data in datas.get_points():
-                        post_data['nic'].append(data['net'])
-                        post_data['rec'].append(data['rec'])
-                        post_data['trans'].append(data['trans'])
-                else:
-                    res['message'] = 'No monitoring data is found, please check the disk number or time setting.'
-                    res['code'] = 0
-
-        if pid:
-            pass
-
-        if system and disk:
-            disk_n = disk.replace('-', '')
-            disk_r = disk_n + '_r'
-            disk_w = disk_n + '_w'
-            disk_d = disk_n + '_d'
-            sql = f"select cpu, iowait, usr_cpu, mem, mem_available, {disk_n}, {disk_r}, {disk_w}, {disk_d}, rec, trans, " \
-                  f"net, tcp, retrans from \"{roomId}\" where host='{host}' and type='system' and time>='{startTime}' " \
+        if endTime:
+            sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
+                  f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"{group}\" where room='{room}' host='{host}' and time>='{startTime}' " \
                   f"and time<'{endTime}' tz('Asia/Shanghai')"
-            logger.info(f'Execute sql: {sql}')
-            datas = connection.query(sql)
-            if datas:
-                post_data['types'] = 'system'
-                for data in datas.get_points():
-                    post_data['cpu_time'].append(data['time'][:19].replace('T', ' '))
-                    post_data['cpu'].append(data['cpu'])
-                    post_data['iowait'].append(data['iowait'])
-                    post_data['usr_cpu'].append(data['usr_cpu'])
-                    post_data['mem'].append(data['mem'])
-                    post_data['mem_available'].append(data['mem_available'])
-                    post_data['rec'].append(data['rec'])
-                    post_data['trans'].append(data['trans'])
-                    post_data['nic'].append(data['net'])
-                    post_data['io'].append(data[disk_n])
-                    post_data['disk_r'].append(data[disk_r])
-                    post_data['disk_w'].append(data[disk_w])
-                    post_data['disk_d'].append(data[disk_d])
-                    post_data['tcp'].append(data['tcp'])
-                    post_data['retrans'].append(data['retrans'])
+        else:
+            sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
+                  f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"{group}\" where room='{room}' host='{host}' and time>='{startTime}'"
+        logger.info(f'Execute sql: {sql}')
+        datas = settings.INFLUX_CLIENT.query(sql)
+        if datas:
+            for data in datas.get_points():
+                if data['time'] == startTime: continue
+                post_data['cpu_time'].append(data['c_time'])
+                post_data['cpu'].append(data['cpu'])
+                post_data['iowait'].append(data['iowait'])
+                # post_data['usr_cpu'].append(data['usr_cpu'])
+                post_data['mem'].append(data['mem'])
+                post_data['mem_available'].append(data['mem_available'])
+                post_data['jvm'].append(data['jvm'])
+                post_data['disk'].append(data['disk'])
+                post_data['disk_r'].append(data['disk_r'])
+                post_data['disk_w'].append(data['disk_w'])
+                # post_data['disk_d'].append(data['disk_d'])
+                post_data['rec'].append(data['rec'])
+                post_data['trans'].append(data['trans'])
+                post_data['net'].append(data['net'])
+                post_data['tcp'].append(data['tcp'])
+                post_data['retrans'].append(data['retrans'])
+                post_data['port_tcp'].append(data['port_tcp'])
+                post_data['close_wait'].append(data['close_wait'])
+                post_data['time_wait'].append(data['time_wait'])
+            post_data['time'] = datas.get_points()[-1]['time']
 
-            else:
-                res['message'] = 'No monitoring data is found, please check the disk number or time setting.'
-                res['code'] = 0
+        else:
+            res['message'] = 'No monitoring data is found, please check the time setting.'
+            res['code'] = 0
 
         res.update({'post_data': post_data})
         logger.info(f'Time consuming to query is {time.time() - s_time}')
-
-        # lines = get_lines(post_data)      # Calculate percentile, 75%, 90%, 95%, 99%
-        # res.update(lines)
 
     except Exception as err:
         logger.error(traceback.format_exc())
         res['message'] = str(err)
         res['code'] = 0
 
-    del connection, post_data
+    del post_data
     return res
 
 

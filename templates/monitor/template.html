@@ -11,46 +11,39 @@
         <link href="{% static 'monitor/css/toast.style.css' %}" rel="stylesheet">
 
         {% block scripts %}
-        <script src="{% static 'monitor/js/echarts.common.js' %}"></script>
         <script src="{% static 'monitor/js/jquery.js' %}"></script>
         <script src="{% static 'monitor/js/bootstrap.js' %}"></script>
         <script src="{% static 'monitor/js/toast.script.js' %}"></script>
-        <script src="{% static 'monitor/js/plot_port.js' %}"></script>
-        <script src="{% static 'monitor/js/plot_system.js' %}"></script>
+        {% endblock %}
+        {% block addcss %}
+        {% endblock %}
+        {% block addjs %}
         {% endblock %}
     </head>
 
     <body>
         {% block body %}
             {% block navbar %}
-                <div class="navbar navbar-inverse" role="navigation">
-                    <div style="float: left; margin-top: 12px; font-size: large; margin-right: 11%; margin-left: 1%;">
+                <div class="navbar navbar-inverse" role="navigation" style="min-height: 30px; height: 40px; margin-bottom: 15px;">
+                    <div style="float: left; margin-top: 8px; font-size: large; margin-right: 11%; margin-left: 1%;">
                         <a href="{% url 'home' %}" style="color:aliceblue; text-decoration: none;">Home</a>
                         <span style="color:aliceblue;">>></span>
                         <a href="{% url 'monitor:home' %}" style="color:aliceblue; text-decoration: none;">Monitor</a>
                     </div>
-                    <div class="container" style="float: left;">
-                        <div class="navbar-header">
-                            <a class="navbar-brand" href="{% url 'monitor:home' %}">
-                                Home
-                            </a>
+                    {% if not is_staff %}
+                        <div class="container" style="float: left; margin-right: 20px;">
+                            <div class="navbar-header">
+                                <a class="navbar-brand" style="padding: 10px;" href="{% url 'monitor:home' %}">
+                                    Home
+                                </a>
+                            </div>
+                            <div class="navbar-left">
+                                <a class="navbar-brand" style="padding: 10px;" href="{% url 'monitor:visualize' %}">
+                                    Visualize
+                                </a>
+                            </div>
                         </div>
-                        <!--div class="navbar-left">
-                            <a class="navbar-brand" href="{% url 'monitor:start_monitor' %}">
-                                MonitorList
-                            </a>
-                        </div-->
-                        <div class="navbar-left">
-                            <a class="navbar-brand" href="{% url 'monitor:visualize' %}">
-                                Visualize
-                            </a>
-                        </div>
-                        <!--div class="navbar-left">
-                            <a class="navbar-brand" href="{% url 'monitor:course_en' %}">
-                                Course
-                            </a>
-                        </div-->
-                    </div>
+                    {% endif %}
                 </div>
             {% endblock %}
             {% block content %}

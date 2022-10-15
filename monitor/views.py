@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.db.models import Q
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
-from shell.models import Servers, GroupIdentifier
+from shell.models import Servers, GroupIdentifier, ServerRoom
 from common.Email import sendEmail
 from common.Result import result
 from .server.request import Request
@@ -29,13 +29,12 @@ if settings.IS_MONITOR == 1:
 def home(request):
     if request.method == 'GET':
         try:
+            username = request.user.username
             groups = request.user.groups.all()
             servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
             agents = monitor_server.get_all_keys()
-            datas = []
-            for i in range(len(servers)):
-                if 'server_' + servers[i]['host'] in agents:
-                    datas.append(monitor_server.get_value_by_host('server_' + servers[i]['host']))
+            datas = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in agents]
+            logger.info(f'Get monitor servers list, operator: {username}')
             return render(request, 'monitor/home.html', context={'datas': datas})
         except:
             logger.error(traceback.format_exc())
@@ -53,10 +52,7 @@ def start_monitor(request):
             groups = request.user.groups.all()
             servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
             keys = monitor_server.get_all_keys()
-            datas = []
-            for i in range(len(servers)):
-                if 'server_' + servers[i]['host'] in keys:
-                    datas.append(monitor_server.get_value_by_host('server_' + servers[i]['host']))
+            datas = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
             monitor_list = monitor_server.get_monitor(hosts=datas)
             return render(request, 'monitor/runMonitor.html', context={'ip': datas, 'foos': monitor_list})
         except:
@@ -74,7 +70,7 @@ def get_monitor(request):
         ip = request.GET.get('host')
         monitor_list = []
         try:
-            port = monitor_server.get_value_by_host('server_' + ip, 'port')
+            port = monitor_server.get_value_by_host('Server_' + ip, 'port')
             post_data = {
                 'host': ip,
             }
@@ -109,24 +105,22 @@ def visualize(request):
     """
     if request.method == 'GET':
         try:
+            username = request.user.username
             spec_host = request.GET.get('host')
-            starttime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-600))
+            spec_group = request.GET.get('group')
+            spec_room = request.GET.get('room')
+            starttime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-1800))
             endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             groups = request.user.groups.all()
-            servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
-            keys = monitor_server.get_all_keys()
-            hosts = []
-            for i in range(len(servers)):
-                if 'server_' + servers[i]['host'] in keys:
-                    hosts.append(monitor_server.get_value_by_host('server_' + servers[i]['host']))
-
-            if hosts:
-                monitor_list = monitor_server.get_monitor(hosts=[hosts[0]])
-                ports = [mon['port'] for mon in monitor_list]
-            else:
-                ports = []
-            return render(request, 'monitor/visualize.html', context={'ip': hosts, 'port': ports, 'starttime': starttime,
-                'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec': spec_host})
+            servers = Servers.objects.values('host', 'room_id').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
+            room_list = [s['room_id'] for s in servers]
+            rooms = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
+            # keys = monitor_server.get_all_keys()
+            # hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
+            hosts = servers
+            logger.info(f'Access visualization page, operaotr: {username}')
+            return render(request, 'monitor/visualize.html', context={'ip': hosts, 'groups': groups,'rooms': rooms, 'starttime': starttime,
+                'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec_host': spec_host, 'spec_group': spec_group, 'spec_room': spec_room})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -153,9 +147,10 @@ def register_first(request):
             identifier = GroupIdentifier.objects.get(group_id=servers.group_id)
             datas.update({'roomId': servers.room.id, 'groupKey': identifier.key})
             monitor_server.agent_setter(datas)
-            return result(msg='registered successfully!', data={'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
-                                        'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD,
-                                        'database': settings.INFLUX_DATABASE, 'roomId': servers.room.id, 'groupKey': identifier.key})
+            return result(msg='registered successfully!', data={'influx': {'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
+                      'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE},
+                      'redis': {'host': settings.REDIS_HOST, 'port': settings.REDIS_PORT, 'password': settings.REDIS_PWD,
+                       'db': settings.REDIS_DB}, 'roomId': servers.room.id, 'groupKey': identifier.key})
         except Servers.DoesNotExist:
             logger.error(f"Host: {datas['host']} is not set in 'shell->server'")
             return result(code=1, msg=f"Host: {datas['host']} is not set in 'shell->server'")
@@ -187,7 +182,7 @@ def run_monitor(request):
                 'port': port,
                 'isRun': str(is_run)
             }
-            port = monitor_server.get_value_by_host('server_' + host, 'port')
+            port = monitor_server.get_value_by_host('Server_' + host, 'port')
             res = http.request('post', host, port, 'runMonitor', json=post_data)
 
             if res.status_code == 200:
@@ -205,46 +200,47 @@ def plot_monitor(request):
     Visualize
     """
     if request.method == 'POST':
+        username = request.user.username
         data = json.loads(request.body)
         host = data.get('host')
-        room_id = data.get('roomId')
+        group_id = data.get('group')
+        room_id = data.get('room')
         start_time = data.get('startTime')
         end_time = data.get('endTime')
-        type_ = data.get('type')
-        port_pid = data.get('port')
-        disk = data.get('disk')
         try:
-            if host:
-                servers = Servers.objects.filter(room_id=room_id, host=host)
-                server_dict = monitor_server.get_value_by_host('Server_' + host)
-                if servers and server_dict:
-                    hosts = [host]
-                else:
-                    hosts = []
-            else:
-                servers = Servers.objects.filter(room_id=room_id)
+            group_identifier = GroupIdentifier.objects.values('key').get(group_id=group_id)
+            if host == 'all':
+                res = draw_data_from_db(room=room_id, group=group_identifier['key'], host=host, startTime=start_time, endTime=end_time)
+                if res['code'] == 0:
+                    raise Exception(res['message'])
+                servers = Servers.objects.filter(group_id=group_id, room_id=room_id, is_monitor=1)
                 server_keys = monitor_server.get_all_keys()
                 hosts = [s.host for s in servers if 'Server_' + s.host in server_keys]
-            if hosts:
-                if type_ == 'port':
-                    res = draw_data_from_db(roomId=room_id, host=hosts, port=port_pid, startTime=start_time, endTime=end_time, disk=disk)
+                monitor_data = [monitor_server.get_value_by_host('Server_' + host) for host in hosts]
+                gc = [d['gc'] for d in monitor_data if d[0] > -1 and d[2] > -1]
+                if gc:
+                    ffgc = [d['ffgc'] for d in monitor_data]
+                    gc_data = [sum(r) for r in zip(*gc)]
+                    gc_data.append(min(ffgc))
+                    res.update({'gc': gc_data})
+                else:
+                    res['flag'] = 0
+                return JsonResponse(res)
+            else:
+                servers = Servers.objects.filter(group_id=group_id, room_id=room_id, host=host, is_monitor=1)
+                server_dict = monitor_server.get_value_by_host('Server_' + host)
+                if servers and server_dict:
+                    res = draw_data_from_db(room=room_id, group=group_identifier['key'], host=host, startTime=start_time, endTime=end_time)
                     if res['code'] == 0:
                         raise Exception(res['message'])
-                    res.update({'gc': monitor_server.get_gc(hosts, hosts['port'], f'getGC/{port_pid}')})
+                    monitor_data = monitor_server.get_value_by_host('Server_' + host)
+                    res.update({'gc': monitor_data['gc'].append(monitor_data['ffgc'])})
                     if res['gc'][0] == -1 and res['gc'][2] == -1:
                         res['flag'] = 0
                     return JsonResponse(res)
-
-                if type_ == 'system':
-                    res = draw_data_from_db(roomId=room_id, host=hosts, startTime=start_time, endTime=end_time, system=1, disk=disk)
-                    if res['code'] == 0:
-                        raise Exception(res['message'])
-                    res['flag'] = 0
-                    return JsonResponse(res)
-            else:
-                logger.error(f'Server room {room_id} has no registered agents.')
-                return result(code=1, msg=f'Server room {room_id} has no registered agents.')
-
+                else:
+                    logger.error(f'Server {host} has not monitored. operator: {username}')
+                    return result(code=1, msg=f'Server {host} has not monitored.')
         except Exception as err:
             logger.error(traceback.format_exc())
             return result(code=1, msg=str(err))
@@ -256,7 +252,7 @@ def get_port_disk(request):
     """
     if request.method == 'GET':
         host = request.GET.get('host')
-        server_info = monitor_server.get_value_by_host('server_' + host)
+        server_info = monitor_server.get_value_by_host('Server_' + host)
         if server_info:
             try:
                 disks = server_info['disk']
@@ -284,3 +280,54 @@ def notice(request):
         except Exception as err:
             logger.error(traceback.format_exc())
             return result(code=1, msg=err)
+
+
+def change_group(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            groups = request.user.groups.all()
+            group_id = request.GET.get('group')
+            # if group_id not in groups:
+            #     return result(code=1, msg='You have no permission to access this group ~')
+            servers = Servers.objects.values('host', 'room_id').filter(group_id=group_id, is_monitor=1)
+            # keys = monitor_server.get_all_keys()
+            # hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
+            hosts = [{'host':'127.0.0.1', 'cpu_usage':60, 'mem_usage': 40, 'io_usage': 50, 'net_usage': 60},
+                     {'host':'127.0.0.1', 'cpu_usage':80, 'mem_usage': 99, 'io_usage': 90, 'net_usage': 60},
+                     {'host':'127.0.0.1', 'cpu_usage':60, 'mem_usage': 60, 'io_usage': 100, 'net_usage': 60},
+                     {'host':'127.0.0.1', 'cpu_usage':50, 'mem_usage': 80, 'io_usage': 50, 'net_usage': 60},
+                     {'host':'127.0.0.1', 'cpu_usage':30, 'mem_usage': 40, 'io_usage': 99, 'net_usage': 60}]
+            hosts.sort(key=lambda x:(-x['cpu_usage'], -x['io_usage'], -x['net_usage'], -x['mem_usage']))
+            room_list = [s['room_id'] for s in servers]
+            rooms_obj = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
+            rooms = [{'id': r['id'], 'name': r['name']} for r in rooms_obj]
+            logger.info(f'Query all servers and rooms in group {group_id}, operator: {username}')
+            return result(msg='Query success ~', data={'hosts': hosts, 'rooms': rooms})
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Error, please try later ~')
+
+
+def change_room(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            group_id = request.GET.get('group')
+            room_id = request.GET.get('room')
+            servers = Servers.objects.values('host').filter(group_id=group_id, room_id=room_id, is_monitor=1)
+            # keys = monitor_server.get_all_keys()
+            # hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
+            hosts = [{'host': '127.0.0.1', 'cpu_usage': 60, 'mem_usage': 40, 'io_usage': 50, 'net_usage': 60},
+                     {'host': '127.0.0.1', 'cpu_usage': 80, 'mem_usage': 99, 'io_usage': 90, 'net_usage': 60},
+                     {'host': '127.0.0.1', 'cpu_usage': 60, 'mem_usage': 60, 'io_usage': 100, 'net_usage': 60},
+                     {'host': '127.0.0.1', 'cpu_usage': 50, 'mem_usage': 80, 'io_usage': 50, 'net_usage': 60},
+                     {'host': '127.0.0.1', 'cpu_usage': 30, 'mem_usage': 40, 'io_usage': 99, 'net_usage': 60}]
+            hosts.sort(key=lambda x: (-x['cpu_usage'], -x['io_usage'], -x['net_usage'], -x['mem_usage']))
+            logger.info(f'Query all servers in group {group_id} and room {room_id}, operator: {username}')
+            return result(msg='Query success ~', data={'hosts': hosts})
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Error, please try later ~')
+
+

@@ -23,7 +23,6 @@ class Task(object):
         self.task_id = None
         self.task_key = None
         self.plan_id = None
-        self.agent_num = 1
         self.number_samples = 1
         self.start_time = 0
         self.pattern = 'summary\+(\d+)in.*=(\d+.\d+)/sAvg:(\d+)Min:(\d+)Max:(\d+)Err:(\d+)\(.*Active:(\d+)Started'
@@ -36,7 +35,7 @@ class Task(object):
         self.redis_port = 6379
         self.redis_password = '123456'
         self.redis_db = 0
-        self.key_expire = 604800
+        # self.key_expire = 604800
         self.get_configure_from_server()
 
         self.jmeter_path = get_config('jmeterPath')
@@ -209,16 +208,13 @@ class Task(object):
 
         position = 0
         index = 0
-        flag = True
         with open(log_path, mode='r', encoding='utf-8') as f1:
             while True:
                 line = f1.readline().strip()
                 if 'Summariser: summary +' in line:
                     logger.info(f'JMeter run log - {self.task_id} - {line}')
                     if index > 1:   # 前两次结果不写入，等待summary输出频率稳定
-                        if flag:
-                            self.redis_client.set(self.task_id, self.agent_num, ex=self.key_expire)
-                            flag = False
+                        self.redis_client.set(f'{self.task_id}_host_{self.IP}', 1, ex=30)
                         c_time = line.split(',')[0].strip()
                         res = re.findall(self.pattern, line.replace(' ', ''))[0]
                         logger.debug(res)
@@ -255,7 +251,7 @@ class Task(object):
                     time.sleep(0.2)
 
     def write_to_redis(self, data):
-        total_num = int(self.redis_client.get(self.task_id))
+        total_num = len(self.redis_client.keys(self.task_id + '_host_*'))
         if self.redis_client.llen(self.task_key) == total_num:
             res = self.redis_client.lrange(self.task_key, 0, total_num - 1)
             self.redis_client.ltrim(self.task_key, total_num + 1, total_num + 1)  # remove all
@@ -315,10 +311,6 @@ class Task(object):
         try:
             self.connect_redis()
             self.connect_influx()
-            if self.redis_client.get(task_id):
-                self.agent_num = int(self.redis_client.get(task_id)) + 1
-            else:
-                self.agent_num = 1
             local_file_path = os.path.join(self.file_path, task_id + '.zip')
             target_file_path = os.path.join(self.file_path, task_id)
             self.download_file_to_path(data.get('filePath'), local_file_path)
@@ -412,7 +404,7 @@ class Task(object):
         while scheduler:
             s = scheduler[0]
             if s['timing'] < time.time():
-                _ = self.change_TPS(int(target_num * self.number_samples * s['value'] * 0.6 / self.agent_num))
+                _ = self.change_TPS(int(target_num * self.number_samples * s['value'] * 0.6 / len(self.redis_client.keys(self.task_id + '_host_*'))))
                 scheduler.pop(0)
             time.sleep(0.1)
         logger.info(f'Task {self.task_id} auto change TPS is completed ~')

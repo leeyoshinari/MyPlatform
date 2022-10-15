@@ -14,6 +14,7 @@ import configparser
 from pathlib import Path
 
 import redis
+import influxdb
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -230,13 +231,9 @@ INFLUX_PASSWORD = get_config('InfluxPassword')
 INFLUX_DATABASE = get_config('InfluxDatabase')
 INFLUX_EXPIRY_TIME = int(get_config('expiryTime'))
 INFLUX_SHARD_DURATION = get_config('shardDuration')
-if IS_MONITOR and IS_PERF:
-    import influxdb
-    # data expiration time
-    conn = influxdb.InfluxDBClient(INFLUX_HOST, INFLUX_PORT, INFLUX_USER_NAME, INFLUX_PASSWORD, INFLUX_DATABASE)
-    conn.query(f'alter retention policy "autogen" on "{INFLUX_DATABASE}" duration '
-               f'{INFLUX_EXPIRY_TIME}d REPLICATION 1 SHARD DURATION {INFLUX_SHARD_DURATION} default;')
-    del conn
+INFLUX_CLIENT = influxdb.InfluxDBClient(INFLUX_HOST, INFLUX_PORT, INFLUX_USER_NAME, INFLUX_PASSWORD, INFLUX_DATABASE)
+INFLUX_CLIENT.query(f'alter retention policy "autogen" on "{INFLUX_DATABASE}" duration '
+                    f'{INFLUX_EXPIRY_TIME}d REPLICATION 1 SHARD DURATION {INFLUX_SHARD_DURATION} default;')
 
 # Email
 EMAIL_SMTP = get_config('SMTP')

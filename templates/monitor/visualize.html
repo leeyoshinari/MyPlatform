@@ -1,227 +1,277 @@
 {% extends "monitor/template.html" %}
+{% load static %}
+
+{% block addcss %}
+    <link href="{% static 'monitor/css/visualize.css' %}" rel="stylesheet">
+{% endblock %}
+{% block addjs %}
+    <script src="{% static 'monitor/js/echarts.common.js' %}"></script>
+    <script src="{% static 'monitor/js/plot_system.js' %}"></script>
+{% endblock %}
 
 {% block content %}
-<div align="center" style="width: 100%; height: 27px;">
-    Server: <select id="host" style="width: 8%; height: 26px; margin-right: 20px;" onchange="show_port_disk()">
-            {% for foo in ip %}
-                {% if foo.host == spec %}
-                    <option value="{{ foo.host }}" selected>{{ foo.host }}</option>
+<div style="width: 96%; margin-left: 3%;">
+    Group: <select id="group" style="width: 8%; height: 26px; margin-right: 20px;" onchange="change_group();">
+            {% for foo in groups %}
+                {% if foo.id == spec_group %}
+                    <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
                 {% else %}
-                    <option value="{{ foo.host }}">{{ foo.host }}</option>
+                    <option value="{{ foo.id }}">{{ foo.name }}</option>
                 {% endif %}
             {% endfor %}
     </select>
-    Type: <select id="type" style="width: 6%; height: 26px; margin-right: 20px;" onchange="clear_port()">
-        <option value="system" selected="selected">System</option>
-        <option value="port">Port</option>
+    ServerRoom: <select id="room" style="width: 8%; height: 26px; margin-right: 20px;" onchange="change_room();">
+            {% for foo in rooms %}
+                {% if foo.id == spec_room %}
+                    <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
+                {% else %}
+                    <option value="{{ foo.id }}">{{ foo.name }}</option>
+                {% endif %}
+            {% endfor %}
     </select>
-    Port: <select id="port" style="width: 6%; height: 26px; margin-right: 20px;"></select>
-    Disk: <select id="disk" style="width: 6%; height: 26px; margin-right: 20px;"></select>
     StartTime: <input type="text" name="starttime" id="starttime" style="margin-right: 20px; width: 10%;" value="{{ starttime }}">
     EndTime: <input type="text" name="endtime" id="endtime" style="margin-right: 20px; width: 10%;" value="{{ endtime }}">
     <button type="button" id="MonitorList" style="width: 6%;">&nbsp;Visualize&nbsp;</button>
 </div>
-<div id="figure" style="width: 95%;height:1100px;margin: 0 auto;"></div>
-<div id="container" style="width: 89.911%; margin:0 auto">
-    <div id="container1" style="display: none;">
-        <h4 align="center">Percentiles</h4>
-        <table width="100%" cellspacing="0" border="1" cellpadding="6" align="center" id="percentile">
-            <tr style="align: center; margin: auto; background-color: #99CCFF">
-                <td width="10%" style="text-align: center;">Percentile</td>
-                <td width="10%" style="text-align: center;">CPU(%)</td>
-                <td width="10%" style="text-align: center;">Read(MB/s)</td>
-                <td width="10%" style="text-align: center;">Write(MB/s)</td>
-                <td width="10%" style="text-align: center;">IO(%)</td>
-                <td width="10%" style="text-align: center;">Recv(MB/s)</td>
-                <td width="10%" style="text-align: center;">Tran(MB/s)</td>
-                <td width="10%" style="text-align: center;">Net(%)</td>
-            </tr>
-            {% for row in row_name %}
+<div id="left-container"></div>
+<div class="figure-region">
+    <div id="figure" style="width: 95%; height:800px; margin: 0 auto;"></div>
+    <input id="start-time" type="text" value="" style="display: none;">
+    <!--div id="container" style="width: 89.911%; margin:0 auto">
+        <div id="container1" style="display: none;">
+            <h4 align="center">Percentiles</h4>
+            <table width="100%" cellspacing="0" border="1" cellpadding="6" align="center" id="percentile">
+                <tr style="align: center; margin: auto; background-color: #99CCFF">
+                    <td width="10%" style="text-align: center;">Percentile</td>
+                    <td width="10%" style="text-align: center;">CPU(%)</td>
+                    <td width="10%" style="text-align: center;">Read(MB/s)</td>
+                    <td width="10%" style="text-align: center;">Write(MB/s)</td>
+                    <td width="10%" style="text-align: center;">IO(%)</td>
+                    <td width="10%" style="text-align: center;">Recv(MB/s)</td>
+                    <td width="10%" style="text-align: center;">Tran(MB/s)</td>
+                    <td width="10%" style="text-align: center;">Net(%)</td>
+                </tr>
+{#                {% for row in row_name %}#}
+                    <tr align="center">
+{#                        <td>{{ row }}</td>#}
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+{#                {% endfor %}#}
+            </table>
+        </div>
+
+        <div id="container2" style="float: left; width: 36%; margin-left: 3%; margin-top: 15px; margin-bottom: 66px; display: none;">
+            <h4 align="center">Garbage Collection</h4>
+            <table width="90%" cellpadding="6" cellspacing="0" border="1" align="center" id="gc">
+                <tr style="align: center; margin: auto; background-color: #99CCFF">
+                    <td width="10%" style="text-align: center;">GC</td>
+                    <td width="10%" style="text-align: center;">Times</td>
+                    <td width="10%" style="text-align: center;">time(s)</td>
+                    <td width="10%" style="text-align: center;">Frequency(s/times)</td>
+                </tr>
                 <tr align="center">
-                    <td>{{ row }}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
+                    <td>YGC</td>
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
                 </tr>
-            {% endfor %}
-        </table>
-    </div>
-
-    <div id="container2" style="float: left; width: 36%; margin-left: 3%; margin-top: 15px; margin-bottom: 66px; display: none;">
-        <h4 align="center">Garbage Collection</h4>
-        <table width="90%" cellpadding="6" cellspacing="0" border="1" align="center" id="gc">
-            <tr style="align: center; margin: auto; background-color: #99CCFF">
-                <td width="10%" style="text-align: center;">GC</td>
-                <td width="10%" style="text-align: center;">Times</td>
-                <td width="10%" style="text-align: center;">time(s)</td>
-                <td width="10%" style="text-align: center;">Frequency(s/times)</td>
-            </tr>
-            <tr align="center">
-                <td>YGC</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-            <tr align="center">
-                <td>FGC</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-        </table>
-    </div>
+                <tr align="center">
+                    <td>FGC</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+            </table>
+        </div>
+    </div-->
 </div>
 <br><br>
-
+<div class="modal_cover"><div class="modal_gif"></div></div>
 {% endblock %}
 
 {% block myjs %}
 <script type="text/javascript">
-    let global_port = [];
-    $("#MonitorList").click(function () {
-        plot();
-    });
+    let specific_host = 'all';
+    let colors = ['fcf8e3', 'f7ecb5', 'f7e1b5', 'f0c948', 'f0ad4e', 'ec971f', 'd58512', 'ff3333', 'ff0000', 'c9302c', 'c9302c'];
+    let height = window.innerHeight - 107;
+    document.getElementById('left-container').style.height = height + 'px';
 
-    function plot() {
-        let port = 0;
-        let host = document.getElementById('host').value;
-        let type = document.getElementById('type').value;
-        let num = document.getElementById('port').value;
-        let disk = document.getElementById('disk').value;
+    $('#figure').removeAttr("_echarts_instance_").empty();
+    let figure = document.getElementById('figure');
+    // figure.style["height"] = '1800px';
+    let myChart = echarts.init(figure);
+    // let percentile = document.getElementById('container1');
+    // let table1 = document.getElementById('percentile');
+    // let gc = document.getElementById('container2');
+    // let table2 = document.getElementById('gc');
+
+    function refresh_server_list(data) {
+        let total_cpu = 0;
+        let total_mem = 0;
+        let total_io = 0;
+        let total_net = 0;
+        let s = ''
+        for (let i=0; i<data.length; i++) {
+            total_cpu += data[i]['cpu_usage'];
+            total_mem += data[i]['mem_usage'];
+            total_io += data[i]['io_usage'];
+            total_net += data[i]['net_usage'];
+            s += '<div class="host-card" style="background-color: #' + get_color(data[i]['cpu_usage'], data[i]['io_usage'], 0) + ';"><div style="margin: 5px;"><span class="host-ip">' + data[i]['host'] + '</span></div><div><div><span class="host-label">CPU: ' +
+                '<span class="host-value">' + data[i]['cpu_usage'].toFixed(2) + '%</span></span><span class="host-label">Mem: <span class="host-value">' + data[i]['mem_usage'].toFixed(2) + '%</span></span></div><div><span class="host-label">&nbsp;&nbsp;&nbsp;IO: ' +
+                '<span class="host-value">' + data[i]['io_usage'].toFixed(2) + '%</span></span><span class="host-label">Net: <span class="host-value">' + data[i]['net_usage'].toFixed(2) + '%</span></span></div></div></div>';
+        }
+        s = '<div class="host-card" style="background-color: #' + get_color(total_cpu / data.length, total_io / data.length, 0) + ';"><div style="margin: 5px;"><span class="host-ip">All Servers Average</span></div><div><div><span class="host-label">CPU: ' +
+            '<span class="host-value">' + (total_cpu / data.length).toFixed(2) + '%</span></span><span class="host-label">Mem: <span class="host-value">' + (total_mem / data.length).toFixed(2) + '%</span></span></div><div><span class="host-label">&nbsp;&nbsp;&nbsp;IO: ' +
+            '<span class="host-value">' + (total_io / data.length).toFixed(2) + '%</span></span><span class="host-label">Net: <span class="host-value">' + (total_net / data.length).toFixed(2) + '%</span></span></div></div></div>' + s;
+        document.getElementById('left-container').innerHTML = s;
+        let host_card = document.getElementsByClassName('host-card');
+        for (let i=0; i<host_card.length; i++) {
+            host_card[i].onclick = function () {
+                if (i === 0) {
+                    plot_init('all');
+                } else {
+                    plot_init(host_card[i].getElementsByClassName('host-ip')[0].innerText);
+                }
+            }
+        }
+    }
+
+    function plot_init(host) {
         let starttime = document.getElementById('starttime').value;
         let endtime = document.getElementById('endtime').value;
-        try{
-                port = parseInt(num, 10);
-                if (type === 'port' || type === 'pid') {
-                    if (isNaN(port) || port < 1) {
-                        $.Toast('Please select a port!', 'error');
-                        return;
-                    }
-                }
-        }
-        catch (err) {
-            $.Toast(err, 'error');
-            return;
-        }
+        let group = document.getElementById('group').value;
+        let room = document.getElementById('room').value;
 
         let post_data = {
             host: host,
-            type: type,
-            port: port,
-            disk: disk,
+            group: group,
+            room: room,
             startTime: starttime,
             endTime: endtime,
         };
         $(function visualize() {
             $.ajax({
                 type: 'post',
-                url: 'plotMonitor',
-                data: JSON.stringify(post_data),
+                url: '{% url 'monitor:plot_monitor' %}',
+                data: post_data,
                 dataType: "json",
-                contentType: 'application/json; charset=utf-8',
                 success: function (data) {
                     if (data['code'] === 1) {
                         $.Toast(data['message'], 'success');
+                        specific_host = host;
                     } else {
                         $.Toast(data['message'], 'error');
                         return;
                     }
+                    plot(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
+                        data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['jvm'], data['post_data']['disk'],
+                        data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['disk_d'], data['post_data']['rec'],
+                        data['post_data']['trans'], data['post_data']['net'], data['post_data']['tcp'], data['post_data']['retrans'],
+                        data['post_data']['port_tcp'], data['post_data']['close_wait'], data['post_data']['time_wait'], data['flag']);
+                    document.getElementById('start-time').value = data['post_data']['time'];
+                    document.getElementById('endtime').value = date_to_date(data['post_data']['time'], 28800);
+                }
+            });
+        })
+    }
+    function plot_delta() {
+        let starttime = document.getElementById('start-time').value;
+        let group = document.getElementById('group').value;
+        let room = document.getElementById('room').value;
 
-                    $('#figure').removeAttr("_echarts_instance_").empty();
-                    let figure = document.getElementById('figure');
-                    let percentile = document.getElementById('container1');
-                    let table1 = document.getElementById('percentile');
-                    let gc = document.getElementById('container2');
-                    let table2 = document.getElementById('gc');
-
-                    if (data['flag'] === 1) {
-                        percentile.style['float'] = 'left';
-                        percentile.style['margin-left'] = '6%';
-                        percentile.style['display'] = '';
-                        percentile.style['width'] = '50%';
-                        table1.style['width'] = '100%';
-                        gc.style['display'] = '';
-
-                        table2.rows[1].cells[1].innerHTML = data['gc'][0];
-                        table2.rows[1].cells[2].innerHTML = data['gc'][1];
-                        table2.rows[1].cells[3].innerHTML = data['gc'][4];
-                        table2.rows[2].cells[1].innerHTML = data['gc'][2];
-                        table2.rows[2].cells[2].innerHTML = data['gc'][3];
-                        table2.rows[2].cells[3].innerHTML = data['gc'][5];
-                    }
-                    else {
-                        percentile.style['float'] = '';
-                        percentile.style['margin-left'] = '';
-                        percentile.style['width'] = '';
-                        percentile.style['display'] = '';
-                        table1.style['width'] = '50%';
-                        gc.style['display'] = 'none';
-                    }
-
-                    if (data['post_data']['types'] === 'port') {
-                        figure.style["height"] = '1450px';
-                        let myChart = echarts.init(figure);
-                        plot_port(myChart, table1, table2, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['mem'],
-                        data['post_data']['jvm'], data['post_data']['tcp'], data['post_data']['time_wait'], data['post_data']['close_wait'],
-                        data['flag'], data['post_data']['io'], data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['nic']);
+        let post_data = {
+            host: specific_host,
+            group: group,
+            room: room,
+            startTime: starttime,
+        };
+        $(function visualize() {
+            $.ajax({
+                type: 'post',
+                url: '{% url 'monitor:plot_monitor' %}',
+                data: post_data,
+                dataType: "json",
+                success: function (data) {
+                    if (data['code'] === 1) {
+                        if (data['post_data']['cpu_time'].length > 0) {
+                            plot_delta(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
+                                data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['jvm'], data['post_data']['disk'],
+                                data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['disk_d'], data['post_data']['rec'],
+                                data['post_data']['trans'], data['post_data']['net'], data['post_data']['tcp'], data['post_data']['retrans'],
+                                data['post_data']['port_tcp'], data['post_data']['close_wait'], data['post_data']['time_wait'], data['flag']);
+                            document.getElementById('start-time').value = data['post_data']['time'];
+                            document.getElementById('endtime').value = date_to_date(data['post_data']['time'], 28800);
+                        }
                     } else {
-                        figure.style["height"] = '1800px';
-                        let myChart = echarts.init(figure);
-                        plot_system(myChart, table1, table2, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
-                            data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['io'],
-                            data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['disk_d'], data['post_data']['nic'],
-                            data['post_data']['rec'], data['post_data']['trans'], data['post_data']['tcp'], data['post_data']['retrans'],
-                            data['post_data']['time_wait']);
+                        $.Toast(data['message'], 'error');
+                        return;
                     }
-
                 }
             });
         })
     }
 
-    function show_port_disk() {
-        let host = document.getElementById('host').value;
-        let types = document.getElementById('type');
-        let portObj = document.getElementById('port');
-        let diskObj = document.getElementById('disk');
-        types.options[0].selected = true;
-        types.options[1].selected = false;
-        portObj.options.length = 0;
-        diskObj.options.length = 0;
+    let timer = setInterval(function () {
+        plot_delta();
+    }, 10000);
+
+    function get_color(v1, v2, v3) {
+        return colors[parseInt(Math.max(v1, v2, v3) / 10)];
+    }
+
+    $("#MonitorList").click(function () {
+        plot('all');
+    });
+    function change_group() {
+        let group_id = document.getElementById('group').value;
+        let roomObj = document.getElementById('room');
+        $('.modal_cover').css("display", "block");
+        $('.modal_gif').css("display", "block");
         $.ajax({
             type: 'get',
-            url: 'getPortAndDisk?host=' + host,
-            dataType: "json",
+            url: '{% url 'monitor:change_group' %}?group=' + group_id,
             success: function (data) {
-                if (data['code'] === 0){
-                    global_port = data['data']['port'];
-                    for (let i=0; i<data['data']['disk'].length; i++){
-                        diskObj.options.add(new Option(data['data']['disk'][i], data['data']['disk'][i]));
+                if (data['code'] === 0) {
+                    roomObj.options.length = 0;
+                    for (let i=0; i<data['data']['rooms'].length; i++) {
+                        roomObj.options.add(new Option(data['data']['rooms'][i]['name'], data['data']['rooms'][i]['id']));
                     }
-                }
-                else{
+                    refresh_server_list(data['data']['hosts']);
+                    $.Toast(data['msg'], 'success');
+                } else {
                     $.Toast(data['msg'], 'error');
-                    return;
                 }
+                $('.modal_cover').css("display", "none");
+                $('.modal_gif').css("display", "none");
             }
-        });
+        })
     }
 
-    function clear_port() {
-        let types = document.getElementById('type');
-        let portObj = document.getElementById('port');
-        portObj.options.length = 0;
-        if (types.value === 'port') {
-            for (let i=0; i<global_port.length; i++){
-                portObj.options.add(new Option(global_port[i], global_port[i]));
+    function change_room() {
+        let group_id = document.getElementById('group').value;
+        let room_id = document.getElementById('room').value;
+        $('.modal_cover').css("display", "block");
+        $('.modal_gif').css("display", "block");
+        $.ajax({
+            type: 'get',
+            url: '{% url 'monitor:change_room' %}?group=' + group_id + '&room=' + room_id,
+            success: function (data) {
+                if (data['code'] === 0) {
+                    refresh_server_list(data['data']['hosts']);
+                    $.Toast(data['msg'], 'success');
+                } else {
+                    $.Toast(data['msg'], 'error');
+                }
+                $('.modal_cover').css("display", "none");
+                $('.modal_gif').css("display", "none");
             }
-        }
+        })
     }
-
-    window.onload = function () {show_port_disk(); plot();}
 </script>
 {% endblock %}

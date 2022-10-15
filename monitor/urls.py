@@ -20,7 +20,7 @@ from . import views
 app_name = 'monitor'
 urlpatterns = [
     path('', views.home, name='home'),
-    path('startMonitor', views.start_monitor, name='start_monitor'),
+    # path('startMonitor', views.start_monitor, name='start_monitor'),
     # path('getMonitor', views.get_monitor, name='get_monitor'),
     path('visualize', views.visualize, name='visualize'),
     # path('course_zh_CN', views.course_zh_CN, name='course_zh_CN'),
@@ -28,6 +28,8 @@ urlpatterns = [
     path('register', views.registers, name='register'),
     path('register/first', views.register_first, name='register_first'),
     path('getPortAndDisk', views.get_port_disk, name='get_port_disk'),
-    path('runMonitor', views.run_monitor, name='run_monitor'),
+    # path('runMonitor', views.run_monitor, name='run_monitor'),
     path('plotMonitor', views.plot_monitor, name='plot_monitor'),
+    path('change/group', views.change_group, name='change_group'),
+    path('change/room', views.change_room, name='change_room'),
 ] if settings.IS_MONITOR == 1 else []

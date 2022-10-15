@@ -521,20 +521,15 @@ def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=N
     try:
         conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
                                        settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
-        if start_time and end_time:     # If there is a start time and an end time
-            pass
-        elif start_time is None and end_time is None:  # If the start time and end time do not exist, use the default time.
+        if not start_time:     # If there is a start time and an end time
             start_time = strfDeltaTime(1800)
-            end_time = strfTime()
-        else:   # If the end time does not exist, the current time is used
-            end_time = strfTime()
 
-        if delta == '520':
-            sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
-                  f"host='{host}' and time>'{start_time}'"
-        else:
+        if end_time:
             sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
                   f"host='{host}' and time>'{start_time}' and time<='{end_time}' tz('Asia/Shanghai')"
+        else:
+            sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
+                  f"host='{host}' and time>'{start_time}'"
 
         logger.info(f'Execute SQL: {sql}')
         datas = conn.query(sql)
