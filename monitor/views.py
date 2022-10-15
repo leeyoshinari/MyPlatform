@@ -201,12 +201,11 @@ def plot_monitor(request):
     """
     if request.method == 'POST':
         username = request.user.username
-        data = json.loads(request.body)
-        host = data.get('host')
-        group_id = data.get('group')
-        room_id = data.get('room')
-        start_time = data.get('startTime')
-        end_time = data.get('endTime')
+        host = request.POST.get('host')
+        group_id = request.POST.get('group')
+        room_id = request.POST.get('room')
+        start_time = request.POST.get('startTime')
+        end_time = request.POST.get('endTime')
         try:
             group_identifier = GroupIdentifier.objects.values('key').get(group_id=group_id)
             if host == 'all':

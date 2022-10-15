@@ -27,14 +27,14 @@
                     <td><strong style="font-weight: bold; color: #ff3333">{{ data.mem }}G/{{ data.mem_usage|floatformat:2 }}%</strong></td>
                 {% endif %}
                 {% if data.disk_usage < 70 %}
-                    <td>{{ data.disk }}/{{ data.disk_usage|floatformat:2 }}%</td>
+                    <td>{{ data.disk_size }}/{{ data.disk_usage|floatformat:2 }}%</td>
                 {% else %}
-                    <td><strong style="font-weight: bold; color: #ff3333">{{ data.disk }}/{{ data.disk_usage|floatformat:2 }}%</strong></td>
+                    <td><strong style="font-weight: bold; color: #ff3333">{{ data.disk_size }}/{{ data.disk_usage|floatformat:2 }}%</strong></td>
                 {% endif %}
-                {% if data.net == 1 %}
+                {% if data.network_speed == 1 %}
                     <td>None</td>
                 {% else %}
-                    <td>{{ data.net }}Mb/s</td>
+                    <td>{{ data.network_speed }}Mb/s</td>
                 {% endif %}
             </tr>
         {% endfor %}
