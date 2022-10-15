@@ -185,7 +185,7 @@
                 data: post_data,
                 dataType: "json",
                 success: function (data) {
-                    if (data['code'] === 1) {
+                    if (data['code'] === 0) {
                         $.Toast(data['message'], 'success');
                         specific_host = host;
                         plot(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
@@ -222,7 +222,7 @@
                 data: post_data,
                 dataType: "json",
                 success: function (data) {
-                    if (data['code'] === 1) {
+                    if (data['code'] === 0) {
                         if (data['post_data']['cpu_time'].length > 0) {
                             plot_delta(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
                                 data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['jvm'], data['post_data']['disk'],
@@ -289,7 +289,6 @@
             success: function (data) {
                 if (data['code'] === 0) {
                     refresh_server_list(data['data']['hosts']);
-                    $.Toast(data['msg'], 'success');
                 } else {
                     $.Toast(data['msg'], 'error');
                 }

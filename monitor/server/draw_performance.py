@@ -40,7 +40,7 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
         'time_wait': [],
     }
 
-    res = {'code': 1, 'flag': 1, 'message': 'Successful!'}
+    res = {'code': 0, 'flag': 1, 'message': 'Successful!'}
 
     try:
         if not startTime:     # If there is a start time and an end time
@@ -84,7 +84,7 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
 
         else:
             res['message'] = 'No monitoring data is found, please check the time setting.'
-            res['code'] = 0
+            res['code'] = 1
 
         res.update({'post_data': post_data})
         logger.info(f'Time consuming to query is {time.time() - s_time}')
@@ -92,7 +92,7 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
     except Exception as err:
         logger.error(traceback.format_exc())
         res['message'] = str(err)
-        res['code'] = 0
+        res['code'] = 1
 
     del post_data
     return res

@@ -119,7 +119,7 @@ def visualize(request):
             rooms = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
             keys = monitor_server.get_all_keys()
             hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
-            if hosts:
+            if not hosts:
                 logger.error(f'You have no servers to view, please check permission ~')
                 return render(request, '404.html')
             logger.info(f'Access visualization page, operaotr: {username}')
@@ -214,13 +214,13 @@ def plot_monitor(request):
             group_identifier = GroupIdentifier.objects.values('key').get(group_id=group_id)
             if host == 'all':
                 res = draw_data_from_db(room=room_id, group=group_identifier['key'], host=host, startTime=start_time, endTime=end_time)
-                if res['code'] == 0:
+                if res['code'] == 1:
                     raise Exception(res['message'])
                 servers = Servers.objects.filter(group_id=group_id, room_id=room_id)
                 server_keys = monitor_server.get_all_keys()
                 hosts = [s.host for s in servers if 'Server_' + s.host in server_keys]
                 monitor_data = [monitor_server.get_value_by_host('Server_' + host) for host in hosts]
-                gc = [d['gc'] for d in monitor_data if d[0] > -1 and d[2] > -1]
+                gc = [d['gc'] for d in monitor_data if d['gc'][0] > -1 and d['gc'][2] > -1]
                 if gc:
                     ffgc = [d['ffgc'] for d in monitor_data]
                     gc_data = [sum(r) for r in zip(*gc)]
@@ -234,7 +234,7 @@ def plot_monitor(request):
                 server_dict = monitor_server.get_value_by_host('Server_' + host)
                 if servers and server_dict:
                     res = draw_data_from_db(room=room_id, group=group_identifier['key'], host=host, startTime=start_time, endTime=end_time)
-                    if res['code'] == 0:
+                    if res['code'] == 1:
                         raise Exception(res['message'])
                     monitor_data = monitor_server.get_value_by_host('Server_' + host)
                     res.update({'gc': monitor_data['gc'].append(monitor_data['ffgc'])})
