@@ -164,7 +164,7 @@ def registers(request):
     """
     if request.method == 'POST':
         logger.debug(f'The request parameters are {request.body}')
-        monitor_server.agent_setter(request.body)
+        monitor_server.agent_setter(json.loads(request.body))
         return result(msg='registered successfully!')
 
 def run_monitor(request):

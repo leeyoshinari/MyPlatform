@@ -157,7 +157,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-EXCLUDE_URL = 'login|admin|register|changePwd'
+EXCLUDE_URL = 'login|register|changePwd'
 
 # log path
 BASE_LOG_DIR = os.path.join(BASE_DIR, "logs")
