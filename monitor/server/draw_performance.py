@@ -59,6 +59,7 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
         if datas:
             for data in datas.get_points():
                 if data['time'] == startTime: continue
+                last_time = data['time']
                 post_data['cpu_time'].append(data['c_time'])
                 post_data['cpu'].append(data['cpu'])
                 post_data['iowait'].append(data['iowait'])
@@ -78,7 +79,7 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
                 post_data['port_tcp'].append(data['port_tcp'])
                 post_data['close_wait'].append(data['close_wait'])
                 post_data['time_wait'].append(data['time_wait'])
-            post_data['time'] = datas.get_points()[-1]['time']
+            post_data['time'] = last_time
 
         else:
             res['message'] = 'No monitoring data is found, please check the time setting.'
