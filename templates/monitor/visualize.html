@@ -33,7 +33,7 @@
     EndTime: <input type="text" name="endtime" id="endtime" style="margin-right: 20px; width: 10%;" value="{{ endtime }}">
     <button type="button" id="MonitorList" style="width: 6%;">&nbsp;Visualize&nbsp;</button>
 </div>
-<div id="left-container">
+<div id="left-container" style="height: 1525px;">
     {% for h in ip %}
         <div class="host-card">
             <div style="margin: 5px;">
@@ -53,7 +53,7 @@
     {% endfor %}
 </div>
 <div class="figure-region">
-    <div id="figure" style="width: 99%; height:1650px; margin: 0 auto;"></div>
+    <div id="figure" style="width: 99%; height:1525px; margin: 0 auto;"></div>
     <input id="start-time" type="text" value="" style="display: none;">
     <!--div id="container" style="width: 89.911%; margin:0 auto">
         <div id="container1" style="display: none;">
@@ -117,13 +117,9 @@
 <script type="text/javascript">
     let specific_host = '{{ spec_host }}';
     let colors = ['fcf8e3', 'f7ecb5', 'f7e1b5', 'f0c948', 'f0ad4e', 'ec971f', 'd58512', 'ff3333', 'ff0000', 'c9302c', 'c9302c'];
-    let height = window.innerHeight - 107;
-    document.getElementById('left-container').style.height = height + 'px';
-    // document.getElementById('figure').style.height = height + 'px';
 
     $('#figure').removeAttr("_echarts_instance_").empty();
     let figure = document.getElementById('figure');
-    // figure.style["height"] = '1800px';
     let myChart = echarts.init(figure);
     // let percentile = document.getElementById('container1');
     // let table1 = document.getElementById('percentile');

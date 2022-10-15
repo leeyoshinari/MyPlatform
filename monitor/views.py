@@ -237,7 +237,8 @@ def plot_monitor(request):
                     if res['code'] == 1:
                         raise Exception(res['message'])
                     monitor_data = monitor_server.get_value_by_host('Server_' + host)
-                    res.update({'gc': monitor_data['gc'].append(monitor_data['ffgc'])})
+                    res.update({'gc': monitor_data['gc']})
+                    res['gc'].append(monitor_data['ffgc'])
                     if res['gc'][0] == -1 and res['gc'][2] == -1:
                         res['flag'] = 0
                     return JsonResponse(res)

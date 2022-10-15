@@ -516,7 +516,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
         let port_tcp_zoom = port_tcp.slice(start_index, end_index);
         let mem_title = 'Memory(G), Min Available:: ' + findMin(mem_a_zoom).toFixed(2) + 'G, Min Free:: ' + findMin(mem_zoom).toFixed(2) + 'G';
         if(is_jvm === 1) {
-            let jvm_zoom = jvm.size(start_index, end_index);
+            let jvm_zoom = jvm.slice(start_index, end_index);
             mem_title += ', Max JVM: ' + findMax(jvm_zoom).toFixed(2) + 'G';
         }
 
@@ -549,10 +549,10 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
         myChart.setOption({
             title: [
                 {text: 'CPU(%), Max: ' + cpu_sorted.slice(-1)[0].toFixed(2) + '%, 90%Line CPU: ' + cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2) + '%, 90%Line IOWait: ' + iowait_sorted[parseInt(0.9 * iowait_sorted.length)].toFixed(2) + '%', x: 'center', y: 5, textStyle: {fontSize: 13}},
-                {text: mem_title, x: 'center', y: 350, textStyle: {fontSize: 13}},
-                {text: 'IO, Max IO: ' + IO_sorted.slice(-1)[0].toFixed(2) + '%, Avg Read: ' + average(disk_r_sorted).toFixed(2) + 'MB/s, Avg Write: ' + average(disk_w_sorted).toFixed(2) + 'MB/s', x: 'center', y: 700, textStyle: {fontSize: 13}},
-                {text: 'NetWork, Max Net: ' + net_sorted.slice(-1)[0].toFixed(2) + '%, Avg Recv: ' + average(rec_sorted).toFixed(2) + 'MB/s, Avg Trans: ' + average(trans_sorted).toFixed(2) + 'MB/s', x: 'center', y: 1050, textStyle: {fontSize: 13}},
-                {text: 'TCP, Max System-TCP: ' + findMax(tcp_zoom) + ', Max Port-TCP: '+ findMax(port_tcp_zoom), x: 'center', y: 1400, textStyle: {fontSize: 13}}]});
+                {text: mem_title, x: 'center', y: 305, textStyle: {fontSize: 13}},
+                {text: 'IO, Max IO: ' + IO_sorted.slice(-1)[0].toFixed(2) + '%, Avg Read: ' + average(disk_r_sorted).toFixed(2) + 'MB/s, Avg Write: ' + average(disk_w_sorted).toFixed(2) + 'MB/s', x: 'center', y: 605, textStyle: {fontSize: 13}},
+                {text: 'NetWork, Max Net: ' + net_sorted.slice(-1)[0].toFixed(2) + '%, Avg Recv: ' + average(rec_sorted).toFixed(2) + 'MB/s, Avg Trans: ' + average(trans_sorted).toFixed(2) + 'MB/s', x: 'center', y: 905, textStyle: {fontSize: 13}},
+                {text: 'TCP, Max System-TCP: ' + findMax(tcp_zoom) + ', Max Port-TCP: '+ findMax(port_tcp_zoom), x: 'center', y: 1205, textStyle: {fontSize: 13}}]});
     });
 }
 
@@ -628,6 +628,10 @@ function plot_change(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available,
     options = myChart.getOption();
     for(let i=0; i<x_label.length; i++) {
         options.xAxis[0].data.push(x_label[i]);
+        options.xAxis[1].data.push(x_label[i]);
+        options.xAxis[2].data.push(x_label[i]);
+        options.xAxis[3].data.push(x_label[i]);
+        options.xAxis[4].data.push(x_label[i]);
         options.series[0].data.push(cpu[i]);
         options.series[1].data.push(iowait[i]);
         options.series[2].data.push(mem_available[i]);
