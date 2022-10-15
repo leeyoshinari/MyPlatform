@@ -57,4 +57,5 @@
     margin-left: 15%;
     margin-top: 20px;
     border-top: 1px solid gray;
+    overflow-y: auto;
 }

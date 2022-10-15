@@ -80,31 +80,31 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 left: '5%',
                 right: '5%',
                 top: 50,
-                height: 250
+                height: 200
             },
             {
                 left: '5%',
                 right: '5%',
-                top: 400,
-                height: 250
+                top: 350,
+                height: 200
             },
             {
                 left: '5%',
                 right: '5%',
-                top: 750,
-                height: 250
+                top: 650,
+                height: 200
             },
             {
                 left: '5%',
                 right: '5%',
-                top: 1100,
-                height: 250
+                top: 950,
+                height: 200
             },
             {
                 left: '5%',
                 right: '5%',
-                top: 1450,
-                height: 250
+                top: 1250,
+                height: 200
             }
         ],
 
@@ -126,25 +126,25 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
             {
                 data: ['Available', 'Free'],
                 x: 'center',
-                y: 375,
+                y: 325,
                 icon: 'line'
             },
             {
                 data: ['rMB/s', 'wMB/s', 'IO'],
                 x: 'center',
-                y: 725,
+                y: 625,
                 icon: 'line'
             },
             {
                 data: ['rMB/s', 'tMB/s', 'Net'],
                 x: 'center',
-                y: 1075,
+                y: 925,
                 icon: 'line'
             },
             {
                 data: ['TCP', 'TCP Retrans', 'Port-TCP', 'Time-Wait', 'Close-Wait'],
                 x: 'center',
-                y: 1425,
+                y: 1225,
                 icon: 'line'
             }
         ],

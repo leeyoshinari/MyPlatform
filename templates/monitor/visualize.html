@@ -35,7 +35,7 @@
 </div>
 <div id="left-container"></div>
 <div class="figure-region">
-    <div id="figure" style="width: 95%; height:800px; margin: 0 auto;"></div>
+    <div id="figure" style="width: 99%; height:800px; margin: 0 auto;"></div>
     <input id="start-time" type="text" value="" style="display: none;">
     <!--div id="container" style="width: 89.911%; margin:0 auto">
         <div id="container1" style="display: none;">
@@ -101,6 +101,7 @@
     let colors = ['fcf8e3', 'f7ecb5', 'f7e1b5', 'f0c948', 'f0ad4e', 'ec971f', 'd58512', 'ff3333', 'ff0000', 'c9302c', 'c9302c'];
     let height = window.innerHeight - 107;
     document.getElementById('left-container').style.height = height + 'px';
+    document.getElementById('figure').style.height = height + 'px';
 
     $('#figure').removeAttr("_echarts_instance_").empty();
     let figure = document.getElementById('figure');
@@ -144,6 +145,8 @@
     }
 
     function plot_init(host) {
+        $('.modal_cover').css("display", "block");
+        $('.modal_gif').css("display", "block");
         let starttime = document.getElementById('starttime').value;
         let endtime = document.getElementById('endtime').value;
         let group = document.getElementById('group').value;
@@ -177,6 +180,8 @@
                         data['post_data']['port_tcp'], data['post_data']['close_wait'], data['post_data']['time_wait'], data['flag']);
                     document.getElementById('start-time').value = data['post_data']['time'];
                     document.getElementById('endtime').value = date_to_date(data['post_data']['time'], 28800);
+                    $('.modal_cover').css("display", "none");
+                    $('.modal_gif').css("display", "none");
                 }
             });
         })
