@@ -281,9 +281,9 @@ def notice(request):
             }
             sendEmail(emailObj)
             return result(msg='Send Email Successful!')
-        except Exception as err:
+        except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg=err)
+            return result(code=1, msg='Send Email Failure!')
 
 
 def change_group(request):

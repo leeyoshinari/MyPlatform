@@ -30,6 +30,7 @@ urlpatterns = [
     path('getPortAndDisk', views.get_port_disk, name='get_port_disk'),
     # path('runMonitor', views.run_monitor, name='run_monitor'),
     path('plotMonitor', views.plot_monitor, name='plot_monitor'),
+    path('register/notification', views.notice, name='notification'),
     path('change/group', views.change_group, name='change_group'),
     path('change/room', views.change_room, name='change_room'),
 ] if settings.IS_MONITOR == 1 else []
