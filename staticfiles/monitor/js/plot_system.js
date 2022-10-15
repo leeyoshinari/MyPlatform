@@ -44,7 +44,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
             {
                 text: 'Memory(G), Min Available: ' + findMin(mem_available).toFixed(2) + 'G, Min Free: ' + findMin(mem).toFixed(2) + 'G',
                 x: 'center',
-                y: 350,
+                y: 305,
                 textStyle: {
                     fontSize: 13
                 }
@@ -52,7 +52,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
             {
                 text: 'IO, Max IO: ' + IO_sorted.slice(-1)[0].toFixed(2) + '%, Avg Read: ' + average(disk_r_sorted).toFixed(2) + 'MB/s, Avg Write: ' + average(disk_w_sorted).toFixed(2) + 'MB/s',
                 x: 'center',
-                y: 700,
+                y: 605,
                 textStyle: {
                     fontSize: 13
                 }
@@ -60,7 +60,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
             {
                 text: 'NetWork, Max Net: ' + net_sorted.slice(-1)[0].toFixed(2) + '%, Avg Recv: ' + average(rec_sorted).toFixed(2) + 'MB/s, Avg Trans: ' + average(trans_sorted).toFixed(2) + 'MB/s',
                 x: 'center',
-                y: 1050,
+                y: 905,
                 textStyle: {
                     fontSize: 13
                 }
@@ -68,7 +68,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
             {
                 text: 'TCP, Max System-TCP: ' + findMax(tcp) + ', Max Port-TCP: '+ findMax(port_tcp),
                 x: 'center',
-                y: 1400,
+                y: 1205,
                 textStyle: {
                     fontSize: 13
                 }
