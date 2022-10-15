@@ -224,7 +224,7 @@
                 success: function (data) {
                     if (data['code'] === 0) {
                         if (data['post_data']['cpu_time'].length > 0) {
-                            plot_delta(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
+                            plot_change(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
                                 data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['jvm'], data['post_data']['disk'],
                                 data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['disk_d'], data['post_data']['rec'],
                                 data['post_data']['trans'], data['post_data']['net'], data['post_data']['tcp'], data['post_data']['retrans'],

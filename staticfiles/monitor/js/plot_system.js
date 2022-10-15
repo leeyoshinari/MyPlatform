@@ -624,7 +624,7 @@ function format_date(D) {
     return D.getFullYear() + '-' + month + '-' + strDate + ' ' + hours + ':' + minutes + ':' + seconds;
 }
 
-function plot_delta(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, IO, disk_r, disk_w, disk_d, rec, trans, net, tcp, retrans, port_tcp, close_wait, time_wait, is_jvm) {
+function plot_change(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, IO, disk_r, disk_w, disk_d, rec, trans, net, tcp, retrans, port_tcp, close_wait, time_wait, is_jvm) {
     options = myChart.getOption();
     for(let i=0; i<x_label.length; i++) {
         options.xAxis[0].data.push(x_label[i]);
