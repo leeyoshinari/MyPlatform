@@ -48,7 +48,9 @@ def home(request):
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get test plan failure ~')
+            return render(request, '404.html')
+    else:
+        return render(request, '404.html')
 
 def edit(request):
     if request.method == 'POST':
@@ -84,7 +86,7 @@ def edit(request):
                                                                             'current_time': strfTime()})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get test plan failure ~')
+            return render(request, '404.html')
 
 
 def upload_file(request):

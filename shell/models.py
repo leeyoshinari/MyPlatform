@@ -42,7 +42,6 @@ class Servers(models.Model):
     arch= models.CharField(max_length=10, verbose_name='system architecture')
     mem = models.FloatField(default=0.0, verbose_name='memory(G)')
     disk = models.CharField(max_length=8, verbose_name='disk')
-    is_monitor = models.IntegerField(default=0, verbose_name='whether server is monitored, 0-pending monitor，1-monitoring')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
     update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
     operator = models.CharField(max_length=50, verbose_name='operator')

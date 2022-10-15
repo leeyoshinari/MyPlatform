@@ -33,7 +33,25 @@
     EndTime: <input type="text" name="endtime" id="endtime" style="margin-right: 20px; width: 10%;" value="{{ endtime }}">
     <button type="button" id="MonitorList" style="width: 6%;">&nbsp;Visualize&nbsp;</button>
 </div>
-<div id="left-container"></div>
+<div id="left-container">
+    {% for h in ip %}
+        <div class="host-card">
+            <div style="margin: 5px;">
+                <span class="host-ip">{{ h.host }}</span>
+            </div>
+            <div>
+                <div>
+                    <span class="host-label">CPU: <span class="host-value">{{ h.cpu_usage|floatformat:2 }}%</span></span>
+                    <span class="host-label">Mem: <span class="host-value">{{ h.mem_usage|floatformat:2 }}%</span></span>
+                </div>
+                <div>
+                    <span class="host-label">&nbsp;&nbsp;&nbsp;IO: <span class="host-value">{{ h.io_usage|floatformat:2 }}%</span></span>
+                    <span class="host-label">Net: <span class="host-value">{{ h.net_usage|floatformat:2 }}%</span></span>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 <div class="figure-region">
     <div id="figure" style="width: 99%; height:800px; margin: 0 auto;"></div>
     <input id="start-time" type="text" value="" style="display: none;">
@@ -97,7 +115,7 @@
 
 {% block myjs %}
 <script type="text/javascript">
-    let specific_host = 'all';
+    let specific_host = '{{ spec_host }}';
     let colors = ['fcf8e3', 'f7ecb5', 'f7e1b5', 'f0c948', 'f0ad4e', 'ec971f', 'd58512', 'ff3333', 'ff0000', 'c9302c', 'c9302c'];
     let height = window.innerHeight - 107;
     document.getElementById('left-container').style.height = height + 'px';
@@ -111,7 +129,7 @@
     // let table1 = document.getElementById('percentile');
     // let gc = document.getElementById('container2');
     // let table2 = document.getElementById('gc');
-    plot_init('all');
+    plot_init(specific_host);
 
     function refresh_server_list(data) {
         let total_cpu = 0;

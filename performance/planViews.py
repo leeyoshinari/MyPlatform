@@ -46,7 +46,9 @@ def home(request):
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get test plan failure ~')
+            return render(request, '404.html')
+    else:
+        return render(request, '404.html')
 
 def add(request):
     if request.method == 'POST':
@@ -115,7 +117,7 @@ def edit(request):
                                                                           'current_time': strfTime()})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get test plan failure ~')
+            return render(request, '404.html')
 
 def edit_variable(request):
     if request.method == 'POST':
@@ -141,7 +143,7 @@ def edit_variable(request):
             return render(request, 'performance/plan/variable.html', context={'variables': variables})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get variables failure ~')
+            return render(request, '404.html')
 
 
 def upload_file(request):
@@ -208,24 +210,24 @@ def copy_plan(request):
             return result(code=1, msg='Copy Plan Failure ~')
 
 
-def get_server(request):
-    if request.method == 'GET':
-        try:
-            username = request.user.username
-            groups = request.user.groups.all()
-            servers = Servers.objects.filter(group__in=groups).order_by('-id')
-            all_keys = get_all_keys()
-            datas = []
-            status = []
-            for server in servers:
-                if 'jmeterServer_' + server.host in all_keys:
-                    datas.append(server)
-                    status.append(get_value_by_host('jmeterServer_' + server.host, 'status'))
-            logger.info(f'Get pressure server info success, operator: {username}')
-            return render(request, 'performance/plan/server.html', context={'servers': datas, 'status': status})
-        except:
-            logger.error(traceback.format_exc())
-            return result(code=1, msg='Get server info Error ~')
+# def get_server(request):
+#     if request.method == 'GET':
+#         try:
+#             username = request.user.username
+#             groups = request.user.groups.all()
+#             servers = Servers.objects.filter(group__in=groups).order_by('-id')
+#             all_keys = get_all_keys()
+#             datas = []
+#             status = []
+#             for server in servers:
+#                 if 'jmeterServer_' + server.host in all_keys:
+#                     datas.append(server)
+#                     status.append(get_value_by_host('jmeterServer_' + server.host, 'status'))
+#             logger.info(f'Get pressure server info success, operator: {username}')
+#             return render(request, 'performance/plan/server.html', context={'servers': datas, 'status': status})
+#         except:
+#             logger.error(traceback.format_exc())
+#             return result(code=1, msg='Get server info Error ~')
 
 def get_idle_server_num(is_name=False):
     result = {}

@@ -90,6 +90,8 @@ def home(request):
         return render(request, 'home.html', context={'username': username, 'is_monitor': settings.IS_MONITOR,
                                                      'is_mitm': settings.IS_MITMPROXY, 'is_staff': is_staff,
                                                      'is_perf': settings.IS_PERF})
+    else:
+        return render(request, '404.html')
 
 
 def course(request):
@@ -99,3 +101,5 @@ def course(request):
             return render(request, 'course.html')
         else:
             return render(request, 'course_en.html')
+    else:
+        return render(request, '404.html')

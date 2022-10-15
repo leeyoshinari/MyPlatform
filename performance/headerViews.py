@@ -39,7 +39,9 @@ def home(request):
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get controller failure ~')
+            return render(request, '404.html')
+    else:
+        return render(request, '404.html')
 
 
 def add_header(request):

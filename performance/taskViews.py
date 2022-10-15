@@ -47,7 +47,9 @@ def home(request):
                           'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get task Failure ~')
+            return render(request, '404.html')
+    else:
+        return render(request, '404.html')
 
 
 def register(request):
@@ -429,7 +431,9 @@ def view_task_detail(request):
                 return render(request, 'performance/task/detail.html', context={'tasks': None})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get task detail error ~')
+            return render(request, '404.html')
+    else:
+        render(request, '404.html')
 
 
 def get_running_server(request):

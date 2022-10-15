@@ -52,11 +52,11 @@
                     <td>
                         <a target="_blank" href="{% url 'shell:open_shell' %}?ip={{ host.host }}">OpenShell</a>
                         {% if isMonitor == 1 %}
-                            {% if host.is_monitor == 0 %}
-                                <a onclick="deploy('{{ host.host }}')">DeployMonitor</a>
-                            {% else %}
-                                <a target="_blank" href="{% url 'monitor:visualize' %}?host={{ host.host }}">ViewMonitor</a>
+                            {% if host.host in keys %}
+                                <a target="_blank" href="{% url 'monitor:visualize' %}?group={{ host.group.id }}&room={{ host.room.id }}&host={{ host.host }}">ViewMonitor</a>
                                 <a onclick="stop_mon('{{ host.host }}')">StopMonitor</a>
+                            {% else %}
+                                <a onclick="deploy('{{ host.host }}')">DeployMonitor</a>
                             {% endif %}
                         {% endif %}
                         {% if is_staff %}

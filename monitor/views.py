@@ -15,15 +15,13 @@ from common.Email import sendEmail
 from common.Result import result
 from .server.request import Request
 from .server.process import Process
+from .server.draw_performance import draw_data_from_db
 
 
 logger = logging.getLogger('django')
 
-if settings.IS_MONITOR == 1:
-    from .server.draw_performance import draw_data_from_db
-    # from .server.draw_performance1 import draw_data_from_db
-    monitor_server = Process()
-    http = Request()
+monitor_server = Process()
+http = Request()
 
 
 def home(request):
@@ -31,7 +29,7 @@ def home(request):
         try:
             username = request.user.username
             groups = request.user.groups.all()
-            servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
+            servers = Servers.objects.values('host').filter(group__in=groups).order_by('-id')
             agents = monitor_server.get_all_keys()
             datas = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in agents]
             logger.info(f'Get monitor servers list, operator: {username}')
@@ -50,7 +48,7 @@ def start_monitor(request):
     if request.method == 'GET':
         try:
             groups = request.user.groups.all()
-            servers = Servers.objects.values('host').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
+            servers = Servers.objects.values('host').filter(group__in=groups).order_by('-id')
             keys = monitor_server.get_all_keys()
             datas = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
             monitor_list = monitor_server.get_monitor(hosts=datas)
@@ -107,17 +105,20 @@ def visualize(request):
         try:
             username = request.user.username
             spec_host = request.GET.get('host')
+            spec_host = spec_host if spec_host else 'all'
             spec_group = request.GET.get('group')
             spec_room = request.GET.get('room')
             starttime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-1800))
             endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             groups = request.user.groups.all()
-            servers = Servers.objects.values('host', 'room_id').filter(Q(is_monitor=1), Q(group__in=groups)).order_by('-id')
+            if spec_group:
+                servers = Servers.objects.values('host', 'room_id').filter(group_id=spec_group).order_by('-id')
+            else:
+                servers = Servers.objects.values('host', 'room_id').filter(group__in=groups).order_by('-id')
             room_list = [s['room_id'] for s in servers]
             rooms = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
-            # keys = monitor_server.get_all_keys()
-            # hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
-            hosts = servers
+            keys = monitor_server.get_all_keys()
+            hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
             logger.info(f'Access visualization page, operaotr: {username}')
             return render(request, 'monitor/visualize.html', context={'ip': hosts, 'groups': groups,'rooms': rooms, 'starttime': starttime,
                 'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec_host': spec_host, 'spec_group': spec_group, 'spec_room': spec_room})
@@ -212,7 +213,7 @@ def plot_monitor(request):
                 res = draw_data_from_db(room=room_id, group=group_identifier['key'], host=host, startTime=start_time, endTime=end_time)
                 if res['code'] == 0:
                     raise Exception(res['message'])
-                servers = Servers.objects.filter(group_id=group_id, room_id=room_id, is_monitor=1)
+                servers = Servers.objects.filter(group_id=group_id, room_id=room_id)
                 server_keys = monitor_server.get_all_keys()
                 hosts = [s.host for s in servers if 'Server_' + s.host in server_keys]
                 monitor_data = [monitor_server.get_value_by_host('Server_' + host) for host in hosts]
@@ -226,7 +227,7 @@ def plot_monitor(request):
                     res['flag'] = 0
                 return JsonResponse(res)
             else:
-                servers = Servers.objects.filter(group_id=group_id, room_id=room_id, host=host, is_monitor=1)
+                servers = Servers.objects.filter(group_id=group_id, room_id=room_id, host=host)
                 server_dict = monitor_server.get_value_by_host('Server_' + host)
                 if servers and server_dict:
                     res = draw_data_from_db(room=room_id, group=group_identifier['key'], host=host, startTime=start_time, endTime=end_time)
@@ -289,14 +290,9 @@ def change_group(request):
             group_id = request.GET.get('group')
             # if group_id not in groups:
             #     return result(code=1, msg='You have no permission to access this group ~')
-            servers = Servers.objects.values('host', 'room_id').filter(group_id=group_id, is_monitor=1)
-            # keys = monitor_server.get_all_keys()
-            # hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
-            hosts = [{'host':'127.0.0.1', 'cpu_usage':60, 'mem_usage': 40, 'io_usage': 50, 'net_usage': 60},
-                     {'host':'127.0.0.1', 'cpu_usage':80, 'mem_usage': 99, 'io_usage': 90, 'net_usage': 60},
-                     {'host':'127.0.0.1', 'cpu_usage':60, 'mem_usage': 60, 'io_usage': 100, 'net_usage': 60},
-                     {'host':'127.0.0.1', 'cpu_usage':50, 'mem_usage': 80, 'io_usage': 50, 'net_usage': 60},
-                     {'host':'127.0.0.1', 'cpu_usage':30, 'mem_usage': 40, 'io_usage': 99, 'net_usage': 60}]
+            servers = Servers.objects.values('host', 'room_id').filter(group_id=group_id)
+            keys = monitor_server.get_all_keys()
+            hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
             hosts.sort(key=lambda x:(-x['cpu_usage'], -x['io_usage'], -x['net_usage'], -x['mem_usage']))
             room_list = [s['room_id'] for s in servers]
             rooms_obj = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
@@ -314,14 +310,9 @@ def change_room(request):
             username = request.user.username
             group_id = request.GET.get('group')
             room_id = request.GET.get('room')
-            servers = Servers.objects.values('host').filter(group_id=group_id, room_id=room_id, is_monitor=1)
-            # keys = monitor_server.get_all_keys()
-            # hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
-            hosts = [{'host': '127.0.0.1', 'cpu_usage': 60, 'mem_usage': 40, 'io_usage': 50, 'net_usage': 60},
-                     {'host': '127.0.0.1', 'cpu_usage': 80, 'mem_usage': 99, 'io_usage': 90, 'net_usage': 60},
-                     {'host': '127.0.0.1', 'cpu_usage': 60, 'mem_usage': 60, 'io_usage': 100, 'net_usage': 60},
-                     {'host': '127.0.0.1', 'cpu_usage': 50, 'mem_usage': 80, 'io_usage': 50, 'net_usage': 60},
-                     {'host': '127.0.0.1', 'cpu_usage': 30, 'mem_usage': 40, 'io_usage': 99, 'net_usage': 60}]
+            servers = Servers.objects.values('host').filter(group_id=group_id, room_id=room_id)
+            keys = monitor_server.get_all_keys()
+            hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
             hosts.sort(key=lambda x: (-x['cpu_usage'], -x['io_usage'], -x['net_usage'], -x['mem_usage']))
             logger.info(f'Query all servers in group {group_id} and room {room_id}, operator: {username}')
             return result(msg='Query success ~', data={'hosts': hosts})

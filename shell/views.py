@@ -40,13 +40,16 @@ def index(request):
             rooms = ServerRoom.objects.all().order_by('-create_time')
             total_num = Servers.objects.filter(group__in=groups).count()
             servers = Servers.objects.filter(group__in=groups).order_by('-id')[(page - 1) * page_size: page * page_size]
+            monitor_keys = settings.REDIS.keys('Server_*')
             logger.info(f'access shell index.html. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page, 'isMonitor': settings.IS_MONITOR,
+            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'keys': monitor_keys, 'page': page, 'isMonitor': settings.IS_MONITOR,
                                                                 'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1,
                                                                 'rooms': rooms, 'is_staff': is_staff})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Access shell index.html failure ~')
+            return render(request, '404.html')
+    else:
+        return render(request, '404.html')
 
 
 def add_server(request):
@@ -86,7 +89,7 @@ def add_server(request):
 
             server = Servers.objects.create(id = current_time, group_id = group_id, name=server_name, room_id=room_id,
                                    host=server_ip, port = int(port), user = sshname, pwd = password, system = system,
-                                   cpu = cpu, arch=arch, mem = mem, disk = disk, is_monitor=0, operator=username)
+                                   cpu = cpu, arch=arch, mem = mem, disk = disk, operator=username)
             logger.info(f'Add server success. ip: {server.host}, operator: {username}, time: {server.id}')
             return result(code=0, msg='Add server success ~ ')
         except Exception as err:
@@ -259,6 +262,8 @@ def search_server(request):
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
+    else:
+        return render(request, '404.html')
 
 
 def openssh(request):
@@ -345,26 +350,30 @@ def download_file(request):
             del upload_obj
             logger.error(traceback.format_exc())
             return render(request, '404.html')
+    else:
+        return render(request, '404.html')
 
 def deploy_monitor(request):
     if request.method == 'GET':
         try:
             username = request.user.username
             host = request.GET.get('host')
-            servers = Servers.objects.get(Q(host=host), Q(is_monitor=0))
-            local_file = f"{servers.system.split(' ')[0].strip().lower()}_{servers.arch.strip().lower()}_agent.zip"
-            local_file_path = os.path.join('monitor','agent', local_file)
-            if not os.path.exists(local_file_path):
-                return result(code=1, msg=f'{local_file} is not exist ~')
-            res = deploy_mon(host = servers.host, port = servers.port, user = servers.user, pwd = servers.pwd,
-                             current_time = servers.id, local_path=local_file_path, file_name=local_file)
-            if res['code'] > 0:
-                return result(code=1, msg=res['msg'])
+            if not settings.REDIS.keys('Server_' + host):
+                servers = Servers.objects.get(host=host)
+                local_file = f"{servers.system.split(' ')[0].strip().lower()}_{servers.arch.strip().lower()}_agent.zip"
+                local_file_path = os.path.join('monitor','agent', local_file)
+                if not os.path.exists(local_file_path):
+                    return result(code=1, msg=f'{local_file} is not exist ~')
+                res = deploy_mon(host = servers.host, port = servers.port, user = servers.user, pwd = servers.pwd,
+                                 current_time = servers.id, local_path=local_file_path, file_name=local_file)
+                if res['code'] > 0:
+                    return result(code=1, msg=res['msg'])
+                else:
+                    logger.info(f'deploy monitor success, file: {local_file_path}, operator: {username}')
+                    return result(msg='deploy monitor success ~')
             else:
-                servers.is_monitor = 1
-                servers.save()
-                logger.info(f'deploy monitor success, file: {local_file_path}, operator: {username}')
-                return result(msg='deploy monitor success ~')
+                logger.warning(f'Host {host} has been monitored ~')
+                return result(code=1, msg=f'Host {host} has been monitored ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='deploy monitor failure ~ ')
@@ -375,16 +384,18 @@ def stop_monitor(request):
         try:
             username = request.user.username
             host = request.GET.get('host')
-            servers = Servers.objects.get(Q(host=host), Q(is_monitor=1))
-            res = stop_mon(host=servers.host, port=servers.port, user=servers.user, pwd=servers.pwd,
-                             current_time=servers.id)
-            if res['code'] > 0:
-                return result(code=1, msg=res['msg'])
+            if settings.REDIS.keys('Server_' + host):
+                servers = Servers.objects.get(host=host)
+                res = stop_mon(host=servers.host, port=servers.port, user=servers.user, pwd=servers.pwd,
+                                 current_time=servers.id)
+                if res['code'] > 0:
+                    return result(code=1, msg=res['msg'])
+                else:
+                    logger.info(f'stop monitor success, operator: {username}')
+                    return result(msg='stop monitor success ~')
             else:
-                servers.is_monitor = 0
-                servers.save()
-                logger.info(f'stop monitor success, operator: {username}')
-                return result(msg='stop monitor success ~')
+                logger.warning(f'Host {host} has not been monitored ~')
+                return result(code=1, msg=f'Host {host} has not been monitored ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='stop monitor failure, please try again ~ ')

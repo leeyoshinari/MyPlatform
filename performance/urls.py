@@ -28,7 +28,7 @@ urlpatterns = [
     path('home', taskViews.home, name='home'),
     path('delete', views.delete, name='delete'),
     path('setStatus', views.is_valid, name='set_status'),
-    path('server', planViews.get_server, name='get_server'),
+    # path('server', planViews.get_server, name='get_server'),
 
     path('plan', planViews.home, name='plan_home'),
     path('plan/add', planViews.add, name='plan_add'),

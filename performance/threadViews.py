@@ -48,7 +48,9 @@ def home(request):
                                                                      'key_word': key_word, 'plan_id': plan_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get test plan failure ~')
+            return render(request, '404.html')
+    else:
+        return render(request, '404.html')
 
 
 def add_group(request):
@@ -165,7 +167,7 @@ def edit_cookie(request):
             return render(request, 'performance/threadGroup/cookie.html', context={'cookies': cookies})
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='Get cookies failure ~')
+            return render(request, '404.html')
 
 
 def copy_group(request):
