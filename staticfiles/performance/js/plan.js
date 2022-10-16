@@ -298,6 +298,13 @@ function add_task(url, start_url, location_url, plan_id) {
             if(data['code'] === 0) {
                 if(data['data']['flag'] === 0) {
                     $.Toast(data['msg'], 'success');
+                    $.ajax({
+                        type: 'get',
+                        url: 'task/autoRun',
+                        dataType: 'json',
+                        success: function (data) {
+                        }
+                    })
                     $('.modal_cover').css("display", "none");
                     $('.modal_gif').css("display", "none");
                     return;

@@ -69,6 +69,10 @@ def is_valid(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Set failure ~')
 
+def request_auto_run(request):
+    if request.method == 'GET':
+        start_thread(auto_run_task, ())
+        return result(msg='success')
 
 def auto_run_task():
     global is_auto_run
