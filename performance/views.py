@@ -16,6 +16,7 @@ from common.multiThread import start_thread
 
 
 logger = logging.getLogger('django')
+is_auto_run = False
 
 
 def delete(request):
@@ -70,29 +71,37 @@ def is_valid(request):
 
 
 def auto_run_task():
-    while True:
-        try:
-            tasks = PerformanceTestTask.objects.filter(plan__schedule=1, status=0)
-            logger.info(f'Total auto test task is {len(tasks)}')
-            for task in tasks:
-                scheduler = task.plan.time_setting
-                if task.plan.type == 0 and -30 <= toTimeStamp(scheduler[0]['timing']) - time.time() <= 10:
-                    start_test(task.id, None, 'admin')
-                    logger.info(f'Task {task.id} - {task.plan.name} start success, type: Thread, operator: admin.')
-                if task.plan.type == 1 and -60 <= toTimeStamp(scheduler[0]['timing'], delta=-600) - time.time() <= 10:
-                    start_test(task.id, None, 'admin')
-                    logger.info(f'Task {task.id} - {task.plan.name} start success, type: TPS, operator: admin.')
-                if task.plan.type == 0 and toTimeStamp(scheduler[0]['timing']) - time.time() < -60:
-                    task.status = 4
-                    task.save()
-                    logger.info(f'Modify task {task.id} status to Cancel ~')
-                if task.plan.type == 1 and toTimeStamp(scheduler[0]['timing'], delta=-600) - time.time() < -60:
-                    task.status = 4
-                    task.save()
-                    logger.info(f'Modify task {task.id} status to Cancel ~')
-        except:
-            logger.error(traceback.format_exc())
-        time.sleep(30)
-
-
-start_thread(auto_run_task, ())
+    global is_auto_run
+    if not is_auto_run:
+        index = 1
+        is_auto_run = True
+        while True:
+            try:
+                tasks = PerformanceTestTask.objects.filter(plan__schedule=1, status=0)
+                logger.info(f'Total auto test task is {len(tasks)}')
+                if len(tasks) == 0:
+                    index += 1
+                if index > 5:
+                    is_auto_run = False
+                    break
+                for task in tasks:
+                    scheduler = task.plan.time_setting
+                    if task.plan.type == 0 and -30 <= toTimeStamp(scheduler[0]['timing']) - time.time() <= 10:
+                        start_test(task.id, None, 'admin')
+                        logger.info(f'Task {task.id} - {task.plan.name} start success, type: Thread, operator: admin.')
+                    if task.plan.type == 1 and -60 <= toTimeStamp(scheduler[0]['timing'], delta=-600) - time.time() <= 10:
+                        start_test(task.id, None, 'admin')
+                        logger.info(f'Task {task.id} - {task.plan.name} start success, type: TPS, operator: admin.')
+                    if task.plan.type == 0 and toTimeStamp(scheduler[0]['timing']) - time.time() < -60:
+                        task.status = 4
+                        task.save()
+                        logger.info(f'Modify task {task.id} status to Cancel ~')
+                    if task.plan.type == 1 and toTimeStamp(scheduler[0]['timing'], delta=-600) - time.time() < -60:
+                        task.status = 4
+                        task.save()
+                        logger.info(f'Modify task {task.id} status to Cancel ~')
+            except:
+                logger.error(traceback.format_exc())
+            time.sleep(30)
+    else:
+        logger.info('Auto run task is running ~')

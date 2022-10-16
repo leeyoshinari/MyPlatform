@@ -13,12 +13,14 @@ from django.http import StreamingHttpResponse
 from .models import TestPlan, ThreadGroup, TransactionController, TestTaskLogs
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from shell.models import Servers
+from .views import auto_run_task
 from .common.generateJmx import *
 from .common.getRedis import *
+from .common.fileController import *
 from .common.request import http_request
 from common.Result import result, json_result
 from common.generator import primaryKey, strfTime, strfDeltaTime, toTimeStamp
-from .common.fileController import *
+from common.multiThread import start_thread
 import influxdb
 # Create your views here.
 
@@ -166,6 +168,7 @@ def add_to_task(request):
             if plans.schedule == 0:
                 return result(msg=f'Start success ~', data={'taskId': task_id, 'flag': 1})
             else:
+                start_thread(auto_run_task, ())
                 return result(msg=f'Add to test task success ~', data={'flag': 0})
         except:
             test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)

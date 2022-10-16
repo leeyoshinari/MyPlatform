@@ -11,12 +11,14 @@ from django.conf import settings
 from .models import TestPlan, PerformanceTestTask
 from shell.models import ServerRoom
 from .planViews import get_idle_server_num
+from .views import auto_run_task
 from .common.getRedis import *
 from .common.fileController import *
 from .common.parseJmx import modify_jmeter, get_enabled_samples_num
 from common.Result import result
 from common.generator import primaryKey, strfTime
 from common.customException import MyException
+from common.multiThread import start_thread
 # Create your views here.
 
 
@@ -197,6 +199,7 @@ def add_to_task(request):
             if plans.schedule == 0:
                 return result(msg=f'Start success ~', data={'taskId': task_id, 'flag': 1})
             else:
+                start_thread(auto_run_task, ())
                 return result(msg=f'Add to test task success ~', data={'flag': 0})
         except MyException as err:
             test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
