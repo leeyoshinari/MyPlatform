@@ -94,7 +94,7 @@
                 <label>Method: </label>
             </div>
             <div class="value-div">
-                <select id="method">
+                <select id="method" onchange="get_header_by_method('{% url 'perf:get_header_by_method' %}');">
                     {% for k, v in methods.items %}
                         {% if v == samples.method %}
                             <option value="{{ v }}" selected>{{ k }}</option>

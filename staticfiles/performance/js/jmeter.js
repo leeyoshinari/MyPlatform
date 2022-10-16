@@ -5,6 +5,7 @@ function edit_plan(url, location_url) {
     let run_type = document.getElementById('run_type').value;
     let schedule = document.getElementById('schedule').value;
     let server_room = document.getElementById('server_room').value;
+    let group_id = document.getElementById('group-name').value;
     let server_num = document.getElementById('server-num').value;
     let target_number = document.getElementById('target_number').value;
     let duration = document.getElementById('duration').value;
@@ -63,6 +64,7 @@ function edit_plan(url, location_url) {
         schedule: schedule,
         server_room: server_room,
         server_num: server_num,
+        group_id: group_id,
         target_number: target_number,
         duration: duration,
         is_debug: isDebug,

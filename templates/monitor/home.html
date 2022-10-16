@@ -1,8 +1,35 @@
 {% extends "monitor/template.html" %}
+{% load static %}
+
+{% block addjs %}
+    <script src="{% static 'js/fenye.js' %}"></script>
+{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-    <h3 align="center" style="margin-top: 66px">Server List&ensp;&ensp;(total {{ datas|length }} servers)</h3>
+<div class="page-header" style="margin-top: 1px;">
+    <div style="margin-bottom: 2%;">
+        <div style="float: left; width: 350px;">
+            <label>Group: </label>
+            <select id="group" style="width: 196px; height: 30px;">
+                {% for g in groups %}
+                    {% if g.id == group %}
+                        <option value="{{ g.id }}" selected>{{ g.name }}</option>
+                    {% else %}
+                        <option value="{{ g.id }}">{{ g.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div style="float: left; width: 350px;">
+            <label>Host: </label>
+            {% if key_word %}
+                <input id="host" placeholder="Please input server IP ~" style="width: 190px; height: 30px;" value="{{ key_word }}">
+            {% else %}
+                <input id="host" placeholder="Please input server IP ~" style="width: 190px; height: 30px;">
+            {% endif %}
+        </div>
+        <div><button style="width: 125px; height: 26px;" id="search">Search</button></div>
+    </div>
     <table width="99%" border="1" cellspacing="0" cellpadding="6" align="center" id="monitor">
         <tr style="align: center; margin: auto; background-color: #99CCFF">
             <th width=13% style="text-align: center;">Server</th>
@@ -40,4 +67,20 @@
         {% endfor %}
     </table>
 </div>
+<div class="fenye"><ul id="paging" class="pagination"></ul></div>
+{% endblock %}
+
+{% block myjs %}
+    <script type="text/javascript">
+        {% if key_word %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'monitor:home' %}?group={{ group }}&keyWord={{ key_word }}&page=');
+        {% else %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'monitor:home' %}?group={{ group }}&page=');
+        {% endif %}
+        document.getElementById('search').addEventListener('click', function () {
+            let group_id = document.getElementById('group').value;
+            let key_work = document.getElementById('host').value;
+            window.location.href = '{% url 'monitor:home' %}' + '?group=' + group_id + '&keyWord=' + key_work;
+        })
+    </script>
 {% endblock %}

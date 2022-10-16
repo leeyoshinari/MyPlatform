@@ -36,7 +36,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
-IS_MITMPROXY = int(get_config('isMitmProxy'))
+IS_ATIJMETER = int(get_config('isATIJMeter'))
 IS_MONITOR = int(get_config('isMonitor'))
 IS_PERF = int(get_config('isPerformanceTest'))
 
@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     'channels',
     'shell',
     'monitor',
-    'mitm',
     'performance',
 ]
 

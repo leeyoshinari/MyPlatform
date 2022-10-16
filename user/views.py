@@ -88,7 +88,7 @@ def home(request):
         username = request.user.username
         is_staff = request.user.is_staff
         return render(request, 'home.html', context={'username': username, 'is_monitor': settings.IS_MONITOR,
-                                                     'is_mitm': settings.IS_MITMPROXY, 'is_staff': is_staff,
+                                                     'isATIJMeter': settings.IS_ATIJMETER, 'is_staff': is_staff,
                                                      'is_perf': settings.IS_PERF})
     else:
         return render(request, '404.html')

@@ -23,6 +23,19 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Please select a group name.">?</span></div>
+                <label>GroupName: </label>
+            </div>
+            <div class="value-div">
+                <select id="group-name">
+                    {% for g in groups %}
+                        <option value="{{ g.id }}">{{ g.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Run tearDown Thread Groups after shutdown of main threads. Default: True.">?</span></div>
                 <label>tearDown: </label>
             </div>

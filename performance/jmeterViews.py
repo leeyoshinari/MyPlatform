@@ -63,6 +63,7 @@ def edit(request):
             plan.type = data.get('run_type')
             plan.schedule = data.get('schedule')
             plan.server_room_id = data.get('server_room')
+            plan.group_id = data.get('group_id')
             plan.server_number = data.get('server_num')
             plan.target_num = data.get('target_number')
             plan.duration = data.get('duration')
@@ -80,10 +81,11 @@ def edit(request):
     else:
         try:
             plan_id = request.GET.get('id')
+            groups = request.user.groups.all()
             plans = TestPlan.objects.get(id=plan_id)
             server_rooms = ServerRoom.objects.filter(type=2).order_by('-create_time')
             return render(request, 'performance/jmeter/edit.html', context={'plan': plans, 'server_rooms': server_rooms,
-                                                                            'current_time': strfTime()})
+                                                                            'groups': groups, 'current_time': strfTime()})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -92,6 +94,7 @@ def edit(request):
 def upload_file(request):
     if request.method == 'POST':
         username = request.user.username
+        groups = request.user.groups.all().order_by('-id')
         form = request.FILES['file']
         file_name = form.name
         file_id = str(primaryKey())
@@ -126,7 +129,7 @@ def upload_file(request):
             if del_file['code'] == 1:
                 logger.error(del_file['msg'])
             task_path = f'{settings.FILE_URL}{zip_file_url}'
-            plans = TestPlan.objects.create(id=file_id, name=file_name, is_valid='true',is_file=1, file_path=task_path, operator=username)
+            plans = TestPlan.objects.create(id=file_id, name=file_name, group_id=groups[0].id, is_valid='true',is_file=1, file_path=task_path, operator=username)
             logger.info(f'{file_name} upload success, operator: {username}')
             return result(msg=f'{file_name} upload success ~', data=file_name)
         except:

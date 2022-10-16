@@ -197,3 +197,23 @@ function edit_sample(url, location_url, group_id) {
         }
     })
 }
+
+function get_header_by_method(url) {
+    let method = document.getElementById('method').value;
+    $.ajax({
+        type: 'get',
+        url: url + '?method=' + method,
+        dataType: 'json',
+        success: function (data) {
+            if (data['code'] === 0) {
+                let header_obj = document.getElementById('http_header');
+                header_obj.options.length = 0;
+                for (let i=0; i<data['data'].length; i++) {
+                    header_obj.options.add(new Option(data['data'][i]['name'], data['data'][i]['id']));
+                }
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
+}

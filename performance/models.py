@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import Group
 from shell.models import ServerRoom
 # Create your models here.
 
@@ -17,6 +18,7 @@ class TestPlan(models.Model):
     is_debug = models.IntegerField(default=0, verbose_name='0-Not debug, 1-debug')
     variables = models.JSONField(null=True, verbose_name='variables')
     server_room = models.ForeignKey(ServerRoom, default=520, on_delete=models.CASCADE, verbose_name='server room')
+    group = models.ForeignKey(Group, on_delete=models.PROTECT, verbose_name='group name')
     server_number = models.IntegerField(default=1, verbose_name='number of pressure servers')
     is_file = models.IntegerField(default=0, verbose_name='is Jmeter file, 0-import Jmeter file, 1-upload Jmeter file')
     file_path = models.CharField(null=True, max_length=125, verbose_name='file path if is_file=1')
@@ -32,6 +34,7 @@ class TestPlan(models.Model):
 class ThreadGroup(models.Model):
     id = models.CharField(max_length=16, verbose_name='thread group id', primary_key=True)
     plan = models.ForeignKey(TestPlan, on_delete=models.PROTECT, verbose_name='test plan id')
+    group = models.IntegerField(null=True, verbose_name='group id')
     name = models.CharField(null=True, max_length=100, verbose_name='thread group name')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
     ramp_time = models.IntegerField(null=True, verbose_name='ramp_time')
@@ -50,6 +53,7 @@ class ThreadGroup(models.Model):
 class TransactionController(models.Model):
     id = models.CharField(max_length=16, verbose_name='Controller id', primary_key=True)
     thread_group = models.ForeignKey(ThreadGroup, on_delete=models.CASCADE, verbose_name='thread group id')
+    group = models.IntegerField(null=True, verbose_name='group id')
     name = models.CharField(null=True, max_length=100, verbose_name='Controller name')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
     comment = models.CharField(null=True, max_length=200, verbose_name='comment')
@@ -80,6 +84,7 @@ class HTTPRequestHeader(models.Model):
 class HTTPSampleProxy(models.Model):
     id = models.CharField(max_length=16, verbose_name='http sample id', primary_key=True)
     controller = models.ForeignKey(TransactionController, on_delete=models.CASCADE, verbose_name='controller id')
+    group = models.IntegerField(null=True, verbose_name='group id')
     name = models.CharField(null=True, max_length=100, verbose_name='http sample name')
     is_valid = models.CharField(max_length=8, verbose_name='true, false')
     comment = models.CharField(null=True, max_length=200, verbose_name='comment')
@@ -106,6 +111,7 @@ class HTTPSampleProxy(models.Model):
 class PerformanceTestTask(models.Model):
     id = models.CharField(max_length=16, verbose_name='task id', primary_key=True)
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE, verbose_name='plan id')
+    group = models.ForeignKey(Group, on_delete=models.PROTECT, verbose_name='group name')
     number_samples = models.IntegerField(default=1, verbose_name='number of http samples')
     ratio = models.FloatField(verbose_name='ratio, target_num * ratio')
     status = models.IntegerField(verbose_name='status, 0-pending run, 1-running, 2-stopped, 3-failure, 4-cancel')

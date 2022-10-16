@@ -1,0 +1,15 @@
+aiohttp==3.7.4.post0
+aiohttp-jinja2==1.5
+channels==3.0.4
+daphne==3.0.2
+Django==4.0.1
+django-mdeditor==0.1.20
+django-pandas==0.6.6
+influxdb==2.6.0
+Jinja2==3.0.3
+minio==7.1.3
+paramiko==2.10.3
+PyMySQL==1.0.2
+redis==4.1.1
+requests==2.27.1
+sqlparse==0.4.2

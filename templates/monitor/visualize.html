@@ -139,11 +139,11 @@
             total_mem += data[i]['mem_usage'];
             total_io += data[i]['io_usage'];
             total_net += data[i]['net_usage'];
-            s += '<div class="host-card" style="background-color: #' + get_color(data[i]['cpu_usage'], data[i]['io_usage'], 0) + ';"><div style="margin: 5px;"><span class="host-ip">' + data[i]['host'] + '</span></div><div><div><span class="host-label">CPU: ' +
+            s += '<div class="host-card" style="background-color: #' + get_color(data[i]['cpu_usage'], data[i]['io_usage'], data[i]['net_usage']) + ';"><div style="margin: 5px;"><span class="host-ip">' + data[i]['host'] + '</span></div><div><div><span class="host-label">CPU: ' +
                 '<span class="host-value">' + data[i]['cpu_usage'].toFixed(2) + '%</span></span><span class="host-label">Mem: <span class="host-value">' + data[i]['mem_usage'].toFixed(2) + '%</span></span></div><div><span class="host-label">&nbsp;&nbsp;&nbsp;IO: ' +
                 '<span class="host-value">' + data[i]['io_usage'].toFixed(2) + '%</span></span><span class="host-label">Net: <span class="host-value">' + data[i]['net_usage'].toFixed(2) + '%</span></span></div></div></div>';
         }
-        s = '<div class="host-card" style="background-color: #' + get_color(total_cpu / data.length, total_io / data.length, 0) + ';"><div style="margin: 5px;"><span class="host-ip">All Servers Average</span></div><div><div><span class="host-label">CPU: ' +
+        s = '<div class="host-card" style="background-color: #' + get_color(total_cpu / data.length, total_io / data.length, total_net / data.length) + ';"><div style="margin: 5px;"><span class="host-ip">All Servers Average</span></div><div><div><span class="host-label">CPU: ' +
             '<span class="host-value">' + (total_cpu / data.length).toFixed(2) + '%</span></span><span class="host-label">Mem: <span class="host-value">' + (total_mem / data.length).toFixed(2) + '%</span></span></div><div><span class="host-label">&nbsp;&nbsp;&nbsp;IO: ' +
             '<span class="host-value">' + (total_io / data.length).toFixed(2) + '%</span></span><span class="host-label">Net: <span class="host-value">' + (total_net / data.length).toFixed(2) + '%</span></span></div></div></div>' + s;
         document.getElementById('left-container').innerHTML = s;
@@ -245,7 +245,7 @@
     }, 10000);
 
     function get_color(v1, v2, v3) {
-        return colors[parseInt(Math.max(v1, v2, v3) / 10)];
+        return colors[(v1 * 0.5 + v2 * 0.3 + v3 * 0.2) / 10 |> parseInt];
     }
 
     $("#MonitorList").click(function () {

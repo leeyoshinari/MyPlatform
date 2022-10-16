@@ -7,9 +7,9 @@ import json
 import logging
 import traceback
 from django.shortcuts import render
-from django.db.models import Q
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
+from django.contrib.auth.models import Group
 from shell.models import Servers, GroupIdentifier, ServerRoom
 from common.Email import sendEmail
 from common.Result import result
@@ -28,12 +28,29 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            if not request.user.is_staff:
+                logger.warning(f'You have no permission to access monitor home page, operator: {username}')
+                return render(request, '404.html')
+            page_size = request.GET.get('pageSize')
+            page = request.GET.get('page')
+            group_id = request.GET.get('group')
+            key_word = request.GET.get('keyWord')
+            page = int(page) if page else 1
+            page_size = int(page_size) if page_size else settings.PAGE_SIZE
+            key_word = key_word.replace('%', '').strip() if key_word else ''
             groups = request.user.groups.all()
-            servers = Servers.objects.values('host').filter(group__in=groups).order_by('-id')
+            group_id = group_id if group_id else groups[0].id
+            if key_word:
+                total_page = Servers.objects.filter(group_id=group_id, host__contains=key_word).count()
+                servers = Servers.objects.values('host').filter(group_id=group_id, host__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
+            else:
+                total_page = Servers.objects.filter(group_id=group_id).count()
+                servers = Servers.objects.values('host').filter(group_id=group_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
             agents = monitor_server.get_all_keys()
             datas = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in agents]
             logger.info(f'Get monitor servers list, operator: {username}')
-            return render(request, 'monitor/home.html', context={'datas': datas})
+            return render(request, 'monitor/home.html', context={'datas': datas, 'groups': groups, 'group': group_id, 'key_word': key_word,
+                                                                 'page': page, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -207,6 +224,11 @@ def plot_monitor(request):
         username = request.user.username
         host = request.POST.get('host')
         group_id = request.POST.get('group')
+        try:
+            _ = request.user.groups.get(id=group_id)
+        except Group.DoesNotExist:
+            logger.warning(f'You have no permission to access this group, operator: {username}')
+            return result(code=1, msg='You have no permission to access this group ~')
         room_id = request.POST.get('room')
         start_time = request.POST.get('startTime')
         end_time = request.POST.get('endTime')
@@ -245,9 +267,9 @@ def plot_monitor(request):
                 else:
                     logger.error(f'Server {host} has not monitored. operator: {username}')
                     return result(code=1, msg=f'Server {host} has not monitored.')
-        except Exception as err:
+        except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg=str(err))
+            return result(code=1, msg='Get data error, please try later ~')
 
 
 def get_port_disk(request):
@@ -290,19 +312,20 @@ def change_group(request):
     if request.method == 'GET':
         try:
             username = request.user.username
-            groups = request.user.groups.all()
             group_id = request.GET.get('group')
-            # if group_id not in groups:
-            #     return result(code=1, msg='You have no permission to access this group ~')
+            _ = request.user.groups.get(id=group_id)
             servers = Servers.objects.values('host', 'room_id').filter(group_id=group_id)
             keys = monitor_server.get_all_keys()
             hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
-            hosts.sort(key=lambda x:(-x['cpu_usage'], -x['io_usage'], -x['net_usage'], -x['mem_usage']))
+            hosts.sort(key=lambda x:(-(x['cpu_usage'] * 0.5 + x['io_usage'] * 0.3 + x['net_usage'] * 0.2), -x['mem_usage']))
             room_list = [s['room_id'] for s in servers]
             rooms_obj = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
             rooms = [{'id': r['id'], 'name': r['name']} for r in rooms_obj]
             logger.info(f'Query all servers and rooms in group {group_id}, operator: {username}')
             return result(msg='Query success ~', data={'hosts': hosts, 'rooms': rooms})
+        except Group.DoesNotExist:
+            logger.warning(f'You have no permission to access this group, operator: {username}')
+            return result(code=1, msg='You have no permission to access this group ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Error, please try later ~')
@@ -314,12 +337,16 @@ def change_room(request):
             username = request.user.username
             group_id = request.GET.get('group')
             room_id = request.GET.get('room')
+            _ = request.user.groups.get(id=group_id)
             servers = Servers.objects.values('host').filter(group_id=group_id, room_id=room_id)
             keys = monitor_server.get_all_keys()
             hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
-            hosts.sort(key=lambda x: (-x['cpu_usage'], -x['io_usage'], -x['net_usage'], -x['mem_usage']))
+            hosts.sort(key=lambda x: (-(x['cpu_usage'] * 0.5 + x['io_usage'] * 0.3 + x['net_usage'] * 0.2), -x['mem_usage']))
             logger.info(f'Query all servers in group {group_id} and room {room_id}, operator: {username}')
             return result(msg='Query success ~', data={'hosts': hosts})
+        except Group.DoesNotExist:
+            logger.warning(f'You have no permission to access this group, operator: {username}')
+            return result(code=1, msg='You have no permission to access this group ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Error, please try later ~')

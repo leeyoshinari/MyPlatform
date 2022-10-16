@@ -25,6 +25,7 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            groups = request.user.groups.all().values('id')
             ctl_id = request.GET.get('id')
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
@@ -39,11 +40,11 @@ def home(request):
                 total_page = HTTPSampleProxy.objects.filter(controller_id=ctl_id).count()
                 samples = HTTPSampleProxy.objects.filter(controller_id=ctl_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif key_word and not ctl_id:
-                total_page = HTTPSampleProxy.objects.filter(name__contains=key_word).count()
-                samples = HTTPSampleProxy.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = HTTPSampleProxy.objects.filter(group__in=groups, name__contains=key_word).count()
+                samples = HTTPSampleProxy.objects.filter(group__in=groups, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
-                total_page = HTTPSampleProxy.objects.all().count()
-                samples = HTTPSampleProxy.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = HTTPSampleProxy.objects.filter(group__in=groups).count()
+                samples = HTTPSampleProxy.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get http samples success, operator: {username}')
             return render(request, 'performance/httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
@@ -59,6 +60,7 @@ def get_from_header(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            groups = request.user.groups.all().values('id')
             header_id = request.GET.get('id')
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
@@ -67,17 +69,21 @@ def get_from_header(request):
             page_size = int(page_size) if page_size else settings.PAGE_SIZE
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word and header_id:
-                samples = HTTPSampleProxy.objects.filter(http_header_id=header_id, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = HTTPSampleProxy.objects.filter(http_header_id=header_id, group__in=groups, name__contains=key_word).count()
+                samples = HTTPSampleProxy.objects.filter(http_header_id=header_id, group__in=groups, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif header_id and not key_word:
-                samples = HTTPSampleProxy.objects.filter(http_header_id=header_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = HTTPSampleProxy.objects.filter(http_header_id=header_id, group__in=groups).count()
+                samples = HTTPSampleProxy.objects.filter(http_header_id=header_id, group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif key_word and not header_id:
-                samples = HTTPSampleProxy.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = HTTPSampleProxy.objects.filter(group__in=groups, name__contains=key_word).count()
+                samples = HTTPSampleProxy.objects.filter(group__in=groups, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
-                samples = HTTPSampleProxy.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = HTTPSampleProxy.objects.filter(group__in=groups).count()
+                samples = HTTPSampleProxy.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get http samples success, operator: {username}')
             return render(request, 'performance/httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
-                                                                     'key_word': key_word, 'header_id': header_id})
+                                                                     'key_word': key_word, 'header_id': header_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -104,24 +110,33 @@ def add_sample(request):
             argument = data.get('argument')
             extractor = data.get('extractor')
             comment = data.get('comment')
+            group = TransactionController.objects.values('group').get(id = controller_id)
             sample = HTTPSampleProxy.objects.create(id=primaryKey(), name=name, protocol=protocol, comment=comment, is_valid='true',
                           domain=domain, port=port, path=path, method=method, http_header_id=http_header, assert_type=assertion_type,
                           assert_content=assertion_string, argument=argument, extractor=extractor, controller_id=controller_id,
-                          contentEncoding=contentEncoding, operator=username)
+                          contentEncoding=contentEncoding, group=group['group'], operator=username)
             logger.info(f'Http Sample {name} {sample.id} is save success, operator: {username}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Save failure ~')
     else:
-        ctl_id = request.GET.get('id')
-        ctl_id = int(ctl_id) if ctl_id else ctl_id
-        controllers = TransactionController.objects.all().order_by('-create_time')
-        http_headers = HTTPRequestHeader.objects.all().order_by('-create_time')
-        return render(request, 'performance/httpSample/add.html', context={
-            'controller_id': ctl_id, 'controllers': controllers, 'protocols': protocols, 'http_headers': http_headers,
-            'methods': methods, 'assertion_types': assertion_types, 'contentEncodings': contentEncodings, 'data_types': data_types
-        })
+        try:
+            ctl_id = request.GET.get('id')
+            if ctl_id:
+                group = TransactionController.objects.values('group').get(id=ctl_id)
+                controllers = TransactionController.objects.filter(group=group['group']).order_by('-id')
+            else:
+                groups = request.user.groups.all().values('id')
+                controllers = TransactionController.objects.filter(group__in=groups).order_by('-create_time')
+            http_headers = HTTPRequestHeader.objects.filter(method='GET').order_by('-create_time')
+            return render(request, 'performance/httpSample/add.html', context={
+                'controller_id': ctl_id, 'controllers': controllers, 'protocols': protocols, 'http_headers': http_headers,
+                'methods': methods, 'assertion_types': assertion_types, 'contentEncodings': contentEncodings, 'data_types': data_types
+            })
+        except:
+            logger.error(traceback.format_exc())
+            return render(request, '404.html')
 
 def edit_sample(request):
     if request.method == 'POST':
@@ -143,9 +158,11 @@ def edit_sample(request):
             argument = data.get('argument')
             extractor = data.get('extractor')
             comment = data.get('comment')
+            group = TransactionController.objects.values('group').get(id=controller_id)
             samples = HTTPSampleProxy.objects.get(id=sample_id)
             samples.name = name
             samples.controller_id = controller_id
+            samples.group = group['group']
             samples.protocol = protocol
             samples.contentEncoding = contentEncoding
             samples.domain = domain
@@ -166,13 +183,17 @@ def edit_sample(request):
             logger.error(traceback.format_exc())
             return  result(code=1, msg='Edit failure ~')
     else:
-        sample_id = request.GET.get('id')
-        samples = HTTPSampleProxy.objects.get(id=sample_id)
-        controllers = TransactionController.objects.all().order_by('-create_time')
-        http_headers = HTTPRequestHeader.objects.all().order_by('-create_time')
-        return render(request, 'performance/httpSample/edit.html', context={
-            'controllers': controllers, 'samples': samples, 'protocols': protocols, 'methods': methods, 'http_headers': http_headers,
-            'assertion_types': assertion_types, 'contentEncodings': contentEncodings, 'data_types': data_types})
+        try:
+            sample_id = request.GET.get('id')
+            samples = HTTPSampleProxy.objects.get(id=sample_id)
+            controllers = TransactionController.objects.filter(group=samples.controller.group).order_by('-create_time')
+            http_headers = HTTPRequestHeader.objects.filter(method=samples.method).order_by('-create_time')
+            return render(request, 'performance/httpSample/edit.html', context={
+                'controllers': controllers, 'samples': samples, 'protocols': protocols, 'methods': methods, 'http_headers': http_headers,
+                'assertion_types': assertion_types, 'contentEncodings': contentEncodings, 'data_types': data_types})
+        except:
+            logger.error(traceback.format_exc())
+            return render(request, '404.html')
 
 
 def copy_sample(request):
@@ -192,3 +213,18 @@ def copy_sample(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Copy HTTP Sample Failure ~')
+
+def get_header_by_method(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            method = request.GET.get('method')
+            headers = HTTPRequestHeader.objects.values('id', 'name').filter(method=method).order_by('-id')
+            if headers:
+                logger.info(f'Get headers success, operator: {username}')
+                return result(msg='Get headers success ~', data=list(headers))
+            else:
+                return result(code=1, msg=f'Method {method} has no headers, pls set it firstly ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Get headers error ~')

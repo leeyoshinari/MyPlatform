@@ -31,6 +31,23 @@
         </div>
         <div class="row-cols">
             <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Please select a group name.">?</span></div>
+                <label>GroupName: </label>
+            </div>
+            <div class="value-div">
+                <select id="group-name">
+                    {% for g in groups %}
+                        {% if g.id == plan.group.id %}
+                            <option value="{{ g.id }}" selected>{{ g.name }}</option>
+                        {% else %}
+                            <option value="{{ g.id }}">{{ g.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
                 <div class="helpstyle"><span data-tooltip="Run type. Special thread group or special TPS.">?</span></div>
                 <label>runType:</label>
             </div>

@@ -54,13 +54,13 @@
                     </a>
                 </li>
             {% endif %}
-            {% if is_mitm == 1 %}
-                <li>
-                    <a href="{% url 'mitm:home' %}">
+            {% if isATIJMeter == 1 %}
+                <!--li>
+                    <a href="">
                         <img src="{% static 'img/mitmproxy.ico' %}" width="100px", height="100px"/>
                         <h4>Mitmproxy</h4>
                     </a>
-                </li>
+                </li-->
             {% endif %}
             {% if is_perf == 1 %}
                 <li>

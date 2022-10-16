@@ -71,6 +71,7 @@ urlpatterns = [
     path('sample/add', sampleViews.add_sample, name='sample_add'),
     path('sample/edit', sampleViews.edit_sample, name='sample_edit'),
     path('sample/copy', sampleViews.copy_sample, name='sample_copy'),
+    path('header/getByMehtod', sampleViews.get_header_by_method, name='get_header_by_method'),
 
     path('header', headerViews.home, name='header_home'),
     path('header/add', headerViews.add_header, name='header_add'),

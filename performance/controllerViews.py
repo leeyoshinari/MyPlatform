@@ -20,6 +20,7 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            groups = request.user.groups.all().values('id')
             group_id = request.GET.get('id')
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
@@ -34,11 +35,11 @@ def home(request):
                 total_page = TransactionController.objects.filter(thread_group_id=group_id).count()
                 controllers = TransactionController.objects.filter(thread_group_id=group_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif key_word and not group_id:
-                total_page = TransactionController.objects.filter(name__contains=key_word).count()
-                controllers = TransactionController.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = TransactionController.objects.filter(group__in=groups, name__contains=key_word).count()
+                controllers = TransactionController.objects.filter(group__in=groups, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
-                total_page = TransactionController.objects.all().count()
-                controllers = TransactionController.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = TransactionController.objects.filter(group__in=groups).count()
+                controllers = TransactionController.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get controller success, operator: {username}')
             return render(request, 'performance/controller/home.html', context={'controllers': controllers, 'page': page, 'page_size': page_size,
@@ -57,18 +58,27 @@ def add_group(request):
             name = request.POST.get('name')
             group_id = request.POST.get('group_id')
             comment = request.POST.get('comment')
+            my_group = ThreadGroup.objects.values('group').get(id=group_id)
             controller = TransactionController.objects.create(id=primaryKey(), name=name, comment=comment, is_valid='true',
-                          thread_group_id=group_id, operator=username)
+                          thread_group_id=group_id, group=my_group['group'], operator=username)
             logger.info(f'Controller {name} {controller.id} is save success, operator: {username}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Save failure ~')
     else:
-        group_id = request.GET.get('id')
-        group_id = int(group_id) if group_id else group_id
-        groups = ThreadGroup.objects.all().order_by('-create_time')
-        return render(request, 'performance/controller/add.html', context={'group_id': group_id, 'groups': groups})
+        try:
+            group_id = request.GET.get('id')
+            if group_id:
+                group = ThreadGroup.objects.values('group').get(id=group_id)
+                groups = ThreadGroup.objects.filter(group=group['group']).order_by('-create_time')
+            else:
+                my_groups = request.user.groups.all().values('id')
+                groups = ThreadGroup.objects.filter(group__in=my_groups).order_by('-create_time')
+            return render(request, 'performance/controller/add.html', context={'group_id': group_id, 'groups': groups})
+        except:
+            logger.error(traceback.format_exc())
+            return render(request, '404.html')
 
 def edit_group(request):
     if request.method == 'POST':
@@ -78,9 +88,11 @@ def edit_group(request):
             name = request.POST.get('name')
             group_id = request.POST.get('group_id')
             comment = request.POST.get('comment')
+            my_group = ThreadGroup.objects.values('group').get(id=group_id)
             controllers = TransactionController.objects.get(id=controller_id)
             controllers.name = name
             controllers.thread_group_id = group_id
+            controllers.group = my_group['group']
             controllers.comment = comment
             controllers.operator = username
             controllers.save()
@@ -90,11 +102,14 @@ def edit_group(request):
             logger.error(traceback.format_exc())
             return  result(code=1, msg='Edit failure ~')
     else:
-        group_id = request.GET.get('id')
-        controllers = TransactionController.objects.get(id=group_id)
-        groups = ThreadGroup.objects.all().order_by('-create_time')
-        return render(request, 'performance/controller/edit.html', context={'controllers': controllers, 'groups': groups})
-
+        try:
+            group_id = request.GET.get('id')
+            controllers = TransactionController.objects.get(id=group_id)
+            groups = ThreadGroup.objects.filter(group=controllers.thread_group.group).order_by('-create_time')
+            return render(request, 'performance/controller/edit.html', context={'controllers': controllers, 'groups': groups})
+        except:
+            logger.error(traceback.format_exc())
+            return render(request, '404.html')
 
 def copy_controller(request):
     if request.method == 'GET':

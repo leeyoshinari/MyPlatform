@@ -6,7 +6,6 @@ import os
 import json
 import logging
 import traceback
-from threading import Thread
 from shell.models import Servers
 from channels.generic.websocket import WebsocketConsumer
 from .ssh import SSH

@@ -19,7 +19,7 @@ from . import views
 
 app_name = 'monitor'
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('home', views.home, name='home'),
     # path('startMonitor', views.start_monitor, name='start_monitor'),
     # path('getMonitor', views.get_monitor, name='get_monitor'),
     path('visualize', views.visualize, name='visualize'),

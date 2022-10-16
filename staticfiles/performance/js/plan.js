@@ -6,6 +6,7 @@ function add_plan(url, location_url) {
     let run_type = document.getElementById('run_type').value;
     let schedule = document.getElementById('schedule').value;
     let server_room = document.getElementById('server_room').value;
+    let group_id = document.getElementById('group-name').value;
     let server_num = document.getElementById('server-num').value;
     let isDebug = document.getElementById('isDebug').value;
     let target_number = document.getElementById('target_number').value;
@@ -64,6 +65,7 @@ function add_plan(url, location_url) {
         run_type: run_type,
         schedule: schedule,
         server_room: server_room,
+        group_id: group_id,
         server_num: server_num,
         is_debug: isDebug,
         target_number: target_number,
@@ -98,6 +100,7 @@ function edit_plan(url, location_url) {
     let run_type = document.getElementById('run_type').value;
     let schedule = document.getElementById('schedule').value;
     let server_room = document.getElementById('server_room').value;
+    let group_id = document.getElementById('group-name').value;
     let server_num = document.getElementById('server-num').value;
     let isDebug = document.getElementById('isDebug').value;
     let target_number = document.getElementById('target_number').value;
@@ -157,6 +160,7 @@ function edit_plan(url, location_url) {
         run_type: run_type,
         schedule: schedule,
         server_room: server_room,
+        group_id: group_id,
         server_num: server_num,
         is_debug: isDebug,
         target_number: target_number,

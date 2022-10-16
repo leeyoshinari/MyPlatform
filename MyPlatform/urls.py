@@ -25,7 +25,6 @@ urlpatterns = [
     path('user/', include('user.urls'), name='user'),
     path('shell/', include('shell.urls'), name='shell'),
     path('monitor/', include('monitor.urls'), name='monitor'),
-    path('mitmproxy/', include('mitm.urls'), name='mitm'),
     path('performance/', include('performance.urls'), name='perf'),
 ]
 

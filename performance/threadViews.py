@@ -23,6 +23,7 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            my_groups = request.user.groups.all().values('id')
             plan_id = request.GET.get('id')
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
@@ -37,11 +38,11 @@ def home(request):
                 total_page = ThreadGroup.objects.filter(plan_id=plan_id).count()
                 groups = ThreadGroup.objects.filter(plan_id=plan_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
             elif key_word and not plan_id:
-                total_page = ThreadGroup.objects.filter(name__contains=key_word).count()
-                groups = ThreadGroup.objects.filter(name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = ThreadGroup.objects.filter(group__in=my_groups, name__contains=key_word).count()
+                groups = ThreadGroup.objects.filter(group__in=my_groups, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
-                total_page = ThreadGroup.objects.all().count()
-                groups = ThreadGroup.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = ThreadGroup.objects.filter(group__in=my_groups).count()
+                groups = ThreadGroup.objects.filter(group__in=my_groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get thread group success, operator: {username}')
             return render(request, 'performance/threadGroup/home.html', context={'groups': groups, 'page': page, 'page_size': page_size,
@@ -71,7 +72,8 @@ def add_group(request):
                     'share_mode': request.POST.get('share_mode')}
             else:
                 file_dict = None
-            group = ThreadGroup.objects.create(id=primaryKey(), name=name, ramp_time=ramp_time, comment=comment,
+            plan = TestPlan.objects.values('group_id').get(id=plan_id)
+            group = ThreadGroup.objects.create(id=primaryKey(), name=name, ramp_time=ramp_time, comment=comment, group=plan['group_id'],
                                                is_valid='true', plan_id=plan_id, file=file_dict, operator=username)
             logger.info(f'Thread Group {name} {group.id} is save success, operator: {username}')
             return result(msg='Save success ~')
@@ -79,9 +81,18 @@ def add_group(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Save failure ~')
     else:
-        plan_id = request.GET.get('id')
-        plans = TestPlan.objects.filter(is_file=0).order_by('-create_time')
-        return render(request, 'performance/threadGroup/add.html', context={'plan_id': plan_id, 'plans': plans, 'share_mode': share_mode})
+        try:
+            plan_id = request.GET.get('id')
+            if plan_id:
+                group = TestPlan.objects.values('group').get(id=plan_id)
+                plans = TestPlan.objects.filter(group_id=group['group'], is_file=0).order_by('-create_time')
+            else:
+                groups = request.user.groups.all()
+                plans = TestPlan.objects.filter(group__in=groups, is_file=0).order_by('-create_time')
+            return render(request, 'performance/threadGroup/add.html', context={'plan_id': plan_id, 'plans': plans, 'share_mode': share_mode})
+        except:
+            logger.error(traceback.format_exc())
+            return render(request, '404.html')
 
 
 def edit_group(request):
@@ -103,9 +114,11 @@ def edit_group(request):
                     'share_mode': request.POST.get('share_mode')}
             else:
                 file_dict = None
+            plan = TestPlan.objects.values('group_id').get(id=plan_id)
             groups = ThreadGroup.objects.get(id=group_id)
             groups.name = name
             groups.plan_id = plan_id
+            groups.group = plan['group_id']
             groups.ramp_time = ramp_time
             groups.comment = comment
             groups.file = file_dict
@@ -117,10 +130,14 @@ def edit_group(request):
             logger.error(traceback.format_exc())
             return  result(code=1, msg='Edit failure ~')
     else:
-        group_id = request.GET.get('id')
-        groups = ThreadGroup.objects.get(id=group_id)
-        plans = TestPlan.objects.filter(is_file=0).order_by('-create_time')
-        return render(request, 'performance/threadGroup/edit.html', context={'groups': groups, 'plans': plans, 'share_mode': share_mode})
+        try:
+            group_id = request.GET.get('id')
+            groups = ThreadGroup.objects.get(id=group_id)
+            plans = TestPlan.objects.filter(group_id=groups.plan.group_id, is_file=0).order_by('-create_time')
+            return render(request, 'performance/threadGroup/edit.html', context={'groups': groups, 'plans': plans, 'share_mode': share_mode})
+        except:
+            logger.error(traceback.format_exc())
+            return render(request, '404.html')
 
 
 def upload_file(request):

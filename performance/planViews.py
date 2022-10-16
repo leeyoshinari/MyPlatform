@@ -27,6 +27,7 @@ def home(request):
         try:
             server_num_rooms = {}
             username = request.user.username
+            groups = request.user.groups.all()
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
@@ -34,11 +35,11 @@ def home(request):
             page_size = int(page_size) if page_size else settings.PAGE_SIZE
             key_word = key_word.replace('%', '').strip() if key_word else ''
             if key_word:
-                total_page = TestPlan.objects.filter(is_file=0, name__contains=key_word).count()
-                plans = TestPlan.objects.filter(is_file=0, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = TestPlan.objects.filter(is_file=0, group__in=groups, name__contains=key_word).count()
+                plans = TestPlan.objects.filter(is_file=0, group__in=groups, name__contains=key_word).order_by('-create_time')[page_size * (page - 1): page_size * page]
             else:
-                total_page = TestPlan.objects.filter(is_file=0).count()
-                plans = TestPlan.objects.filter(is_file=0).order_by('-create_time')[page_size * (page - 1): page_size * page]
+                total_page = TestPlan.objects.filter(is_file=0, group__in=groups).count()
+                plans = TestPlan.objects.filter(is_file=0, group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
             if plans:
                 server_num_rooms = get_idle_server_num()
             logger.info(f'Get test plan success, operator: {username}')
@@ -61,6 +62,7 @@ def add(request):
             run_type = data.get('run_type')
             schedule = data.get('schedule')
             server_room = data.get('server_room')
+            group_id = data.get('group_id')
             server_num = data.get('server_num')
             is_debug = data.get('is_debug')
             target_number = data.get('target_number')
@@ -68,7 +70,7 @@ def add(request):
             time_setting = data.get('time_setting') if schedule == '1' else []
             comment = data.get('comment')
             plans = TestPlan.objects.create(id=primaryKey(), name=name, tearDown=teardown, serialize=serialize, is_valid='true',
-                            type=run_type, schedule=schedule, server_room_id=server_room, server_number=server_num,
+                            type=run_type, schedule=schedule, server_room_id=server_room, group_id=group_id, server_number=server_num,
                             target_num=target_number,time_setting=time_setting, duration=duration,
                             is_debug=is_debug, comment=comment, operator=username)
             logger.info(f'Test plan {name} is save success, id is {plans.id}, operator: {username}')
@@ -77,8 +79,9 @@ def add(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Save failure ~')
     else:
+        groups = request.user.groups.all()
         server_rooms = ServerRoom.objects.filter(type=2).order_by('-create_time')
-        return render(request, 'performance/plan/add.html', context={'server_rooms': server_rooms})
+        return render(request, 'performance/plan/add.html', context={'server_rooms': server_rooms, 'groups': groups})
 
 
 def edit(request):
@@ -94,6 +97,7 @@ def edit(request):
             plan.type = data.get('run_type')
             plan.schedule = data.get('schedule')
             plan.server_room_id = data.get('server_room')
+            plan.group_id = data.get('group_id')
             plan.server_number = data.get('server_num')
             plan.target_num = data.get('target_number')
             plan.is_debug = data.get('is_debug')
@@ -111,10 +115,11 @@ def edit(request):
     else:
         try:
             plan_id = request.GET.get('id')
+            groups = request.user.groups.all()
             plans = TestPlan.objects.get(id=plan_id)
             server_rooms = ServerRoom.objects.filter(type=2).order_by('-create_time')
             return render(request, 'performance/plan/edit.html', context={'plan': plans, 'server_rooms': server_rooms,
-                                                                          'current_time': strfTime()})
+                                                                          'groups': groups, 'current_time': strfTime()})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -149,12 +154,13 @@ def edit_variable(request):
 def upload_file(request):
     if request.method == 'POST':
         username = request.user.username
+        groups = request.user.groups.all().order_by('-id')
         form = request.FILES['file']
         file_name = form.name
         file_byte = form.file.read()
         try:
             res = read_jmeter_from_byte(file_byte)
-            parse_jmx_to_database(res, username)
+            parse_jmx_to_database(res, groups[0].id, username)
             logger.info(f'{file_name} Import Success, operator: {username}')
             return result(msg=f'{file_name} Import Success ~', data=file_name)
         except:
@@ -162,22 +168,22 @@ def upload_file(request):
             return result(code=1, msg=f'{file_name} Import Failure ~', data=file_name)
 
 
-def parse_jmx_to_database(res, username):
+def parse_jmx_to_database(res, group_id, username):
     try:
         for plan in res:
             testPlan = TestPlan.objects.create(id=primaryKey(), name=plan.get('testname'), comment=plan.get('comments'),
-                                    tearDown=plan.get('tearDown_on_shutdown'), serialize=plan.get('serialize_threadgroups'),
+                                    tearDown=plan.get('tearDown_on_shutdown'), serialize=plan.get('serialize_threadgroups'), group_id=group_id,
                                     variables=plan['arguments'], is_valid=plan.get('enabled'), operator=username)
             for tg in plan['thread_group']:
-                thread = ThreadGroup.objects.create(id=primaryKey(), plan_id=testPlan.id, name=tg.get('testname'),
+                thread = ThreadGroup.objects.create(id=primaryKey(), plan_id=testPlan.id, name=tg.get('testname'), group=group_id,
                                     is_valid=tg.get('enabled'), ramp_time=tg.get('ramp_time'), comment=tg.get('comments'), operator=username)
                 for ctl in tg['controller']:
-                    controller = TransactionController.objects.create(id=primaryKey(), thread_group_id=thread.id,
+                    controller = TransactionController.objects.create(id=primaryKey(), thread_group_id=thread.id, group=group_id,
                                     name=ctl.get('testname'), is_valid=ctl.get('enabled'), comment=ctl.get('comments'),
                                     operator=username)
                     for sample in ctl['http_sample']:
                         http = HTTPSampleProxy.objects.create(id=primaryKey(), controller_id=controller.id, name=sample.get('testname'),
-                                    is_valid=sample.get('enabled'), comment=sample.get('sample_dict').get('comments'),
+                                    is_valid=sample.get('enabled'), comment=sample.get('sample_dict').get('comments'), group=group_id,
                                     domain=sample.get('sample_dict').get('domain'), port=sample.get('sample_dict').get('port'),
                                     protocol=sample.get('sample_dict').get('protocol'), path=sample.get('sample_dict').get('path'),
                                     method=sample.get('sample_dict').get('method'), contentEncoding=sample.get('sample_dict').get('contentEncoding'),
