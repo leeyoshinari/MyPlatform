@@ -180,7 +180,7 @@ def create_group(request):
                     logger.error(f"{identifier.key} has existed, operator: {username}")
                     return result(code=1, msg=f"{identifier.key} has existed, Group Name is {identifier.group.name}")
                 except GroupIdentifier.DoesNotExist:
-                    identifier = GroupIdentifier.objects.create(group_id=group.id, key=group_key)
+                    identifier = GroupIdentifier.objects.create(id=primaryKey(), group_id=group.id, key=group_key)
             if group_type == 'delete':
                 group = Group.objects.get(id=group_id).delete()
             logger.info(f'{group_type} group {group_name} success, operator: {username}')
