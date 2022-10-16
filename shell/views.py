@@ -47,12 +47,7 @@ def index(request):
                                                                 'rooms': rooms, 'is_staff': is_staff})
         except:
             logger.error(traceback.format_exc())
-            return render(request, 'shell/index.html',
-                          context={'servers': servers, 'groups': groups, 'page': page,
-                                   'isMonitor': settings.IS_MONITOR,
-                                   'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1,
-                                   'rooms': rooms, 'is_staff': is_staff})
-            # return render(request, '404.html')
+            return render(request, '404.html')
     else:
         return render(request, '404.html')
 

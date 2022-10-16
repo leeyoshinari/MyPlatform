@@ -200,54 +200,56 @@ Action列具有的一些操作：
 3、把修改后的jmx文件和其他依赖的文件一起打包，然后开始压测；<br>
 
 #### Test Task
-在所有待执行、执行中、已停止的测试记录都会显示在这里，只有测试完成后，才会显示Sample、TPS、RT、Error等数据。
-在这里，可以下载每个任务执行的JMeter文件，如果压测出现问题，可以下载文件看看是哪里出现问题了。
+在左侧点击 Test Task 可以查看所有的测试任务，所有待执行、执行中、已停止的测试记录都会显示在这里，只有测试完成后，才会显示Sample、TPS、RT、Error等数据。<br>
+在Actions列，可以下载每个任务执行的JMeter文件，如果压测出现问题，可以下载文件看看是哪里出现问题了。
 
-查看压测详情
+##### 查看压测详情
 在压测执行时或压测结束后，可以查看压测详情。
-当点击开始执行压测后，首先会生成压测所需要的文件，然后传给施压机，施压机会执行压测文件。此时页面会自动跳转到查看任务详情页面，由于压测初始化和产生压测结果需要时间，故需要等待一会儿才会在页面看到数据。
+当开始执行压测后，首先会生成压测所需要的文件，然后传给施压机，施压机会执行压测文件。此时页面会自动跳转到查看压测详情页面，由于压测初始化和产生压测结果需要时间，故需要等待一会儿才会在页面看到数据。<br>
+
 在压测详情页面可以的操作：
-停止压测：会立即停止压测；
-调整TPS：统一调整所有施压机的TPS；
-下载文件：下载该任务执行的JMeter文件；
+- 停止压测：会立即停止压测；
+- 调整TPS：统一调整所有施压机的TPS；
+- 下载文件：下载该任务执行的JMeter文件；
 
 每个施压机可以的操作：
-查看施压数据：查看单个施压机的压测数据；
-停止压测：停止该施压机的压测，其他施压机不停；
-下载日志：下载JMeter执行的日志；
-开始压测：启动该施压机开始压测，施压机启动需要一点时间，当启动后，就可以调整该施压机的TPS；
+- 查看施压数据：查看单个施压机的压测数据；
+- 停止压测：停止该施压机的压测，其他施压机不停；
+- 下载日志：下载该施压机的JMeter执行的日志；
+- 开始压测：启动该施压机开始压测，施压机启动需要一点时间，当启动后，就可以调整该施压机的TPS；
 
 ## 部署
 1、克隆 `git clone https://github.com/leeyoshinari/MyPlatform.git` ；
 
-2、进入目录 `cd MyPlatform`，修改配置文件`config.conf`；
+2、部署数据库、InfluxDB、Redis、MinIO；
 
-3、数据库初始化，依次执行下面命令；<br>
+3、进入目录 `cd MyPlatform`，修改配置文件`config.conf`；
+
+4、数据库初始化，依次执行下面命令；<br>
 ```shell script
 python3 manage.py migrate
-python3 manage.py makemigrations shell
-python3 manage.py makemigrations performance
+python3 manage.py makemigrations shell performance
 python3 manage.py migrate
 ```
 
-4、创建超级管理员账号；
+5、创建超级管理员账号；
 ```shell script
 python3 manage.py createsuperuser
 ```
 
-5、数据初始化，不初始化会导致上传jmeter文件报错；
+6、数据初始化，不初始化会导致上传jmeter文件报错；
 ```shell script
 python3 manage.py loaddata initdata.json
 ```
 
-6、处理所有静态文件；
+7、处理所有静态文件；
 ```shell script
 python3 manage.py collectstatic
 ```
 
-7、修改`startup.sh`中的端口号；
+8、修改`startup.sh`中的端口号；
 
-8、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`tencent`是url上下文，即url前缀，可根据自己需要修改)<br>
+9、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`tencent`是url上下文，即url前缀，可根据自己需要修改)<br>
 （1）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
 ```shell script
 location /tencent/static {
@@ -272,12 +274,30 @@ location /shell {  # 必须是shell
 }
 ```
 
-9、启动
+10、启动
 ```
 sh startup.sh
 ```
 
-10、访问页面，url是 `http://ip:port/上下文`
+11、访问页面，url是 `http://ip:port/上下文`
 
-11、访问权限控制页面，url是 `http://ip:port/上下文/admin`
+12、访问权限控制页面，url是 `http://ip:port/上下文/admin`
 
+13、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
+
+14、部署性能测试执行工具，[快点我](https://github.com/leeyoshinari/jmeter_agent)
+
+## QAQ：
+Q1：为什么shell会经常提醒 Session is in closed status？<br>
+A1：为了避免可能的无效连接占用服务器资源，对超过10分钟没有任何数据交互的连接进行关闭；同时由于客户端网络问题或其他各种异常，服务端也需要及时关闭无效连接。<br>
+
+Q2：为什么服务器资源监控工具部署不成功？<br>
+A2：首先核对Linux系统发行版本和CPU架构是否和部署包一致，然后查看部署日志。<br>
+
+Q3：为什么施压机上的压测工具部署不成功？<br>
+A3：同Q2<br>
+
+Q4：单台施压机支持的QPS多少？<br>
+A4：建议每台施压机的QPS不要超过1000/s。如果发现压力上不来，请先排除施压机和被测系统问题后，再增加一台施压机。<br>
+
+Q5：测试

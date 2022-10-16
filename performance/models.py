@@ -48,6 +48,7 @@ class ThreadGroup(models.Model):
 
     class Meta:
         db_table = 'jmeter_thread_group'
+        indexes = [models.Index(fields=['group'])]
 
 
 class TransactionController(models.Model):
@@ -64,6 +65,7 @@ class TransactionController(models.Model):
 
     class Meta:
         db_table = 'jmeter_controller'
+        indexes = [models.Index(fields=['group'])]
 
 
 class HTTPRequestHeader(models.Model):
@@ -106,6 +108,7 @@ class HTTPSampleProxy(models.Model):
 
     class Meta:
         db_table = 'jmeter_http_sample'
+        indexes = [models.Index(fields=['group'])]
 
 
 class PerformanceTestTask(models.Model):
