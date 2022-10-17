@@ -245,7 +245,7 @@
     }, 10000);
 
     function get_color(v1, v2, v3) {
-        return colors[(v1 * 0.5 + v2 * 0.3 + v3 * 0.2) / 10 |> parseInt];
+        return colors[parseInt((v1 * 0.5 + v2 * 0.3 + v3 * 0.2) / 10)];
     }
 
     $("#MonitorList").click(function () {

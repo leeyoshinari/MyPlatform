@@ -202,7 +202,11 @@ def create_room(request):
             operate_type = request.POST.get('operateType')
             room_id = request.POST.get('roomId')
             if operate_type == 'add':
-                room = ServerRoom.objects.create(id=primaryKey(), name=room_name, type=room_type, operator=username)
+                try:
+                    _ = ServerRoom.objects.get(name=room_name, type=room_type)
+                    return result(msg='Server room has been created ~')
+                except ServerRoom.DoesNotExist:
+                    room = ServerRoom.objects.create(id=primaryKey(), name=room_name, type=room_type, operator=username)
             if operate_type == 'delete':
                 room = ServerRoom.objects.get(id=room_id).delete()
             logger.info(f'{operate_type} server room {room_name} success, operator: {username}')

@@ -125,9 +125,9 @@ def visualize(request):
             spec_host = spec_host if spec_host else 'all'
             spec_group = request.GET.get('group')
             spec_room = request.GET.get('room')
-            starttime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-1800))
+            starttime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-600))
             endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-            groups = request.user.groups.all()
+            groups = request.user.groups.all().order_by('-id')
             if spec_group:
                 servers = Servers.objects.values('host', 'room_id').filter(group_id=spec_group).order_by('-id')
             else:
