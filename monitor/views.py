@@ -237,7 +237,7 @@ def plot_monitor(request):
             if host == 'all':
                 res = draw_data_from_db(room=room_id, group=group_identifier['key'], host=host, startTime=start_time, endTime=end_time)
                 if res['code'] == 1:
-                    raise Exception(res['message'])
+                    raise Exception(res['msg'])
                 servers = Servers.objects.filter(group_id=group_id, room_id=room_id)
                 server_keys = monitor_server.get_all_keys()
                 hosts = [s.host for s in servers if 'Server_' + s.host in server_keys]
@@ -257,7 +257,7 @@ def plot_monitor(request):
                 if servers and server_dict:
                     res = draw_data_from_db(room=room_id, group=group_identifier['key'], host=host, startTime=start_time, endTime=end_time)
                     if res['code'] == 1:
-                        raise Exception(res['message'])
+                        raise Exception(res['msg'])
                     monitor_data = monitor_server.get_value_by_host('Server_' + host)
                     res.update({'gc': monitor_data['gc']})
                     res['gc'].append(monitor_data['ffgc'])

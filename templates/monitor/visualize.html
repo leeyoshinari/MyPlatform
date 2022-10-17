@@ -182,7 +182,7 @@
                 dataType: "json",
                 success: function (data) {
                     if (data['code'] === 0) {
-                        $.Toast(data['message'], 'success');
+                        $.Toast(data['msg'], 'success');
                         specific_host = host;
                         plot(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
                             data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['jvm'], data['post_data']['disk'],
@@ -192,7 +192,7 @@
                         document.getElementById('start-time').value = data['post_data']['time'];
                         document.getElementById('endtime').value = date_to_date(data['post_data']['time'], 0);
                     } else {
-                        $.Toast(data['message'], 'error');
+                        $.Toast(data['msg'], 'error');
                     }
                     $('.modal_cover').css("display", "none");
                     $('.modal_gif').css("display", "none");
@@ -233,7 +233,7 @@
                             document.getElementById('endtime').value = date_to_date(data['post_data']['time'], 0);
                         }
                     } else {
-                        $.Toast(data['message'], 'error');
+                        $.Toast(data['msg'], 'error');
                     }
                 }
             });
@@ -249,7 +249,7 @@
     }
 
     $("#MonitorList").click(function () {
-        plot('all');
+        plot_init('all');
     });
     function change_group() {
         let group_id = document.getElementById('group').value;
@@ -266,6 +266,7 @@
                         roomObj.options.add(new Option(data['data']['rooms'][i]['name'], data['data']['rooms'][i]['id']));
                     }
                     refresh_server_list(data['data']['hosts']);
+                    plot_init('all');
                     $.Toast(data['msg'], 'success');
                 } else {
                     $.Toast(data['msg'], 'error');
@@ -289,6 +290,7 @@
             success: function (data) {
                 if (data['code'] === 0) {
                     refresh_server_list(data['data']['hosts']);
+                    plot_init('all');
                 } else {
                     $.Toast(data['msg'], 'error');
                 }
