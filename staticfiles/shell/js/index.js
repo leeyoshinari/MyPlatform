@@ -401,7 +401,7 @@ function server_modal(data) {
     submit_a.onclick = function() {
         let ServerId = document.getElementById("ID").value;
         let GroupName = document.getElementById("GroupName").value;
-        let ServerRoom = document.getElementById("ServerRoom").value;
+        let ServerRoom = document.getElementById("Server-room").value;
         let ServerName = document.getElementById('ServerName').value;
         let ServerIP = document.getElementById('ServerIP').value;
         let Port = document.getElementById('Port').value;
