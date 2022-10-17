@@ -528,13 +528,15 @@ def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=N
                                        settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
         if not start_time:     # If there is a start time and an end time
             start_time = strfDeltaTime(1800)
+        if not end_time:
+            end_time = strfTime()
 
-        if end_time:
-            sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
-                  f"host='{host}' and time>'{start_time}' and time<='{end_time}' tz('Asia/Shanghai')"
-        else:
+        if delta == '520':
             sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
                   f"host='{host}' and time>'{start_time}'"
+        else:
+            sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
+                  f"host='{host}' and time>'{start_time}' and time<='{end_time}' tz('Asia/Shanghai')"
 
         logger.info(f'Execute SQL: {sql}')
         datas = conn.query(sql)

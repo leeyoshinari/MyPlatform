@@ -290,7 +290,7 @@
             success: function (data) {
                 if (data['code'] === 0) {
                     refresh_server_list(data['data']['hosts']);
-                    plot_init('all');
+                    if (is_modal === 1) {plot_init('all');}
                 } else {
                     $.Toast(data['msg'], 'error');
                 }
