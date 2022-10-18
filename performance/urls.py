@@ -54,7 +54,7 @@ urlpatterns = [
     path('task/getIdleServer', taskViews.get_idle_server, name='get_idle_server'),
     path('task/getUsedServer', taskViews.get_used_server, name='get_used_server'),
     path('task/getRunningServer', taskViews.get_running_server, name='get_running_server'),
-    path('task/autoRun', views.auto_run_task, name='auto_run_test'),
+    path('task/autoRun', views.request_auto_run, name='auto_run_test'),
 
     path('group', threadViews.home, name='group_home'),
     path('group/add', threadViews.add_group, name='group_add'),

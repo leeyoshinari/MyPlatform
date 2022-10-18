@@ -60,24 +60,24 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5, 
                     trs[0].remove();
                 }
                 for(let i=0; i<all_host.length; i++) {
-                    s += '<tr class="running"><td>' + all_host[i]['host'] + '</td><td>' + all_host[i]['tps'] + '</td>';
+                    s += '<tr class="running"><td style="text-align: center;">' + all_host[i]['host'] + '</td><td style="text-align: center;">' + all_host[i]['tps'] + '</td>';
                     if (all_host[i]['cpu']) {
-                        s += '<td>' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['mem']) {
-                        s += '<td>' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['disk']) {
-                        s += '<td>' + all_host[i]['disk'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['disk_size'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['network_speed']) {
-                        s += '<td>' + all_host[i]['network_speed'] + 'Mb/s</td><td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['network_speed'] + 'Mb/s</td><td>';
                     } else {
                         s += '<td></td><td>';
                     }
@@ -121,24 +121,24 @@ function get_used_server(task_id, url, url1) {
                     trs[0].remove();
                 }
                 for(let i=0; i<all_host.length; i++) {
-                    s += '<tr class="running"><td>' + all_host[i]['host'] + '</td><td>' + all_host[i]['tps'] + '</td>';
+                    s += '<tr class="running"><td style="text-align: center;">' + all_host[i]['host'] + '</td><td style="text-align: center;">' + all_host[i]['tps'] + '</td>';
                     if (all_host[i]['cpu']) {
-                        s += '<td>' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['mem']) {
-                        s += '<td>' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['disk']) {
-                        s += '<td>' + all_host[i]['disk'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['disk_size'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['network_speed']) {
-                        s += '<td>' + all_host[i]['network_speed'] + 'Mb/s</td><td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['network_speed'] + 'Mb/s</td><td>';
                     } else {
                         s += '<td></td><td>';
                     }
@@ -165,24 +165,24 @@ function get_idle_server(room_id, url, task_id, url1) {
                 let s = "";
                 let all_host = data['data'];
                 for(let i=0; i<all_host.length; i++) {
-                    s += '<tr class="idling"><td>' + all_host[i]['host'] + '</td><td>0</td>';
+                    s += '<tr class="idling"><td style="text-align: center;">' + all_host[i]['host'] + '</td><td style="text-align: center;">0</td>';
                     if (all_host[i]['cpu']) {
-                        s += '<td>' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['mem']) {
-                        s += '<td>' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['disk']) {
-                        s += '<td>' + all_host[i]['disk'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['disk_size'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['network_speed']) {
-                        s += '<td>' + all_host[i]['network_speed'] + 'Mb/s</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['network_speed'] + 'Mb/s</td>';
                     } else {
                         s += '<td></td>';
                     }
