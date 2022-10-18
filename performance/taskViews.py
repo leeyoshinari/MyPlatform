@@ -453,7 +453,6 @@ def get_running_server(request):
             username = request.user.username
             task_id = request.GET.get('id')
             hosts = TestTaskLogs.objects.values('value', 'action').filter(task_id=task_id, action=1)
-            task = PerformanceTestTask.objects.values('status').get(id=task_id)
             host_info = []
             for h in hosts:
                 jmeter_server_dict = get_value_by_host('jmeterServer_' + h['value'])
@@ -464,7 +463,7 @@ def get_running_server(request):
                 host_dict.update({'action': h['action']})
                 host_info.append(host_dict)
             logger.info(f'Query running servers success, operator: {username}')
-            return result(msg='Get running servers success ~', data={'host_info': host_info, 'status': task['status']})
+            return result(msg='Get running servers success ~', data=host_info)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get running servers failure ~')

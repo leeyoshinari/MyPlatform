@@ -47,12 +47,12 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5, 
         url: url + '?id=' + task_id,
         success: function (data) {
             if (data['code'] === 0) {
-                if (data['data']['status'] > 1) {
+                let s = "";
+                let all_host = data['data'];
+                if (all_host.length === 0) {
                     window.location.reload();
                     return;
                 }
-                let s = "";
-                let all_host = data['data']['host_info'];
                 let server_num = 0;
                 let trs = document.getElementById('tbody').getElementsByClassName('running');
                 let trs_length = trs.length;
@@ -62,17 +62,17 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5, 
                 for(let i=0; i<all_host.length; i++) {
                     s += '<tr class="running"><td style="text-align: center;">' + all_host[i]['host'] + '</td><td style="text-align: center;">' + all_host[i]['tps'] + '</td>';
                     if (all_host[i]['cpu']) {
-                        s += '<td style="text-align: center;">' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['cpu'] + ' Core(s) / ' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['mem']) {
-                        s += '<td style="text-align: center;">' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['mem'] + 'G / ' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
-                    if (all_host[i]['disk']) {
-                        s += '<td style="text-align: center;">' + all_host[i]['disk_size'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
+                    if (all_host[i]['disk_size']) {
+                        s += '<td style="text-align: center;">' + all_host[i]['disk_size'] + ' / ' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
@@ -123,17 +123,17 @@ function get_used_server(task_id, url, url1) {
                 for(let i=0; i<all_host.length; i++) {
                     s += '<tr class="running"><td style="text-align: center;">' + all_host[i]['host'] + '</td><td style="text-align: center;">' + all_host[i]['tps'] + '</td>';
                     if (all_host[i]['cpu']) {
-                        s += '<td style="text-align: center;">' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['cpu'] + ' Core(s) / ' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['mem']) {
-                        s += '<td style="text-align: center;">' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['mem'] + 'G / ' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
-                    if (all_host[i]['disk']) {
-                        s += '<td style="text-align: center;">' + all_host[i]['disk_size'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
+                    if (all_host[i]['disk_size']) {
+                        s += '<td style="text-align: center;">' + all_host[i]['disk_size'] + ' / ' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
@@ -167,17 +167,17 @@ function get_idle_server(room_id, url, task_id, url1) {
                 for(let i=0; i<all_host.length; i++) {
                     s += '<tr class="idling"><td style="text-align: center;">' + all_host[i]['host'] + '</td><td style="text-align: center;">0</td>';
                     if (all_host[i]['cpu']) {
-                        s += '<td style="text-align: center;">' + all_host[i]['cpu'] + 'core(s)/' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['cpu'] + ' Core(s) / ' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
                     if (all_host[i]['mem']) {
-                        s += '<td style="text-align: center;">' + all_host[i]['mem'] + 'G/' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
+                        s += '<td style="text-align: center;">' + all_host[i]['mem'] + 'G / ' + all_host[i]['mem_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }
-                    if (all_host[i]['disk']) {
-                        s += '<td style="text-align: center;">' + all_host[i]['disk_size'] + '/' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
+                    if (all_host[i]['disk_size']) {
+                        s += '<td style="text-align: center;">' + all_host[i]['disk_size'] + ' / ' + all_host[i]['disk_usage'].toFixed(2) + '%</td>';
                     } else {
                         s += '<td></td>';
                     }

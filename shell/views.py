@@ -17,7 +17,8 @@ from django.db.models.deletion import ProtectedError
 from common.Result import result
 from common.generator import primaryKey
 from .models import Servers, ServerRoom, GroupIdentifier
-from .channel.ssh import get_server_info, UploadAndDownloadFile, deploy_mon, stop_mon
+from .channel.ssh import get_server_info, UploadAndDownloadFile
+from .channel.deployAgent import deploy_mon, stop_mon
 
 
 logger = logging.getLogger('django')

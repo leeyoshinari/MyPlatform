@@ -77,7 +77,7 @@ def request_auto_run(request):
 def auto_run_task():
     global is_auto_run
     if not is_auto_run:
-        index = 1
+        index = 0
         is_auto_run = True
         while True:
             try:
@@ -85,7 +85,7 @@ def auto_run_task():
                 logger.info(f'Total auto test task is {len(tasks)}')
                 if len(tasks) == 0:
                     index += 1
-                if index > 5:
+                if index > 3:
                     is_auto_run = False
                     break
                 for task in tasks:
