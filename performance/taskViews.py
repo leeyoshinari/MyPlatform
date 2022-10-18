@@ -53,16 +53,26 @@ def home(request):
         return render(request, '404.html')
 
 
+def register_first(request):
+    if request.method == 'POST':
+        value = request.body.decode()
+        host = json.loads(value).get('host')
+        settings.REDIS.set(f'jmeterServer_{host}', value, ex=settings.HEARTBEAT)
+        logger.info(f'Jmeter Agent: {host} registers successfully ~')
+        return result(msg='Agent registers successfully ~',data={'influx': {'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
+                      'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE},
+                      'redis': {'host': settings.REDIS_HOST, 'port': settings.REDIS_PORT, 'password': settings.REDIS_PWD,
+                       'db': settings.REDIS_DB}, 'key_expire': settings.PERFORMANCE_EXPIRE})
+
+
 def register(request):
     if request.method == 'POST':
         value = request.body.decode()
         host = json.loads(value).get('host')
         settings.REDIS.set(f'jmeterServer_{host}', value, ex=settings.HEARTBEAT)
-        logger.info(f'Agent: {host} registers successfully ~')
-        return result(msg='Agent registers successfully ~',data={'influx': {'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
-                      'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE},
-                      'redis': {'host': settings.REDIS_HOST, 'port': settings.REDIS_PORT, 'password': settings.REDIS_PWD,
-                       'db': settings.REDIS_DB}, 'key_expire': settings.PERFORMANCE_EXPIRE})
+        logger.debug(f'The request parameters are {value}')
+        logger.info(f'Jmeter Agent: {host} registers successfully ~')
+        return result(msg='Agent registers successfully ~')
 
 
 def add_to_task(request):

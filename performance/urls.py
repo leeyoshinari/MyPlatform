@@ -38,6 +38,7 @@ urlpatterns = [
     path('plan/variable', planViews.edit_variable, name='plan_variable'),
 
     path('task', taskViews.home, name='task_home'),
+    path('task/register/first', taskViews.register_first, name='agent_register'),
     path('task/register', taskViews.register, name='agent_register'),
     path('task/status', taskViews.get_running_status, name='task_status'),
     path('task/add', taskViews.add_to_task, name='task_add'),

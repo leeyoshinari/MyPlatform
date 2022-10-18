@@ -20,9 +20,8 @@ class Process(object):
     def agent_setter(self, value):
         logger.debug(f'The client registration data is {value}')
         key = 'Server_' + value['host']
-        # value['disks'] = value['disks'].split(',')
         settings.REDIS.set(key, json.dumps(value, ensure_ascii=False), ex=settings.HEARTBEAT)
-        logger.info(f'{key} server registered successfully!')
+        logger.info(f'Monitor {key} server registered successfully!')
 
     def get_gc(self, ip, port, interface):
         """
