@@ -32,7 +32,7 @@ body{
 
 .home_list {
     float: left;
-    width: 10%;
+    width: 220px;
     margin-top: 3px;
     margin-left: 1%;
 }
@@ -174,7 +174,7 @@ tr:hover td {
 .myModal {
     display: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 110;
     padding-top: 100px;
     left: 0;
     top: 0;
@@ -305,22 +305,21 @@ tr:hover td {
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 198;
     background-color: rgba(0, 0, 0, .6);
 }
 .modal_gif {
     display: none;
     position: absolute;
-    width: 100px;
-    z-index: 99;
-    height: 100px;
-    /* 水平垂直居中 */
-    left: 45%;
-    top: 45%;
+    width: 130px;
+    z-index: 199;
+    height: 180px;
+    left: 48%;
+    top: 48%;
     transform: translate(-50%,-50%);
-    /* 超出高度右侧出现垂直滚动条 */
     overflow:auto;
     overflow-x:hidden;
     background: url("loading.gif") no-repeat;
-    background-size: 80px 80px;
+    background-size: 100px 136px;
 }
 

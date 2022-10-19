@@ -173,11 +173,11 @@ function upload_file(path) {
                         let msg = "";
                         let level = "success";
                         if (success_num > 0) {
-                            msg += success_num + '个文件上传成功';
+                            msg += success_num + ' files upload success';
                         }
                         if (failure_num > 0) {
                             if (msg.length > 0) {msg += '，';}
-                            msg += failure_num + '个文件上传失败';
+                            msg += failure_num + ' files upload failure';
                             level = "error";
                         }
                         $.Toast(msg, level);

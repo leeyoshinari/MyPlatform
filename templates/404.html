@@ -4,4 +4,9 @@
     <div style="text-align: center;margin-top: 5%;">
         <img style="width: 960px;" src="{% static 'img/404.jpg' %}">
     </div>
+    {% if msg %}
+        <script type="text/javascript">
+            $.Toast('{{ msg }}', 'error');
+        </script>
+    {% endif %}
 {% endblock %}

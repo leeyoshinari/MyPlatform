@@ -50,3 +50,19 @@ class Servers(models.Model):
     class Meta:
         db_table = 'server'
         indexes = [models.Index(fields=['host'])]
+
+
+class Packages(models.Model):
+    id = models.CharField(max_length=16, primary_key=True, verbose_name='primary key')
+    name = models.CharField(max_length=64, verbose_name='package name')
+    type = models.CharField(max_length=16, verbose_name='package type, monitor-agent, jmeter-agent, java, jmeter')
+    system = models.CharField(max_length=64, verbose_name='system')
+    arch = models.CharField(max_length=10, verbose_name='system architecture')
+    path = models.CharField(max_length=128, verbose_name='package store path')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
+    update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
+    operator = models.CharField(max_length=50, verbose_name='operator')
+    objects = models.Manager()
+
+    class Meta:
+        db_table = 'packages'

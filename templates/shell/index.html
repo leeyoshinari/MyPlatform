@@ -51,14 +51,7 @@
                     <td style="text-align: center;">{{ host.disk }}</td>
                     <td>
                         <a target="_blank" href="{% url 'shell:open_shell' %}?ip={{ host.host }}">OpenShell</a>
-                        {% if isMonitor == 1 %}
-                            {% if host.host in keys %}
-                                <a target="_blank" href="{% url 'monitor:visualize' %}?group={{ host.group.id }}&room={{ host.room.id }}&host={{ host.host }}">ViewMonitor</a>
-                                <a onclick="stop_mon('{{ host.host }}')">StopMonitor</a>
-                            {% else %}
-                                <a onclick="deploy('{{ host.host }}')">DeployMonitor</a>
-                            {% endif %}
-                        {% endif %}
+                        <a target="_self" href="{% url 'shell:package_home' %}?ip={{ host.host }}">Deploy</a>
                         {% if is_staff %}
                             <a onclick="edit_server('{{ host.id }}')">Edit</a>
                             <a href="" onclick="delete_server('{{ host.id }}')">Delete</a>
@@ -305,16 +298,14 @@
             </div>
         </div>
     </div>
-    <div class="modal_cover">
-        <div class="modal_gif"></div>
-    </div>
+    <div class="modal_cover"><div class="modal_gif"></div></div>
+{% endblock %}
+{% block define_js %}
+    <script src="{% static 'shell/js/index.js' %}"></script>
     <script type="text/javascript">
     $(function () {
         PagingManage($("#paging"), {{ total_page }}, {{ page }}, '{% url 'shell:index' %}?pageSize=' + {{ page_size }} + '&page=')
     });
     </script>
-{% endblock %}
-{% block define_js %}
-    <script src="{% static 'shell/js/index.js' %}"></script>
 {% endblock %}
 

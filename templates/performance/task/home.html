@@ -32,7 +32,11 @@
 {% block table_body %}
     {% for task in tasks %}
         <tr>
-            <td title="{{ task.plan.comment }}"><a href="{% url 'perf:plan_home' %}?keyWord={{ task.plan.name }}">{{ task.plan.name }}</a></td>
+            {% if task.plan.is_file == 1 %}
+                <td title="{{ task.plan.comment }}"><a href="{% url 'perf:jmeter_home' %}?keyWord={{ task.plan.name }}">{{ task.plan.name }}</a></td>
+            {% else %}
+                <td title="{{ task.plan.comment }}"><a href="{% url 'perf:plan_home' %}?keyWord={{ task.plan.name }}">{{ task.plan.name }}</a></td>
+            {% endif %}
             <td>{{ task.server_room.name }}</td>
             <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
             <td style="text-align: center;">{{ task.plan.schedule | get_value_from_list:'plan_schedule' }}</td>

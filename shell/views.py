@@ -16,7 +16,7 @@ from django.db.models import Q
 from django.db.models.deletion import ProtectedError
 from common.Result import result
 from common.generator import primaryKey
-from .models import Servers, ServerRoom, GroupIdentifier
+from .models import Servers, ServerRoom, GroupIdentifier, Packages
 from .channel.ssh import get_server_info, UploadAndDownloadFile
 from .channel.deployAgent import deploy_mon, stop_mon
 
@@ -24,8 +24,12 @@ from .channel.deployAgent import deploy_mon, stop_mon
 logger = logging.getLogger('django')
 current_path = os.path.abspath(os.path.dirname(__file__))
 upload_file_path = os.path.join(current_path, 'uploadFile')
+deploy_path = settings.DEPLOY_PATH
+local_file_path = os.path.join(settings.BASE_DIR, 'MyPlatform', 'files')
 if not os.path.exists(upload_file_path):
     os.mkdir(upload_file_path)
+if not os.path.exists(local_file_path):
+    os.mkdir(local_file_path)
 
 
 def index(request):
@@ -41,9 +45,8 @@ def index(request):
             rooms = ServerRoom.objects.all().order_by('-create_time')
             total_num = Servers.objects.filter(group__in=groups).count()
             servers = Servers.objects.filter(group__in=groups).order_by('-id')[(page - 1) * page_size: page * page_size]
-            monitor_keys = settings.REDIS.keys('Server_*')
             logger.info(f'access shell index.html. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'keys': monitor_keys, 'page': page, 'isMonitor': settings.IS_MONITOR,
+            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page,
                                                                 'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1,
                                                                 'rooms': rooms, 'is_staff': is_staff})
         except:
@@ -233,6 +236,19 @@ def delete_server(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Delete server failure ~')
 
+def delete_package(request):
+    if request.method == 'GET':
+        try:
+            package_id = request.GET.get('id')
+            username = request.user.username
+            package = Packages.objects.get(id=package_id)
+            os.remove(package.path)
+            package.delete()
+            logger.info(f'Delete server success. operator: {username}, package id: {package.id}, package name: {package.name}')
+            return result(code=0, msg='Delete package success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Delete package failure ~')
 
 def search_server(request):
     if request.method == 'GET':
@@ -262,8 +278,8 @@ def search_server(request):
             is_staff = request.user.is_staff
             rooms = ServerRoom.objects.all().order_by('-create_time')
             logger.info(f'search server success. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': 0, 'isMonitor': settings.IS_MONITOR,
-                                                                'rooms': rooms, 'is_staff': is_staff, 'page_size': 200, 'total_page': 0})
+            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': 0, 'rooms': rooms,
+                                                                'is_staff': is_staff, 'page_size': 200, 'total_page': 0})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -329,7 +345,7 @@ def upload_file(request):
                     f.write(data.read())
                 return result(code=0, msg='upload file success ~')
         except:
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return result(code=1, msg='upload file failure ~')
 
 def download_file(request):
@@ -359,10 +375,11 @@ def download_file(request):
         return render(request, '404.html')
 
 def deploy_monitor(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
         try:
             username = request.user.username
-            host = request.GET.get('host')
+            host = request.POST.get('host')
+            package_id = request.POST.get('id')
             if not settings.REDIS.keys('Server_' + host):
                 servers = Servers.objects.get(host=host)
                 local_file = f"{servers.system.split(' ')[0].strip().lower()}_{servers.arch.strip().lower()}_agent.zip"
@@ -429,3 +446,53 @@ def get_all_room(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get Groups error ~')
 
+def package_home(request):
+    if request.method == 'GET':
+        username = request.user.username
+        groups = request.user.groups.all()
+        host = request.GET.get('ip')
+        try:
+            if host:
+                servers = Servers.objects.get(host=host, group__in=groups)
+                packages = Packages.objects.all().order_by('-create_time')
+                logger.info(f'Query package list success, operator: {username}')
+                return render(request, 'shell/packages.html', context={'servers': servers, 'packages': packages})
+            else:
+                packages = Packages.objects.all().order_by('-create_time')
+                logger.info(f'Query package list success, operator: {username}')
+                return render(request, 'shell/packages.html', context={'packages': packages})
+        except Servers.DoesNotExist:
+            logger.error(f'You have no permission to access {host}, operator: {username}')
+            return render(request, '404.html', context={'msg': f'You have no permission to access {host} ~'})
+        except:
+            logger.error(traceback.format_exc())
+            return render(request, '404.html')
+
+
+def package_upload(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            form = request.FILES['file']
+            file_name = form.name
+            # file_size = form.size
+            content_type = form.content_type
+            if 'zip' not in content_type:
+                logger.error(f'File {file_name} format is not zip, operator: {username}')
+                return result(code=1, msg='File format is not zip ~')
+            data = form.file
+            system = request.POST.get('system')
+            agent_type = request.POST.get('agent_type')
+            arch = request.POST.get('arch')
+            file_path = os.path.join(local_file_path, file_name)
+            if os.path.exists(file_path):
+                logger.error(f'File {file_name} is existed, operator: {username}')
+                return result(code=1, msg=f'File {file_name} is existed ~')
+            with open(file_path, 'wb') as f:
+                f.write(data.read())
+            Packages.objects.create(id=primaryKey(), name=file_name, path=file_path, system=system, arch=arch, type=agent_type, operator=username)
+            logger.info(f'File {file_name} upload success, operator: {username}')
+            return result(code=0, msg='upload file success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='upload file failure ~')

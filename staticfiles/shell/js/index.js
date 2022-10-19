@@ -111,7 +111,6 @@ document.getElementById('addServer').addEventListener('click', function () {
         }
         $.ajax({
             type: 'POST',
-            async: false,
             url: 'add/server',
             data: post_data,
             dataType: 'json',
