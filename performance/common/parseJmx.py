@@ -293,6 +293,8 @@ def parse_ConstantThroughputTimer(jmeter_file, number_of_samples, enabled = 'tru
 
 
 def modify_jmeter(jmeter_path, target_path, run_type, schedule, num_threads, duration, number_of_samples):
+    user_agent = '<elementProp name="User-Agent" elementType="Header"><stringProp name="Header.name">User-Agent' \
+                 '</stringProp><stringProp name="Header.value">PerformanceTest</stringProp></elementProp>'
     if schedule == 1: duration += 600
     with open(jmeter_path, 'r', encoding='utf-8') as f:
         jmeter_file = f.read()
@@ -308,9 +310,7 @@ def modify_jmeter(jmeter_path, target_path, run_type, schedule, num_threads, dur
         res = jmeter_list[0] + ConstantThroughputTimer + '<ThreadGroup' + jmeter_list[1]
     else:
         res = re.sub('<ConstantThroughputTimer([\s\S]+?)</ConstantThroughputTimer>', ConstantThroughputTimer, res)
+    res = re.sub('<elementProp name="User-Agent" elementType="Header">([\s\S]+?)</elementProp>', user_agent, res)
+    res = re.sub('<elementProp name="user-agent" elementType="Header">([\s\S]+?)</elementProp>', user_agent, res)
     with open(target_path, 'w', encoding='utf-8') as f:
         f.write(res)
-
-
-if __name__ == '__main__':
-    file_path = 'E:\\apache-jmeter-5.4.3\\backups\\test.jmx'

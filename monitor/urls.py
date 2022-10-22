@@ -19,18 +19,15 @@ from . import views
 
 app_name = 'monitor'
 urlpatterns = [
-    path('home', views.home, name='home'),
-    # path('startMonitor', views.start_monitor, name='start_monitor'),
-    # path('getMonitor', views.get_monitor, name='get_monitor'),
-    path('visualize', views.visualize, name='visualize'),
-    # path('course_zh_CN', views.course_zh_CN, name='course_zh_CN'),
-    # path('course_en', views.course_en, name='course_en'),
-    path('register', views.registers, name='register'),
-    path('register/first', views.register_first, name='register_first'),
-    path('getPortAndDisk', views.get_port_disk, name='get_port_disk'),
-    # path('runMonitor', views.run_monitor, name='run_monitor'),
-    path('plotMonitor', views.plot_monitor, name='plot_monitor'),
+    path('server/home', views.home, name='home'),
+    path('server/visualize', views.visualize, name='visualize'),
+    path('server/register', views.registers, name='register'),
+    path('server/register/first', views.register_first, name='register_first'),
+    path('server/getPortAndDisk', views.get_port_disk, name='get_port_disk'),
+    path('server/plotMonitor', views.plot_monitor, name='plot_monitor'),
     path('register/notification', views.notice, name='notification'),
-    path('change/group', views.change_group, name='change_group'),
-    path('change/room', views.change_room, name='change_room'),
+    path('server/change/group', views.change_group, name='change_group'),
+    path('server/change/room', views.change_room, name='change_room'),
+
+    path('nginx/register/first', views.nginx_register_first, name='nginx_register_first'),
 ] if settings.IS_MONITOR == 1 else []

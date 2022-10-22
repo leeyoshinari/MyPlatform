@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
-import os
 import json
 import time
 
@@ -135,7 +134,8 @@ def generator_sample_arguments(arguments):
     return argument_str
 
 def generator_header(headers):
-    h_str = ''
+    h_str = '<elementProp name="User-Agent" elementType="Header"><stringProp name="Header.name">User-Agent</stringProp>' \
+            '<stringProp name="Header.value">PerformanceTest</stringProp></elementProp>'
     for k, v in headers.value.items():
         h_str += '<elementProp name="%s" elementType="Header"><stringProp name="Header.name">%s</stringProp>' \
                  '<stringProp name="Header.value">%s</stringProp></elementProp>' %(k, k, v)

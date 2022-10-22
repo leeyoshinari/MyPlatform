@@ -32,11 +32,10 @@ urlpatterns = [
     path('search/server', views.search_server, name='search_server'),
     path('file/upload', views.upload_file, name='upload_file'),
     path('file/download', views.download_file, name='download_file'),
-    path('monitor/deploy', views.deploy_monitor, name='deploy_monitor'),
-    path('monitor/stop', views.stop_monitor, name='stop_monitor'),
 
     path('package/home', views.package_home, name='package_home'),
     path('package/delete', views.delete_package, name='delete_package'),
-    path('package/deploy', views.deploy_monitor, name='deploy_package'),
+    path('package/deploy', views.deploy_package, name='deploy_package'),
+    path('package/stop', views.uninstall_deploy, name='stop_package'),
     path('package/upload', views.package_upload, name='upload_package'),
 ]

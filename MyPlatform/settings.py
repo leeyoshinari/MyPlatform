@@ -204,6 +204,9 @@ LOGGING = {
 HEARTBEAT = 12  # heart beat time, unit: second(s)
 PERFORMANCE_EXPIRE = 604800  # performance test redis keys expire time, 7D
 
+# performance test user agent
+USER_AGENT = 'PerformanceTest'
+
 #The path of deploying agent
 DEPLOY_PATH =get_config('deployPath')
 

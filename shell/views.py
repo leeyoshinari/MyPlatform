@@ -16,9 +16,10 @@ from django.db.models import Q
 from django.db.models.deletion import ProtectedError
 from common.Result import result
 from common.generator import primaryKey
+from common.customException import MyException
 from .models import Servers, ServerRoom, GroupIdentifier, Packages
 from .channel.ssh import get_server_info, UploadAndDownloadFile
-from .channel.deployAgent import deploy_mon, stop_mon
+from .channel.deployAgent import deploy, stop_deploy
 
 
 logger = logging.getLogger('django')
@@ -135,7 +136,7 @@ def edit_server(request):
             return result(msg='Edit server success ~ ')
         except Servers.DoesNotExist:
             logger.error(f'Please do not modify server id and host ~')
-            return result(code=2, msg='Please do not modify server id and host ~')
+            return result(code=1, msg='Please do not modify server id and host ~')
         except Exception as err:
             logger.error(traceback.format_exc())
             return result(code=1, msg=err)
@@ -374,53 +375,58 @@ def download_file(request):
     else:
         return render(request, '404.html')
 
-def deploy_monitor(request):
+def deploy_package(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            groups = request.user.groups.all()
             host = request.POST.get('host')
             package_id = request.POST.get('id')
-            if not settings.REDIS.keys('Server_' + host):
-                servers = Servers.objects.get(host=host)
-                local_file = f"{servers.system.split(' ')[0].strip().lower()}_{servers.arch.strip().lower()}_agent.zip"
-                local_file_path = os.path.join('monitor','agent', local_file)
-                if not os.path.exists(local_file_path):
-                    return result(code=1, msg=f'{local_file} is not exist ~')
-                res = deploy_mon(host = servers.host, port = servers.port, user = servers.user, pwd = servers.pwd,
-                                 current_time = servers.id, local_path=local_file_path, file_name=local_file)
-                if res['code'] > 0:
-                    return result(code=1, msg=res['msg'])
-                else:
-                    logger.info(f'deploy monitor success, file: {local_file_path}, operator: {username}')
-                    return result(msg='deploy monitor success ~')
+            servers = Servers.objects.get(host=host, group__in=groups)
+            package = Packages.objects.get(id=package_id)
+            if not os.path.exists(package.path):
+                return result(code=1, msg=f'{package.name} is not exist ~')
+            if package.system.lower() in servers.system.lower() and package.arch.lower() in servers.arch.lower():
+                deploy(host = servers.host, port = servers.port, user = servers.user, pwd = servers.pwd, deploy_path=deploy_path,
+                       current_time = servers.id, local_path=package.path, file_name=package.name, package_type=package.type)
+                logger.info(f'Deploy {package.name} success, operator: {username}')
+                return result(msg=f'Deploy {package.name} success ~')
             else:
-                logger.warning(f'Host {host} has been monitored ~')
-                return result(code=1, msg=f'Host {host} has been monitored ~')
+                logger.error(f'System or arch do not match, operator: {username}')
+                return result(code=1, msg='System or Arch do not match, Please check it ~')
+        except Servers.DoesNotExist:
+            logger.error(f'You have no permission to access {host}, operator: {username}')
+            return result(code=1, msg=f'You have no permission to access {host} ~')
+        except MyException as err:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg=err)
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='deploy monitor failure ~ ')
+            return result(code=1, msg='Deploy failure ~ ')
 
 
-def stop_monitor(request):
+def uninstall_deploy(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            groups = request.user.groups.all()
             host = request.GET.get('host')
-            if settings.REDIS.keys('Server_' + host):
-                servers = Servers.objects.get(host=host)
-                res = stop_mon(host=servers.host, port=servers.port, user=servers.user, pwd=servers.pwd,
-                                 current_time=servers.id)
-                if res['code'] > 0:
-                    return result(code=1, msg=res['msg'])
-                else:
-                    logger.info(f'stop monitor success, operator: {username}')
-                    return result(msg='stop monitor success ~')
-            else:
-                logger.warning(f'Host {host} has not been monitored ~')
-                return result(code=1, msg=f'Host {host} has not been monitored ~')
+            package_id = request.POST.get('id')
+            servers = Servers.objects.get(host=host, group__in=groups)
+            package = Packages.objects.get(id=package_id)
+            stop_deploy(host=servers.host, port=servers.port, user=servers.user, pwd=servers.pwd,
+                        current_time=servers.id, package_type=package.type, deploy_path=deploy_path)
+            logger.info(f'Uninstall success, operator: {username}')
+            return result(msg='Uninstall success ~')
+        except Servers.DoesNotExist:
+            logger.error(f'You have no permission to access {host}, operator: {username}')
+            return result(code=1, msg=f'You have no permission to access {host} ~')
+        except MyException as err:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg=err)
         except:
             logger.error(traceback.format_exc())
-            return result(code=1, msg='stop monitor failure, please try again ~ ')
+            return result(code=1, msg='Uninstall failure, please try again ~ ')
 
 
 def get_all_group(request):
@@ -476,10 +482,10 @@ def package_upload(request):
             form = request.FILES['file']
             file_name = form.name
             # file_size = form.size
-            content_type = form.content_type
-            if 'zip' not in content_type:
-                logger.error(f'File {file_name} format is not zip, operator: {username}')
-                return result(code=1, msg='File format is not zip ~')
+            # content_type = form.content_type
+            if 'zip' not in file_name and 'tar.gz' not in file_name:
+                logger.error(f'File {file_name} format is not supported, operator: {username}')
+                return result(code=1, msg='File format is not supported ~')
             data = form.file
             system = request.POST.get('system')
             agent_type = request.POST.get('agent_type')

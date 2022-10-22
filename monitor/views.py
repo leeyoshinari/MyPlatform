@@ -352,3 +352,51 @@ def change_room(request):
             return result(code=1, msg='Error, please try later ~')
 
 
+def nginx_register_first(request):
+    """
+    register
+    """
+    if request.method == 'POST':
+        logger.debug(f'The request parameters are {request.body}')
+        datas = json.loads(request.body)
+        try:
+            servers = Servers.objects.get(host=datas['host'])
+            identifier = GroupIdentifier.objects.get(group_id=servers.group_id)
+            return result(msg='registered successfully!', data={'influx': {'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
+                      'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE},
+                      'redis': {'host': settings.REDIS_HOST, 'port': settings.REDIS_PORT, 'password': settings.REDIS_PWD,
+                       'db': settings.REDIS_DB}, 'roomId': servers.room.id, 'groupKey': identifier.key})
+        except Servers.DoesNotExist:
+            logger.error(f"Host: {datas['host']} is not set in 'shell->server'")
+            return result(code=1, msg=f"Host: {datas['host']} is not set in 'shell->server'")
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Register Error ~')
+
+
+def nginx_home(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            groups = request.user.groups.all()
+        except:
+            logger.error(traceback.format_exc())
+            return render(request, '404,html')
+
+
+def query_nginx_summary(group_key, start_time, end_time):
+    pass
+
+
+def query_nginx_detail_summary(group_key, search_type, start_time, end_time):
+    if search_type == 'performance':
+        pass
+    else:
+        pass
+
+
+def query_nginx_detail(group_key, search_type, start_time, end_time):
+    if search_type == 'performance':
+        pass
+    else:
+        pass

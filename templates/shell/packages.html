@@ -32,7 +32,7 @@
         <tbody id="tbody">
             {% for package in packages %}
                 <tr>
-                    <td>{{ package.name }}</td>
+                    <td style="padding-left: 3px;">{{ package.name }}</td>
                     <td style="text-align: center;">{{ package.type }}</td>
                     <td style="text-align: center; color: red;">{{ package.system }}</td>
                     <td style="text-align: center; color: red;">{{ package.arch }}</td>
@@ -40,7 +40,8 @@
                     <td style="text-align: center;">{{ package.create_time | date:"Y-m-d H:i:s" }}</td>
                     <td>
                         {% if servers %}
-                            <a onclick="deploy('{{ host.host }}')">Deploy</a>
+                            <a onclick="deploy('{% url 'shell:deploy_package' %}', '{{ servers.host }}', '{{ package.id }}')">Deploy</a>
+                            <a onclick="stop_deploy('{% url 'shell:stop_package' %}', '{{ servers.host }}', '{{ package.id }}')">Uninstall</a>
                         {% endif %}
                         <a href="" onclick="delete_package('{% url 'shell:delete_package' %}', '{{ package.id }}')">Delete</a>
 
@@ -105,7 +106,7 @@
             </div>
         </div>
     </div>
-    <input type="file" name="filename" id="uploadpackage" accept=".zip" style="display: none">
+    <input type="file" name="filename" id="uploadpackage" accept=".zip, .tar.gz" style="display: none">
     <div class="modal_cover"><div class="modal_gif"></div></div>
 {% endblock %}
 {% block define_js %}
