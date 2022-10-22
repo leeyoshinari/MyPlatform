@@ -268,7 +268,7 @@ function plot_delta_figure(myChart, details, x_label, samples, tps, avg_rt, min_
 
     let duration = Date.parse(new Date(options.xAxis[0].data.slice(-1)[0])) - Date.parse(new Date(options.xAxis[0].data[0]));
     let total_sample = sum(options.series[0].data);
-    details[1].getElementsByTagName("span")[0].innerText = options.series[1].data.slice(-1)[0] + "/s";
+    details[1].getElementsByTagName("span")[0].innerText = options.series[1].data.slice(-1)[0].toFixed(2) + "/s";
     details[4].getElementsByTagName("span")[0].innerText = total_sample;
     details[5].getElementsByTagName("span")[0].innerText = (1000 * total_sample / duration).toFixed(2) + "/s";
     details[6].getElementsByTagName("span")[0].innerText = twoArrSumOfProduct(options.series[0].data, options.series[2].data, total_sample) + " ms";
