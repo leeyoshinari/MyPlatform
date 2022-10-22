@@ -204,9 +204,6 @@ LOGGING = {
 HEARTBEAT = 12  # heart beat time, unit: second(s)
 PERFORMANCE_EXPIRE = 604800  # performance test redis keys expire time, 7D
 
-# performance test user agent
-USER_AGENT = 'PerformanceTest'
-
 #The path of deploying agent
 DEPLOY_PATH =get_config('deployPath')
 
@@ -226,7 +223,7 @@ REDIS_HOST = get_config('RedisHost')
 REDIS_PORT = int(get_config('RedisPort'))
 REDIS_PWD = get_config('RedisPassword')
 REDIS_DB = int(get_config('RedisDB'))
-# REDIS = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PWD, db=REDIS_DB, decode_responses=True)
+REDIS = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PWD, db=REDIS_DB, decode_responses=True)
 
 # influxDB
 INFLUX_HOST = get_config('InfluxHost')
@@ -236,9 +233,9 @@ INFLUX_PASSWORD = get_config('InfluxPassword')
 INFLUX_DATABASE = get_config('InfluxDatabase')
 INFLUX_EXPIRY_TIME = int(get_config('expiryTime'))
 INFLUX_SHARD_DURATION = get_config('shardDuration')
-# INFLUX_CLIENT = influxdb.InfluxDBClient(INFLUX_HOST, INFLUX_PORT, INFLUX_USER_NAME, INFLUX_PASSWORD, INFLUX_DATABASE)
-# INFLUX_CLIENT.query(f'alter retention policy "autogen" on "{INFLUX_DATABASE}" duration '
-#                     f'{INFLUX_EXPIRY_TIME}d REPLICATION 1 SHARD DURATION {INFLUX_SHARD_DURATION} default;')
+INFLUX_CLIENT = influxdb.InfluxDBClient(INFLUX_HOST, INFLUX_PORT, INFLUX_USER_NAME, INFLUX_PASSWORD, INFLUX_DATABASE)
+INFLUX_CLIENT.query(f'alter retention policy "autogen" on "{INFLUX_DATABASE}" duration '
+                    f'{INFLUX_EXPIRY_TIME}d REPLICATION 1 SHARD DURATION {INFLUX_SHARD_DURATION} default;')
 
 # Email
 EMAIL_SMTP = get_config('SMTP')
