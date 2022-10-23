@@ -131,7 +131,10 @@ def deploy_agent(client, local_path, deploy_path, file_name, address):
             logger.info(f'cmd: rm -rf {deploy_path}')
             _ = execute_cmd(client, f'rm -rf {deploy_path}')
         deploy_first_step(client, local_path, deploy_path, file_name)
+        _ = execute_cmd(client, f'chmod 777 {deploy_path}/server')
+        logger.info(f'chmod 777 {deploy_path}/server')
         _ = execute_cmd(client, f'echo "address = {address}" >> {deploy_path}/config.conf')
+        logger.info(f'write address {address} to {deploy_path}/config.conf')
         # startup monitor
         _ = execute_cmd(client, f'nohup {deploy_path}/server > /dev/null 2>&1 &')
         # get monitor port
@@ -169,6 +172,7 @@ def deploy_jmeter(client, local_path, deploy_path, file_name):
 def deploy_java(client, local_path, deploy_path, file_name):
     try:
         res = execute_cmd(client, 'whereis java')
+        logger.info(f'whereis java: {res}')
         if len(res) > 10:
             logger.warning('JAVA has been deployed ~')
             raise MyException('JAVA has been deployed ~')
@@ -193,18 +197,20 @@ def deploy_java(client, local_path, deploy_path, file_name):
 def deploy_first_step(client, local_path, deploy_path, file_name):
     try:
         # create folder
-        res = execute_cmd(client, f'mkdir {deploy_path}')
-        logger.info(f'mkdir: run result -- {res}')
+        _ = execute_cmd(client, f'mkdir {deploy_path}')
+        logger.info(f'mkdir {deploy_path}')
         # sftp
         sftp = client.open_sftp()
         sftp.put(local_path, f'{deploy_path}/{file_name}')
         sftp.close()
+        logger.info(f'sftp {local_path} to {deploy_path}/{file_name}')
         # unzip file
         if 'zip' in file_name:
             cmd = f'unzip -o {deploy_path}/{file_name} -d {deploy_path}'
         else:
             cmd = f'tar -zxf {deploy_path}/{file_name} -C {deploy_path}'
         _ = execute_cmd(client, cmd)
+        logger.info(cmd)
         _ = execute_cmd(client, f'rm -rf {deploy_path}/{file_name}')
         res = execute_cmd(client, f'ls {deploy_path}')
         logger.debug(res)
@@ -213,6 +219,7 @@ def deploy_first_step(client, local_path, deploy_path, file_name):
             if folders == 1:
                 file_path = os.path.join(deploy_path, res)
                 _ = execute_cmd(client, f'mv -f {file_path}/* {deploy_path}')
+                logger.info(f'move files to {deploy_path}')
                 _ = execute_cmd(client, f'rm -rf {file_path}')
         else:
             raise MyException(f'Not found file in {deploy_path}')
