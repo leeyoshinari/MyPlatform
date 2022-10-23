@@ -168,10 +168,7 @@ def uninstall_agent(client, install_path):
 
 def deploy_agent(client, local_path, deploy_path, file_name, address):
     try:
-        res = execute_cmd(client, f'ls {deploy_path} |xargs')
-        if res:
-            logger.info(f'cmd: rm -rf {deploy_path}')
-            _ = execute_cmd(client, f'rm -rf {deploy_path}')
+        uninstall_agent(client, deploy_path)
         deploy_first_step(client, local_path, deploy_path, file_name)
         _ = execute_cmd(client, f'chmod 777 {deploy_path}/server')
         logger.info(f'chmod 777 {deploy_path}/server')
@@ -183,6 +180,7 @@ def deploy_agent(client, local_path, deploy_path, file_name, address):
         _ = execute_cmd(client, f"echo 'sleep 2' >> {deploy_path}/start.sh")
         _ = execute_cmd(client, f'cd {deploy_path}; sh start.sh')
     except MyException as err:
+        _ = execute_cmd(client, f'rm -rf {deploy_path}')
         raise MyException(err.msg)
     except:
         logger.error(traceback.format_exc())

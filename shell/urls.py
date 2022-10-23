@@ -36,7 +36,6 @@ urlpatterns = [
     path('package/home', views.package_home, name='package_home'),
     path('package/delete', views.delete_package, name='delete_package'),
     path('package/deploy', views.deploy_package, name='deploy_package'),
-    path('package/deploy/status', views.check_deploy_status, name='deploy_status'),
     path('package/stop', views.uninstall_deploy, name='stop_package'),
     path('package/upload', views.package_upload, name='upload_package'),
 ]
