@@ -95,12 +95,26 @@ document.getElementById('upload-package').addEventListener('click', function () 
     }
 })
 
-function deploy(url, host, package_id) {
+function deploy(url, host, package_id, s, a) {
+    let system_version = document.getElementById('filter').getElementsByTagName('span')[0].getElementsByTagName('strong')[1].innerText;
+    let cpu_arch = document.getElementById('filter').getElementsByTagName('span')[0].getElementsByTagName('strong')[2].innerText;
+    if(system_version.toLowerCase().indexOf(s.toLowerCase()) === -1 && cpu_arch.toLowerCase().indexOf(a.toLowerCase()) === -1) {
+        let res = confirm('System Version or CPU Arch do not match, Are you sure to deploy yet?')
+        if (!res) {
+            return;
+        }
+    }
     $('.modal_cover').css("display", "block");
     $('.modal_gif').css("display", "block");
+    let post_data = {
+        'host': host,
+        "id": package_id
+    }
     $.ajax({
-        type: 'GET',
-        url: url + '?host=' + host + '&id=' + package_id,
+        type: 'POST',
+        url: url,
+        data: post_data,
+        dataType: 'json',
         success: function (data) {
             if (data['code'] === 0) {
                 $.Toast(data['msg'], 'success');

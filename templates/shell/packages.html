@@ -40,7 +40,7 @@
                     <td style="text-align: center;">{{ package.create_time | date:"Y-m-d H:i:s" }}</td>
                     <td>
                         {% if servers %}
-                            <a onclick="deploy('{% url 'shell:deploy_package' %}', '{{ servers.host }}', '{{ package.id }}')">Deploy</a>
+                            <a onclick="deploy('{% url 'shell:deploy_package' %}', '{{ servers.host }}', '{{ package.id }}', '{{ package.system }}', '{{ package.arch }}')">Deploy</a>
                             <a onclick="stop_deploy('{% url 'shell:stop_package' %}', '{{ servers.host }}', '{{ package.id }}')">Uninstall</a>
                         {% endif %}
                         <a href="" onclick="delete_package('{% url 'shell:delete_package' %}', '{{ package.id }}')">Delete</a>

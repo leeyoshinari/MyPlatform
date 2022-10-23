@@ -386,14 +386,10 @@ def deploy_package(request):
             package = Packages.objects.get(id=package_id)
             if not os.path.exists(package.path):
                 return result(code=1, msg=f'{package.name} is not exist ~')
-            if package.system.lower() in servers.system.lower() and package.arch.lower() in servers.arch.lower():
-                deploy(host = servers.host, port = servers.port, user = servers.user, pwd = servers.pwd, deploy_path=deploy_path,
-                       current_time = servers.id, local_path=package.path, file_name=package.name, package_type=package.type)
-                logger.info(f'Deploy {package.name} success, operator: {username}')
-                return result(msg=f'Deploy {package.name} success ~')
-            else:
-                logger.error(f'System or arch do not match, operator: {username}')
-                return result(code=1, msg='System or Arch do not match, Please check it ~')
+            deploy(host = servers.host, port = servers.port, user = servers.user, pwd = servers.pwd, deploy_path=deploy_path,
+                   current_time = servers.id, local_path=package.path, file_name=package.name, package_type=package.type)
+            logger.info(f'Deploy {package.name} success, operator: {username}')
+            return result(msg=f'Deploy {package.name} success ~')
         except Servers.DoesNotExist:
             logger.error(f'You have no permission to access {host}, operator: {username}')
             return result(code=1, msg=f'You have no permission to access {host} ~')
