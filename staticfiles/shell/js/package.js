@@ -108,7 +108,8 @@ function deploy(url, host, package_id, s, a) {
     $('.modal_gif').css("display", "block");
     let post_data = {
         'host': host,
-        "id": package_id
+        "id": package_id,
+        'address': window.location.host
     }
     $.ajax({
         type: 'POST',

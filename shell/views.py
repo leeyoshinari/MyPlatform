@@ -382,12 +382,13 @@ def deploy_package(request):
             groups = request.user.groups.all()
             host = request.POST.get('host')
             package_id = request.POST.get('id')
+            address = f"{request.POST.get('address')}/{settings.CONTEXT}"
             servers = Servers.objects.get(host=host, group__in=groups)
             package = Packages.objects.get(id=package_id)
             if not os.path.exists(package.path):
                 return result(code=1, msg=f'{package.name} is not exist ~')
             deploy(host = servers.host, port = servers.port, user = servers.user, pwd = servers.pwd, deploy_path=deploy_path,
-                   current_time = servers.id, local_path=package.path, file_name=package.name, package_type=package.type)
+                   current_time = servers.id, local_path=package.path, file_name=package.name, package_type=package.type, address=address)
             logger.info(f'Deploy {package.name} success, operator: {username}')
             return result(msg=f'Deploy {package.name} success ~')
         except Servers.DoesNotExist:
@@ -407,7 +408,7 @@ def uninstall_deploy(request):
             username = request.user.username
             groups = request.user.groups.all()
             host = request.GET.get('host')
-            package_id = request.POST.get('id')
+            package_id = request.GET.get('id')
             servers = Servers.objects.get(host=host, group__in=groups)
             package = Packages.objects.get(id=package_id)
             stop_deploy(host=servers.host, port=servers.port, user=servers.user, pwd=servers.pwd,

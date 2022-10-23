@@ -49,11 +49,11 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
         s_time = time.time()
         if endTime:
             sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
-                  f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"{group}\" where room='{room}' and host='{host}' and time>='{startTime}' " \
+                  f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"server_{group}\" where room='{room}' and host='{host}' and time>='{startTime}' " \
                   f"and time<'{endTime}' tz('Asia/Shanghai')"
         else:
             sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
-                  f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"{group}\" where room='{room}' and host='{host}' and time>='{startTime}'"
+                  f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"server_{group}\" where room='{room}' and host='{host}' and time>='{startTime}'"
         logger.info(f'Execute sql: {sql}')
         last_time = startTime
         datas = settings.INFLUX_CLIENT.query(sql)

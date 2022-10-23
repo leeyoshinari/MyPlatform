@@ -7,14 +7,14 @@ import socket
 import logging
 import traceback
 import paramiko
-from .ssh import connect_ssh, execute_cmd, parse_pwd
+from .ssh import execute_cmd, parse_pwd
 from common.customException import MyException
 
 
 logger = logging.getLogger('django')
 
 
-def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_name, package_type):
+def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_name, package_type, address):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
@@ -41,12 +41,12 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
         res = check_sysstat_version(client)
         if res['code'] > 0:
             raise MyException(res['msg'])
-        deploy_agent(client, local_path, monitor_path, file_name)
+        deploy_agent(client, local_path, monitor_path, file_name, address)
     if package_type == 'jmeter-agent':
         jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
         check_jmeter(client, jmeter_path)
         check_java(client)
-        deploy_agent(client, local_path, jmeter_path, file_name)
+        deploy_agent(client, local_path, jmeter_path, file_name, address)
     if package_type == 'java':
         java_path = os.path.join(deploy_path, 'JAVA')
         deploy_java(client, local_path, java_path, file_name)
@@ -124,17 +124,18 @@ def uninstall_agent(client, install_path):
         raise MyException('Uninstall failure ~')
 
 
-def deploy_agent(client, local_path, deploy_path, file_name):
+def deploy_agent(client, local_path, deploy_path, file_name, address):
     try:
         res = execute_cmd(client, f'ls {deploy_path}')
         if res:
             logger.info(f'cmd: rm -rf {deploy_path}')
             _ = execute_cmd(client, f'rm -rf {deploy_path}')
-        file_path = deploy_first_step(client, local_path, deploy_path, file_name)
+        deploy_first_step(client, local_path, deploy_path, file_name)
+        _ = execute_cmd(client, f'echo "address = {address}" >> {deploy_path}/config.conf')
         # startup monitor
-        _ = execute_cmd(client, f'nohup {file_path}/server > /dev/null 2>&1 &')
+        _ = execute_cmd(client, f'nohup {deploy_path}/server > /dev/null 2>&1 &')
         # get monitor port
-        res = execute_cmd(client, f"cat {file_path}/config.conf |grep port |head -3 |grep =")
+        res = execute_cmd(client, f"cat {deploy_path}/config.conf |grep port |head -3 |grep =")
         agent_port = res.split('=')[-1].strip()
         # port is listened
         for i in range(3):
@@ -154,10 +155,10 @@ def deploy_agent(client, local_path, deploy_path, file_name):
 
 def deploy_jmeter(client, local_path, deploy_path, file_name):
     try:
-        file_path = deploy_first_step(client, local_path, deploy_path, file_name)
-        jmeter_executor = os.path.join(file_path, 'bin', 'jmeter')
-        res = execute_cmd(client, f'{jmeter_executor} -v')
-        if 'Copyright' not in res:
+        deploy_first_step(client, local_path, deploy_path, file_name)
+        jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
+        res = execute_cmd(client, f'ls {jmeter_executor}')
+        if 'cannot' in res:
             logger.error(f'Not Found {jmeter_executor} ~')
             raise MyException('Deploy failure, please deploy JMeter again ~')
     except:
@@ -171,15 +172,15 @@ def deploy_java(client, local_path, deploy_path, file_name):
         if len(res) > 10:
             logger.warning('JAVA has been deployed ~')
             raise MyException('JAVA has been deployed ~')
-        file_path = deploy_first_step(client, local_path, deploy_path, file_name)
-        _ = execute_cmd(client, f'chmod -R 755 {file_path}')
+        deploy_first_step(client, local_path, deploy_path, file_name)
+        _ = execute_cmd(client, f'chmod -R 755 {deploy_path}')
         # clear Java variables from /etc/profile
         _ = execute_cmd(client, "sed -i '/JAVA_HOME/d' /etc/profile")
         _ = execute_cmd(client, "sed -i '/JAVA_BIN/d' /etc/profile")
         _ = execute_cmd(client, "sed -i '/JRE_HOME/d' /etc/profile")
         # write Java variables
-        _ = execute_cmd(client, f"echo 'export JAVA_HOME={file_path}' >> /etc/profile")
-        _ = execute_cmd(client, f"echo 'export JAVA_BIN={file_path}/bin' >> /etc/profile")
+        _ = execute_cmd(client, f"echo 'export JAVA_HOME={deploy_path}' >> /etc/profile")
+        _ = execute_cmd(client, f"echo 'export JAVA_BIN={deploy_path}/bin' >> /etc/profile")
         _ = execute_cmd(client, f"echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile")
         _ = execute_cmd(client, 'source /etc/profile')
         _ = execute_cmd(client, 'sh /etc/profile')
@@ -211,11 +212,10 @@ def deploy_first_step(client, local_path, deploy_path, file_name):
             folders = len(res.split(' '))
             if folders == 1:
                 file_path = os.path.join(deploy_path, res)
-            else:
-                file_path = deploy_path
+                _ = execute_cmd(client, f'mv -f {file_path}/* {deploy_path}')
+                _ = execute_cmd(client, f'rm -rf {file_path}')
         else:
             raise MyException(f'Not found file in {deploy_path}')
-        return file_path
     except:
         logger.error(traceback.format_exc())
         raise MyException('Deploy failure ~')
