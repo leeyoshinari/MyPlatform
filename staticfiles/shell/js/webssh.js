@@ -61,6 +61,8 @@ term.onData(data => {
 });
 
 setTimeout(function(){
+    viewport = document.getElementsByClassName("xterm-viewport")[0];
+    termnal_screen = document.getElementsByClassName('xterm-screen')[0];
     resize_term();
 },500
 );

@@ -203,7 +203,7 @@ def deploy_first_step(client, local_path, deploy_path, file_name):
         if 'zip' in file_name:
             cmd = f'unzip -o {deploy_path}/{file_name} -d {deploy_path}'
         else:
-            cmd = f'tar -zxvf {deploy_path}/{file_name}'
+            cmd = f'tar -zxf {deploy_path}/{file_name} -C {deploy_path}'
         _ = execute_cmd(client, cmd)
         _ = execute_cmd(client, f'rm -rf {deploy_path}/{file_name}')
         res = execute_cmd(client, f'ls {deploy_path}')
