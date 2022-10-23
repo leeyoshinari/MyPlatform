@@ -119,7 +119,21 @@ function deploy(url, host, package_id, s, a) {
         success: function (data) {
             if (data['code'] === 0) {
                 $.Toast(data['msg'], 'success');
-                window.location.reload();
+                $.ajax({
+                    type: 'GET',
+                    url: url + '?host=' + host + '&id=' + package_id,
+                    success: function (data) {
+                        if (data['code'] === 0) {
+                            $.Toast(data['msg'], 'success');
+                            window.location.reload();
+                        } else {
+                            $.Toast(data['msg'], 'error');
+                        }
+                        $('.modal_cover').css("display", "none");
+                        $('.modal_gif').css("display", "none");
+                    }
+                })
+                // window.location.reload();
             } else {
                 $.Toast(data['msg'], 'error');
             }

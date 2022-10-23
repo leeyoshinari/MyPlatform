@@ -58,8 +58,6 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
         raise MyException(err.msg)
     client.close()
 
-    check_deploy_status(host, port, user, pwd, deploy_path, current_time, package_type)
-
 
 def check_deploy_status(host, port, user, pwd, deploy_path, current_time, package_type):
     client = paramiko.SSHClient()

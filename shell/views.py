@@ -19,7 +19,7 @@ from common.generator import primaryKey
 from common.customException import MyException
 from .models import Servers, ServerRoom, GroupIdentifier, Packages
 from .channel.ssh import get_server_info, UploadAndDownloadFile
-from .channel.deployAgent import deploy, stop_deploy
+from .channel.deployAgent import deploy, stop_deploy, check_deploy_status
 
 
 logger = logging.getLogger('django')
@@ -397,6 +397,39 @@ def deploy_package(request):
         except MyException as err:
             logger.error(err)
             return result(code=1, msg=err.msg)
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Deploy failure ~ ')
+    else:
+        try:
+            username = request.user.username
+            groups = request.user.groups.all()
+            host = request.GET.get('host')
+            package_id = request.GET.get('id')
+            servers = Servers.objects.get(host=host, group__in=groups)
+            package = Packages.objects.get(id=package_id)
+            check_deploy_status(host=servers.host, port=servers.port, user=servers.user, pwd=servers.pwd,
+                                deploy_path=deploy_path, current_time=servers.id, package_type=package.type)
+            logger.info(f'Deploy {package.name} success, operator: {username}')
+            return result(msg=f'Deploy {package.name} success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Deploy failure ~ ')
+
+
+def check_deploy_status(request):
+    if request.method == 'GET':
+        try:
+            username = request.user.username
+            groups = request.user.groups.all()
+            host = request.POST.get('host')
+            package_id = request.POST.get('id')
+            servers = Servers.objects.get(host=host, group__in=groups)
+            package = Packages.objects.get(id=package_id)
+            check_deploy_status(host=servers.host, port=servers.port, user=servers.user, pwd=servers.pwd,
+                                deploy_path=deploy_path, current_time=servers.id, package_type=package.type)
+            logger.info(f'Deploy {package.name} success, operator: {username}')
+            return result(msg=f'Deploy {package.name} success ~')
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Deploy failure ~ ')
