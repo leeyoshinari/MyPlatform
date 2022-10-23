@@ -97,7 +97,7 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
 
 def uninstall_agent(client, install_path):
     try:
-        res = execute_cmd(client, f'll {install_path}')
+        res = execute_cmd(client, f'ls {install_path}')
         if res:
             # get monitor port
             res = execute_cmd(client, f"cat /{install_path}/config.conf |grep port |head -3 |grep =")
@@ -114,7 +114,7 @@ def uninstall_agent(client, install_path):
                 raise MyException('Uninstall failure, please try again ~')
             # rm -rf
             _ = execute_cmd(client, f'rm -rf {install_path}')
-            res = execute_cmd(client, f'll {install_path}')
+            res = execute_cmd(client, f'ls {install_path}')
             if res:
                 raise MyException('Uninstall failure, please try again ~')
     except MyException as err:
@@ -126,19 +126,15 @@ def uninstall_agent(client, install_path):
 
 def deploy_agent(client, local_path, deploy_path, file_name):
     try:
-        res = execute_cmd(client, f'll {deploy_path}')
+        res = execute_cmd(client, f'ls {deploy_path}')
         if res:
             logger.info(f'cmd: rm -rf {deploy_path}')
             _ = execute_cmd(client, f'rm -rf {deploy_path}')
-        deploy_first_step(client, local_path, deploy_path, file_name)
+        file_path = deploy_first_step(client, local_path, deploy_path, file_name)
         # startup monitor
-        res = execute_cmd(client, f'nohup {deploy_path}/server > /dev/null 2>&1 &')
-        logger.info(f'startup: run result -- {res}')
-        if not res:
-            _ = execute_cmd(client, f'rm -rf {deploy_path}')  # clear folder
-            raise MyException('Run start cmd failure ~')
+        _ = execute_cmd(client, f'nohup {file_path}/server > /dev/null 2>&1 &')
         # get monitor port
-        res = execute_cmd(client, f"cat {deploy_path}/config.conf |grep port |head -3 |grep =")
+        res = execute_cmd(client, f"cat {file_path}/config.conf |grep port |head -3 |grep =")
         agent_port = res.split('=')[-1].strip()
         # port is listened
         for i in range(3):
@@ -158,8 +154,8 @@ def deploy_agent(client, local_path, deploy_path, file_name):
 
 def deploy_jmeter(client, local_path, deploy_path, file_name):
     try:
-        deploy_first_step(client, local_path, deploy_path, file_name)
-        jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
+        file_path = deploy_first_step(client, local_path, deploy_path, file_name)
+        jmeter_executor = os.path.join(file_path, 'bin', 'jmeter')
         res = execute_cmd(client, f'{jmeter_executor} -v')
         if 'Copyright' not in res:
             logger.error(f'Not Found {jmeter_executor} ~')
@@ -175,15 +171,15 @@ def deploy_java(client, local_path, deploy_path, file_name):
         if len(res) > 10:
             logger.warning('JAVA has been deployed ~')
             raise MyException('JAVA has been deployed ~')
-        deploy_first_step(client, local_path, deploy_path, file_name)
-        _ = execute_cmd(client, f'chmod -R 755 {deploy_path}')
+        file_path = deploy_first_step(client, local_path, deploy_path, file_name)
+        _ = execute_cmd(client, f'chmod -R 755 {file_path}')
         # clear Java variables from /etc/profile
         _ = execute_cmd(client, "sed -i '/JAVA_HOME/d' /etc/profile")
         _ = execute_cmd(client, "sed -i '/JAVA_BIN/d' /etc/profile")
         _ = execute_cmd(client, "sed -i '/JRE_HOME/d' /etc/profile")
         # write Java variables
-        _ = execute_cmd(client, f"echo 'export JAVA_HOME={deploy_path}' >> /etc/profile")
-        _ = execute_cmd(client, f"echo 'export JAVA_BIN={deploy_path}/bin' >> /etc/profile")
+        _ = execute_cmd(client, f"echo 'export JAVA_HOME={file_path}' >> /etc/profile")
+        _ = execute_cmd(client, f"echo 'export JAVA_BIN={file_path}/bin' >> /etc/profile")
         _ = execute_cmd(client, f"echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile")
         _ = execute_cmd(client, 'source /etc/profile')
         _ = execute_cmd(client, 'sh /etc/profile')
@@ -207,8 +203,19 @@ def deploy_first_step(client, local_path, deploy_path, file_name):
             cmd = f'unzip -o {deploy_path}/{file_name} -d {deploy_path}'
         else:
             cmd = f'tar -zxvf {deploy_path}/{file_name}'
-        res = execute_cmd(client, cmd)
-        logger.info(f'unzip: run result -- {res}')
+        _ = execute_cmd(client, cmd)
+        _ = execute_cmd(client, f'rm -rf {deploy_path}/{file_name}')
+        res = execute_cmd(client, f'ls {deploy_path}')
+        logger.debug(res)
+        if res:
+            folders = len(res.split(' '))
+            if folders == 1:
+                file_path = os.path.join(deploy_path, res)
+            else:
+                file_path = deploy_path
+        else:
+            raise MyException(f'Not found file in {deploy_path}')
+        return file_path
     except:
         logger.error(traceback.format_exc())
         raise MyException('Deploy failure ~')
@@ -217,7 +224,7 @@ def deploy_first_step(client, local_path, deploy_path, file_name):
 def uninstall_jmeter(client, install_path):
     # rm -rf
     _ = execute_cmd(client, f'rm -rf {install_path}')
-    res = execute_cmd(client, f'll {install_path}')
+    res = execute_cmd(client, f'ls {install_path}')
     if res:
         raise MyException('Uninstall failure, please try again ~')
 
