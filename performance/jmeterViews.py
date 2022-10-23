@@ -206,7 +206,7 @@ def add_to_task(request):
             if os.path.exists(temp_file_path):
                 _ = delete_local_file(temp_file_path)
             logger.error(traceback.format_exc())
-            return result(code=1, msg=f'"{err}"')
+            return result(code=1, msg=err.msg)
         except:
             test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
             if os.path.exists(test_jmeter_path):

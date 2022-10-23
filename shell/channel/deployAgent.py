@@ -118,7 +118,7 @@ def uninstall_agent(client, install_path):
             if res:
                 raise MyException('Uninstall failure, please try again ~')
     except MyException as err:
-        raise MyException(err)
+        raise MyException(err.msg)
     except:
         logger.error(traceback.format_exc())
         raise MyException('Uninstall failure ~')
@@ -149,7 +149,7 @@ def deploy_agent(client, local_path, deploy_path, file_name):
             _ = execute_cmd(client, f'rm -rf {deploy_path}')  # clear folder
             raise MyException('Startup failure, please try again ~')
     except MyException as err:
-        raise MyException(err)
+        raise MyException(err.msg)
     except:
         logger.error(traceback.format_exc())
         _ = execute_cmd(client, f'rm -rf {deploy_path}')  # clear folder
@@ -280,7 +280,7 @@ def check_jmeter(client, deploy_path):
             logger.error(f'Not Found {jmeter_executor} ~')
             raise MyException('Please deploy JMeter first ~')
     except MyException as err:
-        raise MyException(err)
+        raise MyException(err.msg)
     except:
         logger.error(traceback.format_exc())
         raise MyException('Check JMeter failure, please try to deploy JMeter ~')
@@ -294,7 +294,7 @@ def check_java(client):
             logger.error('Not Found Java ~')
             raise MyException('Please deploy JAVA first ~')
     except MyException as err:
-        raise MyException(err)
+        raise MyException(err.msg)
     except:
         logger.error(traceback.format_exc())
         raise MyException('Check JAVA failure, please try to deploy JAVA ~')
