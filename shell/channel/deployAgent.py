@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 import os
-import time
 import socket
 import logging
 import traceback
@@ -36,26 +35,68 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
         client.close()
         raise MyException('Session Connect Error ~')
 
-    if package_type == 'monitor-agent':
-        monitor_path = os.path.join(deploy_path, 'monitor_agent')
-        res = check_sysstat_version(client)
-        if res['code'] > 0:
-            raise MyException(res['msg'])
-        deploy_agent(client, local_path, monitor_path, file_name, address)
-    if package_type == 'jmeter-agent':
-        jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
-        check_jmeter(client, jmeter_path)
-        check_java(client)
-        deploy_agent(client, local_path, jmeter_path, file_name, address)
-    if package_type == 'java':
-        java_path = os.path.join(deploy_path, 'JAVA')
-        deploy_java(client, local_path, java_path, file_name)
-    if package_type == 'jmeter':
-        jmeter_path = os.path.join(deploy_path, 'JMeter')
-        deploy_jmeter(client, local_path, jmeter_path, file_name)
-
+    try:
+        if package_type == 'monitor-agent':
+            monitor_path = os.path.join(deploy_path, 'monitor_agent')
+            res = check_sysstat_version(client)
+            if res['code'] > 0:
+                raise MyException(res['msg'])
+            deploy_agent(client, local_path, monitor_path, file_name, address)
+        if package_type == 'jmeter-agent':
+            jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
+            check_jmeter(client, jmeter_path)
+            check_java(client)
+            deploy_agent(client, local_path, jmeter_path, file_name, address)
+        if package_type == 'java':
+            java_path = os.path.join(deploy_path, 'JAVA')
+            deploy_java(client, local_path, java_path, file_name)
+        if package_type == 'jmeter':
+            jmeter_path = os.path.join(deploy_path, 'JMeter')
+            deploy_jmeter(client, local_path, jmeter_path, file_name)
+    except MyException as err:
+        client.close()
+        raise MyException(err.msg)
     client.close()
 
+    check_deploy_status(host, port, user, pwd, deploy_path, current_time, package_type)
+
+
+def check_deploy_status(host, port, user, pwd, deploy_path, current_time, package_type):
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        client.connect(username=user, password=parse_pwd(current_time, pwd), hostname=host, port=port, timeout=10)
+    except socket.timeout:
+        logger.error(f'{host} ssh connect timeout ~')
+        client.close()
+        raise MyException('Session Connect Timeout ~')
+    except paramiko.ssh_exception.NoValidConnectionsError:
+        logger.error(f'{host} Unable to Connect Session ~ ')
+        client.close()
+        raise MyException('Unable to connect ~')
+    except paramiko.ssh_exception.AuthenticationException:
+        logger.error(f'{host} Username or Password Error ~')
+        client.close()
+        raise MyException('Username or password error ~')
+    except:
+        logger.error(traceback.format_exc())
+        client.close()
+        raise MyException('Session Connect Error ~')
+
+    try:
+        if package_type == 'monitor-agent':
+            monitor_path = os.path.join(deploy_path, 'monitor_agent')
+            if not check_agent_status(client, monitor_path):
+                raise MyException('Deploy monitor-agent failure, please try later ~')
+        if package_type == 'jmeter-agent':
+            jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
+            if not check_agent_status(client, jmeter_path):
+                raise MyException('Deploy jmeter-agent failure, please try later ~')
+    except MyException as err:
+        client.close()
+        raise MyException(err.msg)
+
+    client.close()
 
 def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
     client = paramiko.SSHClient()
@@ -97,24 +138,27 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
 
 def uninstall_agent(client, install_path):
     try:
-        res = execute_cmd(client, f'ls {install_path}')
+        res = execute_cmd(client, f'ls {install_path} |xargs')
         if res:
             # get monitor port
             res = execute_cmd(client, f"cat /{install_path}/config.conf |grep port |head -3 |grep =")
             agent_port = res.split('=')[-1].strip()
+            logger.info(f'Agent port is {agent_port}')
             # get pid
             res = execute_cmd(client, f"netstat -nlp|grep {agent_port} |grep LISTEN")
+            logger.info(f'Agent status is {res}')
             if res:
                 pid = res.split('LISTEN')[-1].split('/')[0].strip()
                 # kill -9 pid
                 _ = execute_cmd(client, 'kill -9 ' + pid)
             # check port again
             res = execute_cmd(client, f"netstat -nlp|grep {agent_port} |grep LISTEN")
+            logger.info(f'Kill Agent, status is {res}')
             if res:
                 raise MyException('Uninstall failure, please try again ~')
             # rm -rf
             _ = execute_cmd(client, f'rm -rf {install_path}')
-            res = execute_cmd(client, f'ls {install_path}')
+            res = execute_cmd(client, f'ls {install_path} |xargs')
             if res:
                 raise MyException('Uninstall failure, please try again ~')
     except MyException as err:
@@ -126,7 +170,7 @@ def uninstall_agent(client, install_path):
 
 def deploy_agent(client, local_path, deploy_path, file_name, address):
     try:
-        res = execute_cmd(client, f'ls {deploy_path}')
+        res = execute_cmd(client, f'ls {deploy_path} |xargs')
         if res:
             logger.info(f'cmd: rm -rf {deploy_path}')
             _ = execute_cmd(client, f'rm -rf {deploy_path}')
@@ -136,18 +180,10 @@ def deploy_agent(client, local_path, deploy_path, file_name, address):
         _ = execute_cmd(client, f'echo "address = {address}" >> {deploy_path}/config.conf')
         logger.info(f'write address {address} to {deploy_path}/config.conf')
         # startup monitor
-        _ = execute_cmd(client, f'nohup {deploy_path}/server > /dev/null 2>&1 &')
-        # get monitor port
-        res = execute_cmd(client, f"cat {deploy_path}/config.conf |grep port |head -3 |grep =")
-        agent_port = res.split('=')[-1].strip()
-        # port is listened
-        for i in range(3):
-            time.sleep(1)
-            res = execute_cmd(client, "netstat -nlp|grep " + agent_port + " |grep LISTEN")
-            if res: break
-        if not res:
-            _ = execute_cmd(client, f'rm -rf {deploy_path}')  # clear folder
-            raise MyException('Startup failure, please try again ~')
+        _ = execute_cmd(client, f"echo '#!/bin/sh' >> {deploy_path}/start.sh")
+        _ = execute_cmd(client, f"echo 'nohup ./server > /dev/null 2>&1 &' >> {deploy_path}/start.sh")
+        _ = execute_cmd(client, f"echo 'sleep 2' >> {deploy_path}/start.sh")
+        _ = execute_cmd(client, f'cd {deploy_path}; sh start.sh')
     except MyException as err:
         raise MyException(err.msg)
     except:
@@ -158,6 +194,7 @@ def deploy_agent(client, local_path, deploy_path, file_name, address):
 
 def deploy_jmeter(client, local_path, deploy_path, file_name):
     try:
+        uninstall_jmeter(client, deploy_path)
         deploy_first_step(client, local_path, deploy_path, file_name)
         jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
         res = execute_cmd(client, f'ls {jmeter_executor}')
@@ -171,21 +208,19 @@ def deploy_jmeter(client, local_path, deploy_path, file_name):
 
 def deploy_java(client, local_path, deploy_path, file_name):
     try:
-        res = execute_cmd(client, 'whereis java')
-        logger.info(f'whereis java: {res}')
-        if len(res) > 10:
-            logger.warning('JAVA has been deployed ~')
-            raise MyException('JAVA has been deployed ~')
+        uninstall_java(client, deploy_path)
         deploy_first_step(client, local_path, deploy_path, file_name)
         _ = execute_cmd(client, f'chmod -R 755 {deploy_path}')
         # clear Java variables from /etc/profile
         _ = execute_cmd(client, "sed -i '/JAVA_HOME/d' /etc/profile")
         _ = execute_cmd(client, "sed -i '/JAVA_BIN/d' /etc/profile")
         _ = execute_cmd(client, "sed -i '/JRE_HOME/d' /etc/profile")
+        logger.info(f'delete java variable from /etc/profile')
         # write Java variables
         _ = execute_cmd(client, f"echo 'export JAVA_HOME={deploy_path}' >> /etc/profile")
         _ = execute_cmd(client, f"echo 'export JAVA_BIN={deploy_path}/bin' >> /etc/profile")
         _ = execute_cmd(client, f"echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile")
+        logger.info(f'write java variable to /etc/profile')
         _ = execute_cmd(client, 'source /etc/profile')
         _ = execute_cmd(client, 'sh /etc/profile')
         _ = execute_cmd(client, 'source /etc/profile')
@@ -212,7 +247,7 @@ def deploy_first_step(client, local_path, deploy_path, file_name):
         _ = execute_cmd(client, cmd)
         logger.info(cmd)
         _ = execute_cmd(client, f'rm -rf {deploy_path}/{file_name}')
-        res = execute_cmd(client, f'ls {deploy_path}')
+        res = execute_cmd(client, f'ls {deploy_path} |xargs')
         logger.debug(res)
         if res:
             folders = len(res.split(' '))
@@ -246,6 +281,27 @@ def uninstall_java(client, install_path):
     if len(res) > 10:
         logger.warning('Uninstall JAVA failure ~')
         raise MyException('Uninstall JAVA failure ~')
+
+
+def check_agent_status(client, deploy_path):
+    try:
+        res = execute_cmd(client, f'ls {deploy_path} |xargs')
+        if res:
+            res = execute_cmd(client, f"cat {deploy_path}/config.conf |grep port |head -3 |grep =")
+            agent_port = res.split('=')[-1].strip()
+            logger.info(f'Agent port is {agent_port}')
+            res = execute_cmd(client, f"netstat -nlp|grep {agent_port} |grep LISTEN")
+            logger.info(f'Agent port status: {res}')
+            if res:
+                return True
+            else:
+                return False
+        else:
+            logger.error(f'Not found files in {deploy_path}')
+            return False
+    except:
+        logger.error(traceback.format_exc())
+        return False
 
 
 def check_sysstat_version(client):
