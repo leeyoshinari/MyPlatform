@@ -395,7 +395,7 @@ def deploy_package(request):
             logger.error(f'You have no permission to access {host}, operator: {username}')
             return result(code=1, msg=f'You have no permission to access {host} ~')
         except MyException as err:
-            logger.error(err)
+            logger.error(traceback.format_exc())
             return result(code=1, msg=err.msg)
         except:
             logger.error(traceback.format_exc())
@@ -413,7 +413,7 @@ def deploy_package(request):
             logger.info(f'Deploy {package.name} success, operator: {username}')
             return result(msg=f'Deploy {package.name} success ~')
         except MyException as err:
-            logger.error(err)
+            logger.error(traceback.format_exc())
             return result(code=1, msg=err.msg)
         except:
             logger.error(traceback.format_exc())
@@ -437,7 +437,7 @@ def uninstall_deploy(request):
             logger.error(f'You have no permission to access {host}, operator: {username}')
             return result(code=1, msg=f'You have no permission to access {host} ~')
         except MyException as err:
-            logger.error(err)
+            logger.error(traceback.format_exc())
             return result(code=1, msg=err.msg)
         except:
             logger.error(traceback.format_exc())

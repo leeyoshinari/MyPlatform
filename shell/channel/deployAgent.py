@@ -43,14 +43,15 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
                 raise MyException(res['msg'])
             deploy_agent(client, local_path, monitor_path, file_name, address)
         if package_type == 'jmeter-agent':
-            jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
+            jmeter_path = os.path.join(deploy_path, 'JMeter')
+            jmeter_agent_path = os.path.join(deploy_path, 'jmeter_agent')
             if not check_jmeter_status(client, jmeter_path):
                 logger.error(f'Not Found {jmeter_path}/bin/jmeter ~')
                 raise MyException('Please deploy JMeter first ~')
             if not check_java_status(client):
                 logger.error('Not Found Java ~')
                 raise MyException('Please deploy JAVA first ~')
-            deploy_agent(client, local_path, jmeter_path, file_name, address)
+            deploy_agent(client, local_path, jmeter_agent_path, file_name, address)
         if package_type == 'java':
             java_path = os.path.join(deploy_path, 'JAVA')
             deploy_java(client, local_path, java_path, file_name)
@@ -204,7 +205,7 @@ def deploy_jmeter(client, local_path, deploy_path, file_name):
         uninstall_jmeter(client, deploy_path)
         deploy_first_step(client, local_path, deploy_path, file_name)
         jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
-        res = execute_cmd(client, f'ls {jmeter_executor}')
+        res = execute_cmd(client, f'ls {jmeter_executor} |xargs')
         if 'cannot' in res:
             logger.error(f'Not Found {jmeter_executor} ~')
             raise MyException('Deploy failure, please deploy JMeter again ~')
@@ -322,6 +323,7 @@ def check_java_status(client):
 def check_jmeter_status(client, deploy_path):
     jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
     res = execute_cmd(client, f'{jmeter_executor} -v')
+    logger.info(f'jmeter -v : {res}')
     if 'Copyright' in res:
         return True
     else:
