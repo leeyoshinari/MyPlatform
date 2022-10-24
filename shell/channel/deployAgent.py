@@ -44,8 +44,12 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
             deploy_agent(client, local_path, monitor_path, file_name, address)
         if package_type == 'jmeter-agent':
             jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
-            check_jmeter(client, jmeter_path)
-            check_java(client)
+            if not check_jmeter_status(client, jmeter_path):
+                logger.error(f'Not Found {jmeter_path}/bin/jmeter ~')
+                raise MyException('Please deploy JMeter first ~')
+            if not check_java_status(client):
+                logger.error('Not Found Java ~')
+                raise MyException('Please deploy JAVA first ~')
             deploy_agent(client, local_path, jmeter_path, file_name, address)
         if package_type == 'java':
             java_path = os.path.join(deploy_path, 'JAVA')
@@ -90,6 +94,13 @@ def check_deploy_status(host, port, user, pwd, deploy_path, current_time, packag
             jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
             if not check_agent_status(client, jmeter_path):
                 raise MyException('Deploy jmeter-agent failure, please try later ~')
+        if package_type == 'java':
+            if not check_java_status(client):
+                raise MyException('Deploy java failure, please try later ~')
+        if package_type == 'jmeter':
+            jmeter_path = os.path.join(deploy_path, 'JMeter')
+            if not check_jmeter_status(client, jmeter_path):
+                raise MyException('Deploy JMeter failure, please try later ~')
     except MyException as err:
         client.close()
         raise MyException(err.msg)
@@ -177,7 +188,7 @@ def deploy_agent(client, local_path, deploy_path, file_name, address):
         # startup monitor
         _ = execute_cmd(client, f"echo '#!/bin/sh' >> {deploy_path}/start.sh")
         _ = execute_cmd(client, f"echo 'nohup ./server > /dev/null 2>&1 &' >> {deploy_path}/start.sh")
-        _ = execute_cmd(client, f"echo 'sleep 2' >> {deploy_path}/start.sh")
+        _ = execute_cmd(client, f"echo 'sleep 5' >> {deploy_path}/start.sh")
         _ = execute_cmd(client, f'cd {deploy_path}; sh start.sh')
     except MyException as err:
         _ = execute_cmd(client, f'rm -rf {deploy_path}')
@@ -262,7 +273,7 @@ def deploy_first_step(client, local_path, deploy_path, file_name):
 def uninstall_jmeter(client, install_path):
     # rm -rf
     _ = execute_cmd(client, f'rm -rf {install_path}')
-    res = execute_cmd(client, f'ls {install_path}')
+    res = execute_cmd(client, f'ls {install_path} |xargs')
     if res:
         raise MyException('Uninstall failure, please try again ~')
 
@@ -273,8 +284,7 @@ def uninstall_java(client, install_path):
     _ = execute_cmd(client, "sed -i '/JAVA_HOME/d' /etc/profile")
     _ = execute_cmd(client, "sed -i '/JAVA_BIN/d' /etc/profile")
     _ = execute_cmd(client, "sed -i '/JRE_HOME/d' /etc/profile")
-    res = execute_cmd(client, 'whereis java')
-    if len(res) > 10:
+    if check_java_status(client):
         logger.warning('Uninstall JAVA failure ~')
         raise MyException('Uninstall JAVA failure ~')
 
@@ -297,6 +307,24 @@ def check_agent_status(client, deploy_path):
             return False
     except:
         logger.error(traceback.format_exc())
+        return False
+
+
+def check_java_status(client):
+    res = execute_cmd(client, 'whereis java')
+    logger.info(f'whereis java: {res}')
+    if len(res) > 10:
+        return True
+    else:
+        return False
+
+
+def check_jmeter_status(client, deploy_path):
+    jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
+    res = execute_cmd(client, f'{jmeter_executor} -v')
+    if 'Copyright' in res:
+        return True
+    else:
         return False
 
 
@@ -335,32 +363,3 @@ def check_sysstat_version(client):
         return {'code': 1, 'msg': msg}
 
     return {'code': 0, 'msg': None}
-
-
-def check_jmeter(client, deploy_path):
-    """ Check jmeter"""
-    try:
-        jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
-        res = execute_cmd(client, f'{jmeter_executor} -v')
-        if 'Copyright' not in res:
-            logger.error(f'Not Found {jmeter_executor} ~')
-            raise MyException('Please deploy JMeter first ~')
-    except MyException as err:
-        raise MyException(err.msg)
-    except:
-        logger.error(traceback.format_exc())
-        raise MyException('Check JMeter failure, please try to deploy JMeter ~')
-
-
-def check_java(client):
-    """ Check Java"""
-    try:
-        res = execute_cmd(client, 'whereis java')
-        if len(res) < 10:
-            logger.error('Not Found Java ~')
-            raise MyException('Please deploy JAVA first ~')
-    except MyException as err:
-        raise MyException(err.msg)
-    except:
-        logger.error(traceback.format_exc())
-        raise MyException('Check JAVA failure, please try to deploy JAVA ~')

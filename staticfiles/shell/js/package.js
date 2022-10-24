@@ -129,11 +129,8 @@ function deploy(url, host, package_id, s, a) {
                         } else {
                             $.Toast(data['msg'], 'error');
                         }
-                        $('.modal_cover').css("display", "none");
-                        $('.modal_gif').css("display", "none");
                     }
                 })
-                // window.location.reload();
             } else {
                 $.Toast(data['msg'], 'error');
             }
