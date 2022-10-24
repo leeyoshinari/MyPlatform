@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 import os
+import time
 import socket
 import logging
 import traceback
@@ -11,6 +12,14 @@ from common.customException import MyException
 
 
 logger = logging.getLogger('django')
+
+
+def invoke_cmd(channel, command):
+    channel.send(f'{command}\n')
+    while not channel.recv_ready():
+        time.sleep(0.1)
+    data = channel.recv(1024).decode('utf-8')
+    return data
 
 
 def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_name, package_type, address):
@@ -113,6 +122,12 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         client.connect(username=user, password=parse_pwd(current_time, pwd), hostname=host, port=port, timeout=10)
+        channel = client.invoke_shell()
+        while channel.recv_ready():
+            _ = channel.recv(1024)
+            if not channel.recv_ready():
+                break
+
     except socket.timeout:
         logger.error(f'{host} ssh connect timeout ~')
         client.close()
@@ -138,10 +153,10 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
         uninstall_agent(client, jmeter_path)
     if package_type == 'java':
         java_path = os.path.join(deploy_path, 'JAVA')
-        uninstall_java(client, java_path)
+        uninstall_java(channel, java_path)
     if package_type == 'jmeter':
         jmeter_path = os.path.join(deploy_path, 'JMeter')
-        uninstall_jmeter(client, jmeter_path)
+        uninstall_jmeter(channel, jmeter_path)
 
     client.close()
 
@@ -271,21 +286,21 @@ def deploy_first_step(client, local_path, deploy_path, file_name):
         raise MyException('Deploy failure ~')
 
 
-def uninstall_jmeter(client, install_path):
+def uninstall_jmeter(channel, install_path):
     # rm -rf
-    _ = execute_cmd(client, f'rm -rf {install_path}')
-    res = execute_cmd(client, f'ls {install_path} |xargs')
+    _ = invoke_cmd(channel, f'rm -rf {install_path}')
+    res = invoke_cmd(channel, f'ls {install_path} |xargs')
     if res:
         raise MyException('Uninstall failure, please try again ~')
 
 
-def uninstall_java(client, install_path):
-    uninstall_jmeter(client, install_path)
+def uninstall_java(channel, install_path):
+    uninstall_jmeter(channel, install_path)
     # clear Java variables from /etc/profile
-    _ = execute_cmd(client, "sed -i '/JAVA_HOME/d' /etc/profile")
-    _ = execute_cmd(client, "sed -i '/JAVA_BIN/d' /etc/profile")
-    _ = execute_cmd(client, "sed -i '/JRE_HOME/d' /etc/profile")
-    if check_java_status(client):
+    _ = invoke_cmd(channel, "sed -i '/JAVA_HOME/d' /etc/profile")
+    _ = invoke_cmd(channel, "sed -i '/JAVA_BIN/d' /etc/profile")
+    _ = invoke_cmd(channel, "sed -i '/JRE_HOME/d' /etc/profile")
+    if check_java_status(channel):
         logger.warning('Uninstall JAVA failure ~')
         raise MyException('Uninstall JAVA failure ~')
 
@@ -311,8 +326,8 @@ def check_agent_status(client, deploy_path):
         return False
 
 
-def check_java_status(client):
-    res = execute_cmd(client, 'whereis java')
+def check_java_status(channel):
+    res = invoke_cmd(channel, 'whereis java')
     logger.info(f'whereis java: {res}')
     if len(res) > 10:
         return True
