@@ -28,6 +28,22 @@ def invoke_cmd(channel, command):
         return ''
 
 
+def sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name):
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(username=user, password=parse_pwd(current_time, pwd), hostname=host, port=port, timeout=10)
+        sftp = client.open_sftp()
+        sftp.put(local_path, f'{deploy_path}/{file_name}')
+        sftp.close()
+        client.close()
+        logger.info(f'sftp {local_path} to {deploy_path}/{file_name}')
+    except:
+        client.close()
+        logger.error(traceback.format_exc())
+        raise MyException('Deploy failure ~')
+
+
 def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_name, package_type, address):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -61,7 +77,10 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
             res = check_sysstat_version(channel)
             if res['code'] > 0:
                 raise MyException(res['msg'])
-            deploy_agent(client, channel, local_path, monitor_path, file_name, address)
+            uninstall_agent(channel, monitor_path)
+            _ = invoke_cmd(channel, f'mkdir {monitor_path}')
+            sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name)
+            deploy_agent(channel, monitor_path, file_name, address)
         if package_type == 'jmeter-agent':
             jmeter_path = os.path.join(deploy_path, 'JMeter')
             jmeter_agent_path = os.path.join(deploy_path, 'jmeter_agent')
@@ -71,13 +90,22 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
             if not check_java_status(channel):
                 logger.error('Not Found Java ~')
                 raise MyException('Please deploy JAVA first ~')
-            deploy_agent(client, channel, local_path, jmeter_agent_path, file_name, address)
+            uninstall_agent(channel, jmeter_path)
+            _ = invoke_cmd(channel, f'mkdir {jmeter_path}')
+            sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name)
+            deploy_agent(channel, jmeter_agent_path, file_name, address)
         if package_type == 'java':
             java_path = os.path.join(deploy_path, 'JAVA')
-            deploy_java(client, channel, local_path, java_path, file_name)
+            uninstall_java(channel, java_path)
+            _ = invoke_cmd(channel, f'mkdir {java_path}')
+            sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name)
+            deploy_java(channel, java_path, file_name)
         if package_type == 'jmeter':
             jmeter_path = os.path.join(deploy_path, 'JMeter')
-            deploy_jmeter(client, channel, local_path, jmeter_path, file_name)
+            uninstall_jmeter(channel, jmeter_path)
+            _ = invoke_cmd(channel, f'mkdir {jmeter_path}')
+            sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name)
+            deploy_jmeter(channel, jmeter_path, file_name)
     except MyException as err:
         client.close()
         raise MyException(err.msg)
@@ -180,9 +208,9 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
 def uninstall_agent(channel, install_path):
     try:
         res = invoke_cmd(channel, f'ls {install_path}')
-        if res:
+        if 'config.conf' in res:
             # get monitor port
-            res = invoke_cmd(channel, f"cat /{install_path}/config.conf |grep port |head -3 |grep =")
+            res = invoke_cmd(channel, f"cat {install_path}/config.conf |grep port |head -3 |grep =")
             agent_port = res.split('=')[-1].strip()
             logger.info(f'Agent port is {agent_port}')
             # get pid
@@ -206,10 +234,9 @@ def uninstall_agent(channel, install_path):
         raise MyException('Uninstall failure ~')
 
 
-def deploy_agent(client, channel, local_path, deploy_path, file_name, address):
+def deploy_agent(channel, deploy_path, file_name, address):
     try:
-        uninstall_agent(channel, deploy_path)
-        deploy_first_step(client, channel, local_path, deploy_path, file_name)
+        unzip_file(channel, deploy_path, file_name)
         _ = invoke_cmd(channel, f'chmod 777 {deploy_path}/server')
         _ = invoke_cmd(channel, f'echo "address = {address}" >> {deploy_path}/config.conf')
         # startup monitor
@@ -226,10 +253,9 @@ def deploy_agent(client, channel, local_path, deploy_path, file_name, address):
         raise MyException('Deploy failure ~')
 
 
-def deploy_jmeter(client, channel, local_path, deploy_path, file_name):
+def deploy_jmeter(channel, deploy_path, file_name):
     try:
-        uninstall_jmeter(channel, deploy_path)
-        deploy_first_step(client, channel, local_path, deploy_path, file_name)
+        unzip_file(channel, deploy_path, file_name)
         jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
         res = invoke_cmd(channel, f'ls {jmeter_executor}')
         if 'cannot' in res:
@@ -240,10 +266,9 @@ def deploy_jmeter(client, channel, local_path, deploy_path, file_name):
         raise MyException('Deploy failure, please try again ~')
 
 
-def deploy_java(client, channel, local_path, deploy_path, file_name):
+def deploy_java(channel, deploy_path, file_name):
     try:
-        uninstall_java(channel, deploy_path)
-        deploy_first_step(client, channel, local_path, deploy_path, file_name)
+        unzip_file(channel, deploy_path, file_name)
         _ = invoke_cmd(channel, f'chmod -R 755 {deploy_path}')
         # clear Java variables from /etc/profile
         _ = invoke_cmd(channel, "sed -i '/JAVA_HOME/d' /etc/profile")
@@ -261,15 +286,8 @@ def deploy_java(client, channel, local_path, deploy_path, file_name):
         raise MyException('Deploy failure, please try again ~')
 
 
-def deploy_first_step(client, channel, local_path, deploy_path, file_name):
+def unzip_file(channel, deploy_path, file_name):
     try:
-        # create folder
-        _ = invoke_cmd(channel, f'mkdir {deploy_path}')
-        # sftp
-        sftp = client.open_sftp()
-        sftp.put(local_path, f'{deploy_path}/{file_name}')
-        sftp.close()
-        logger.info(f'sftp {local_path} to {deploy_path}/{file_name}')
         # unzip file
         if 'zip' in file_name:
             cmd = f'unzip -o -q {deploy_path}/{file_name} -d {deploy_path}'
