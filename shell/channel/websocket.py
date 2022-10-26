@@ -78,7 +78,6 @@ class WebSSH(WebsocketConsumer):
             logger.debug(f'input linux command is: {data}')
             if data['code'] == 0:  # send data
                 self.ssh.django_to_ssh(data['data'])
-                # Thread(target=self.ssh.django_to_ssh, args=(data['data'],)).start()
             elif data['code'] == 2: # close session
                 self.ssh.close()
             elif data['code'] == 1: # setting terminal size

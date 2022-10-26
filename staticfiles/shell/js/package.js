@@ -118,7 +118,6 @@ function deploy(url, host, package_id, s, a) {
         dataType: 'json',
         success: function (data) {
             if (data['code'] === 0) {
-                $.Toast(data['msg'], 'success');
                 $.ajax({
                     type: 'GET',
                     url: url + '?host=' + host + '&id=' + package_id,
@@ -129,13 +128,15 @@ function deploy(url, host, package_id, s, a) {
                         } else {
                             $.Toast(data['msg'], 'error');
                         }
+                        $('.modal_cover').css("display", "none");
+                        $('.modal_gif').css("display", "none");
                     }
                 })
             } else {
                 $.Toast(data['msg'], 'error');
+                $('.modal_cover').css("display", "none");
+                $('.modal_gif').css("display", "none");
             }
-            $('.modal_cover').css("display", "none");
-            $('.modal_gif').css("display", "none");
         }
     })
 }

@@ -14,19 +14,22 @@ from common.customException import MyException
 logger = logging.getLogger('django')
 
 
-def invoke_cmd(channel, command, timeout=0.5):
+def invoke_cmd(channel, command, is_split=True, timeout=0.5):
     channel.send(f'{command}\n')
     time.sleep(timeout)
     while not channel.recv_ready():
         time.sleep(0.1)
     data = channel.recv(1024).decode('utf-8')
-    res_list = data.split('\n')
-    try:
-        logger.info(f'{command} : {res_list[1]}')
-        return res_list[1]
-    except IndexError:
-        logger.info(f'{command} : {res_list}')
-        return ''
+    if is_split:
+        try:
+            res_list = data.split('\n')
+            logger.info(f'{command} : {res_list[1]}')
+            return res_list[1]
+        except IndexError:
+            logger.info(f'{command} : {res_list}')
+            return ''
+    else:
+        return data
 
 
 def sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name):
@@ -356,8 +359,8 @@ def check_agent_status(channel, deploy_path):
 
 
 def check_java_status(channel):
-    res = invoke_cmd(channel, 'java -version', timeout=3)
-    if 'java version' in res:
+    res = invoke_cmd(channel, 'java -version', is_split=False, timeout=1)
+    if 'Environment' in res:
         return True
     else:
         return False
@@ -365,7 +368,7 @@ def check_java_status(channel):
 
 def check_jmeter_status(channel, deploy_path):
     jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
-    res = invoke_cmd(channel, f'{jmeter_executor} -v |grep Apache', timeout=3)
+    res = invoke_cmd(channel, f'{jmeter_executor} -v |grep Apache', is_split=False, timeout=3)
     if 'Copyright' in res:
         return True
     else:
