@@ -79,7 +79,7 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
                 raise MyException(res['msg'])
             uninstall_agent(channel, monitor_path)
             _ = invoke_cmd(channel, f'mkdir {monitor_path}')
-            sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name)
+            sftp_file(host, port, user, pwd, current_time, local_path, monitor_path, file_name)
             deploy_agent(channel, monitor_path, file_name, address)
         if package_type == 'jmeter-agent':
             jmeter_path = os.path.join(deploy_path, 'JMeter')
@@ -90,21 +90,21 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
             if not check_java_status(channel):
                 logger.error('Not Found Java ~')
                 raise MyException('Please deploy JAVA first ~')
-            uninstall_agent(channel, jmeter_path)
-            _ = invoke_cmd(channel, f'mkdir {jmeter_path}')
-            sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name)
+            uninstall_agent(channel, jmeter_agent_path)
+            _ = invoke_cmd(channel, f'mkdir {jmeter_agent_path}')
+            sftp_file(host, port, user, pwd, current_time, local_path, jmeter_agent_path, file_name)
             deploy_agent(channel, jmeter_agent_path, file_name, address)
         if package_type == 'java':
             java_path = os.path.join(deploy_path, 'JAVA')
             uninstall_java(channel, java_path)
             _ = invoke_cmd(channel, f'mkdir {java_path}')
-            sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name)
+            sftp_file(host, port, user, pwd, current_time, local_path, java_path, file_name)
             deploy_java(channel, java_path, file_name)
         if package_type == 'jmeter':
             jmeter_path = os.path.join(deploy_path, 'JMeter')
             uninstall_jmeter(channel, jmeter_path)
             _ = invoke_cmd(channel, f'mkdir {jmeter_path}')
-            sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name)
+            sftp_file(host, port, user, pwd, current_time, local_path, jmeter_path, file_name)
             deploy_jmeter(channel, jmeter_path, file_name)
     except MyException as err:
         client.close()
