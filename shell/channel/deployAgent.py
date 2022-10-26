@@ -7,7 +7,7 @@ import socket
 import logging
 import traceback
 import paramiko
-from .ssh import parse_pwd
+from .ssh import execute_cmd, parse_pwd
 from common.customException import MyException
 
 
@@ -36,10 +36,12 @@ def sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file
         sftp = client.open_sftp()
         sftp.put(local_path, f'{deploy_path}/{file_name}')
         sftp.close()
-        client.close()
         logger.info(f'sftp {local_path} to {deploy_path}/{file_name}')
-    except:
+        unzip_file(client, deploy_path, file_name)
         client.close()
+    except Exception as err:
+        client.close()
+        logger.error(err)
         logger.error(traceback.format_exc())
         raise MyException('Deploy failure ~')
 
@@ -236,7 +238,6 @@ def uninstall_agent(channel, install_path):
 
 def deploy_agent(channel, deploy_path, file_name, address):
     try:
-        unzip_file(channel, deploy_path, file_name)
         _ = invoke_cmd(channel, f'chmod 777 {deploy_path}/server')
         _ = invoke_cmd(channel, f'echo "address = {address}" >> {deploy_path}/config.conf')
         # startup monitor
@@ -255,7 +256,6 @@ def deploy_agent(channel, deploy_path, file_name, address):
 
 def deploy_jmeter(channel, deploy_path, file_name):
     try:
-        unzip_file(channel, deploy_path, file_name)
         jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
         res = invoke_cmd(channel, f'ls {jmeter_executor}')
         if 'cannot' in res:
@@ -268,7 +268,6 @@ def deploy_jmeter(channel, deploy_path, file_name):
 
 def deploy_java(channel, deploy_path, file_name):
     try:
-        unzip_file(channel, deploy_path, file_name)
         _ = invoke_cmd(channel, f'chmod -R 755 {deploy_path}')
         # clear Java variables from /etc/profile
         _ = invoke_cmd(channel, "sed -i '/JAVA_HOME/d' /etc/profile")
@@ -286,22 +285,25 @@ def deploy_java(channel, deploy_path, file_name):
         raise MyException('Deploy failure, please try again ~')
 
 
-def unzip_file(channel, deploy_path, file_name):
+def unzip_file(client, deploy_path, file_name):
     try:
         # unzip file
         if 'zip' in file_name:
             cmd = f'unzip -o -q {deploy_path}/{file_name} -d {deploy_path}'
         else:
             cmd = f'tar -zxf {deploy_path}/{file_name} -C {deploy_path}'
-        _ = invoke_cmd(channel, cmd)
-        _ = invoke_cmd(channel, f'rm -rf {deploy_path}/{file_name}')
-        res = invoke_cmd(channel, f'ls {deploy_path}')
+        _ = execute_cmd(client, cmd)
+        logger.info(cmd)
+        _ = execute_cmd(client, f'rm -rf {deploy_path}/{file_name}')
+        res = execute_cmd(client, f'ls {deploy_path} |xargs')
+        logger.debug(res)
         if res:
             folders = len(res.split(' '))
             if folders == 1:
                 file_path = os.path.join(deploy_path, res)
-                _ = invoke_cmd(channel, f'mv -f {file_path}/* {deploy_path}')
-                _ = invoke_cmd(channel, f'rm -rf {file_path}')
+                _ = execute_cmd(client, f'mv -f {file_path}/* {deploy_path}')
+                logger.info(f'move files to {deploy_path}')
+                _ = execute_cmd(client, f'rm -rf {file_path}')
         else:
             raise MyException(f'Not found file in {deploy_path}')
     except:
