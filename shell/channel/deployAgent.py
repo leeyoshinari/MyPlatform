@@ -14,8 +14,9 @@ from common.customException import MyException
 logger = logging.getLogger('django')
 
 
-def invoke_cmd(channel, command):
+def invoke_cmd(channel, command, timeout=0.5):
     channel.send(f'{command}\n')
+    time.sleep(timeout)
     while not channel.recv_ready():
         time.sleep(0.1)
     data = channel.recv(1024).decode('utf-8')
@@ -355,7 +356,7 @@ def check_agent_status(channel, deploy_path):
 
 
 def check_java_status(channel):
-    res = invoke_cmd(channel, 'java -version')
+    res = invoke_cmd(channel, 'java -version', timeout=3)
     if 'java version' in res:
         return True
     else:
@@ -364,7 +365,7 @@ def check_java_status(channel):
 
 def check_jmeter_status(channel, deploy_path):
     jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
-    res = invoke_cmd(channel, f'{jmeter_executor} -v |grep Apache')
+    res = invoke_cmd(channel, f'{jmeter_executor} -v |grep Apache', timeout=3)
     if 'Copyright' in res:
         return True
     else:
