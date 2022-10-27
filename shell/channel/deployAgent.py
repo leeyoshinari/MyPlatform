@@ -211,12 +211,15 @@ def deploy_agent(client, local_path, deploy_path, file_name, address):
         _ = execute_cmd(client, f"echo '#!/bin/sh' >> {deploy_path}/start.sh")
         _ = execute_cmd(client, f"echo 'nohup ./server > /dev/null 2>&1 &' >> {deploy_path}/start.sh")
         _ = execute_cmd(client, f"echo 'sleep 3' >> {deploy_path}/start.sh")
-        channel = client.invoke_shell()
-        while channel.recv_ready():
-            _ = channel.recv(1024)
-            if not channel.recv_ready():
-                break
-        _ = invoke_cmd(channel, f'cd {deploy_path}; sh start.sh')
+        if 'JMeter' in deploy_path:
+            channel = client.invoke_shell()
+            while channel.recv_ready():
+                _ = channel.recv(1024)
+                if not channel.recv_ready():
+                    break
+            _ = invoke_cmd(channel, f'cd {deploy_path}; sh start.sh', is_split=False, timeout=5)
+        else:
+            _ = execute_cmd(client, f'cd {deploy_path}; sh start.sh')
     except MyException as err:
         _ = execute_cmd(client, f'rm -rf {deploy_path}')
         raise MyException(err.msg)
