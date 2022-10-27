@@ -132,12 +132,6 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         client.connect(username=user, password=parse_pwd(current_time, pwd), hostname=host, port=port, timeout=10)
-        channel = client.invoke_shell()
-        while channel.recv_ready():
-            _ = channel.recv(1024)
-            if not channel.recv_ready():
-                break
-
     except socket.timeout:
         logger.error(f'{host} ssh connect timeout ~')
         client.close()
@@ -163,10 +157,10 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
         uninstall_agent(client, jmeter_path)
     if package_type == 'java':
         java_path = os.path.join(deploy_path, 'JAVA')
-        uninstall_java(channel, java_path)
+        uninstall_java(client, java_path)
     if package_type == 'jmeter':
         jmeter_path = os.path.join(deploy_path, 'JMeter')
-        uninstall_jmeter(channel, jmeter_path)
+        uninstall_jmeter(client, jmeter_path)
 
     client.close()
 
@@ -216,8 +210,13 @@ def deploy_agent(client, local_path, deploy_path, file_name, address):
         # startup monitor
         _ = execute_cmd(client, f"echo '#!/bin/sh' >> {deploy_path}/start.sh")
         _ = execute_cmd(client, f"echo 'nohup ./server > /dev/null 2>&1 &' >> {deploy_path}/start.sh")
-        _ = execute_cmd(client, f"echo 'sleep 5' >> {deploy_path}/start.sh")
-        _ = execute_cmd(client, f'cd {deploy_path}; sh start.sh')
+        _ = execute_cmd(client, f"echo 'sleep 3' >> {deploy_path}/start.sh")
+        channel = client.invoke_shell()
+        while channel.recv_ready():
+            _ = channel.recv(1024)
+            if not channel.recv_ready():
+                break
+        _ = invoke_cmd(channel, f'cd {deploy_path}; sh start.sh')
     except MyException as err:
         _ = execute_cmd(client, f'rm -rf {deploy_path}')
         raise MyException(err.msg)
