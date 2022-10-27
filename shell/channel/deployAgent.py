@@ -29,25 +29,8 @@ def invoke_cmd(channel, command, is_split=True, timeout=0.5):
             logger.info(f'{command} : {res_list}')
             return ''
     else:
+        logger.info(f'{command} : {data}')
         return data
-
-
-def sftp_file(host, port, user, pwd, current_time, local_path, deploy_path, file_name):
-    try:
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(username=user, password=parse_pwd(current_time, pwd), hostname=host, port=port, timeout=10)
-        sftp = client.open_sftp()
-        sftp.put(local_path, f'{deploy_path}/{file_name}')
-        sftp.close()
-        logger.info(f'sftp {local_path} to {deploy_path}/{file_name}')
-        unzip_file(client, deploy_path, file_name)
-        client.close()
-    except Exception as err:
-        client.close()
-        logger.error(err)
-        logger.error(traceback.format_exc())
-        raise MyException('Deploy failure ~')
 
 
 def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_name, package_type, address):
@@ -55,11 +38,6 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         client.connect(username=user, password=parse_pwd(current_time, pwd), hostname=host, port=port, timeout=10)
-        channel = client.invoke_shell()
-        while channel.recv_ready():
-            _ = channel.recv(1024)
-            if not channel.recv_ready():
-                break
     except socket.timeout:
         logger.error(f'{host} ssh connect timeout ~')
         client.close()
@@ -80,38 +58,25 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
     try:
         if package_type == 'monitor-agent':
             monitor_path = os.path.join(deploy_path, 'monitor_agent')
-            res = check_sysstat_version(channel)
+            res = check_sysstat_version(client)
             if res['code'] > 0:
                 raise MyException(res['msg'])
-            uninstall_agent(channel, monitor_path)
-            _ = invoke_cmd(channel, f'mkdir {monitor_path}')
-            sftp_file(host, port, user, pwd, current_time, local_path, monitor_path, file_name)
-            deploy_agent(channel, monitor_path, file_name, address)
+            deploy_agent(client, local_path, monitor_path, file_name, address)
         if package_type == 'jmeter-agent':
             jmeter_path = os.path.join(deploy_path, 'JMeter')
             jmeter_agent_path = os.path.join(deploy_path, 'jmeter_agent')
-            if not check_jmeter_status(channel, jmeter_path):
-                logger.error(f'Not Found {jmeter_path}/bin/jmeter ~')
-                raise MyException('Please deploy JMeter first ~')
-            if not check_java_status(channel):
-                logger.error('Not Found Java ~')
-                raise MyException('Please deploy JAVA first ~')
-            uninstall_agent(channel, jmeter_agent_path)
-            _ = invoke_cmd(channel, f'mkdir {jmeter_agent_path}')
-            sftp_file(host, port, user, pwd, current_time, local_path, jmeter_agent_path, file_name)
-            deploy_agent(channel, jmeter_agent_path, file_name, address)
+            agent_status = check_jmeter_agent_status(client, jmeter_path)
+            if agent_status > 0:
+                msg = [f'Not Found {jmeter_path}/bin/jmeter', 'Not Found Java']
+                logger.error(msg[agent_status - 1])
+                raise MyException(msg[agent_status - 1])
+            deploy_agent(client, local_path, jmeter_agent_path, file_name, address)
         if package_type == 'java':
             java_path = os.path.join(deploy_path, 'JAVA')
-            uninstall_java(channel, java_path)
-            _ = invoke_cmd(channel, f'mkdir {java_path}')
-            sftp_file(host, port, user, pwd, current_time, local_path, java_path, file_name)
-            deploy_java(channel, java_path, file_name)
+            deploy_java(client, local_path, java_path, file_name)
         if package_type == 'jmeter':
             jmeter_path = os.path.join(deploy_path, 'JMeter')
-            uninstall_jmeter(channel, jmeter_path)
-            _ = invoke_cmd(channel, f'mkdir {jmeter_path}')
-            sftp_file(host, port, user, pwd, current_time, local_path, jmeter_path, file_name)
-            deploy_jmeter(channel, jmeter_path, file_name)
+            deploy_jmeter(client, local_path, jmeter_path, file_name)
     except MyException as err:
         client.close()
         raise MyException(err.msg)
@@ -123,11 +88,6 @@ def check_deploy_status(host, port, user, pwd, deploy_path, current_time, packag
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         client.connect(username=user, password=parse_pwd(current_time, pwd), hostname=host, port=port, timeout=10)
-        channel = client.invoke_shell()
-        while channel.recv_ready():
-            _ = channel.recv(1024)
-            if not channel.recv_ready():
-                break
     except socket.timeout:
         logger.error(f'{host} ssh connect timeout ~')
         client.close()
@@ -148,18 +108,18 @@ def check_deploy_status(host, port, user, pwd, deploy_path, current_time, packag
     try:
         if package_type == 'monitor-agent':
             monitor_path = os.path.join(deploy_path, 'monitor_agent')
-            if not check_agent_status(channel, monitor_path):
+            if not check_agent_status(client, monitor_path):
                 raise MyException('Deploy monitor-agent failure, please try later ~')
         if package_type == 'jmeter-agent':
             jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
-            if not check_agent_status(channel, jmeter_path):
+            if not check_agent_status(client, jmeter_path):
                 raise MyException('Deploy jmeter-agent failure, please try later ~')
         if package_type == 'java':
-            if not check_java_status(channel):
+            if not check_java_status(client):
                 raise MyException('Deploy java failure, please try later ~')
         if package_type == 'jmeter':
             jmeter_path = os.path.join(deploy_path, 'JMeter')
-            if not check_jmeter_status(channel, jmeter_path):
+            if not check_jmeter_status(client, jmeter_path):
                 raise MyException('Deploy JMeter failure, please try later ~')
     except MyException as err:
         client.close()
@@ -197,10 +157,10 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
 
     if package_type == 'monitor-agent':
         monitor_path = os.path.join(deploy_path, 'monitor_agent')
-        uninstall_agent(channel, monitor_path)
+        uninstall_agent(client, monitor_path)
     if package_type == 'jmeter-agent':
         jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
-        uninstall_agent(channel, jmeter_path)
+        uninstall_agent(client, jmeter_path)
     if package_type == 'java':
         java_path = os.path.join(deploy_path, 'JAVA')
         uninstall_java(channel, java_path)
@@ -211,28 +171,33 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
     client.close()
 
 
-def uninstall_agent(channel, install_path):
+def uninstall_agent(client, install_path):
     try:
-        res = invoke_cmd(channel, f'ls {install_path}')
-        if 'config.conf' in res:
+        res = execute_cmd(client, f'ls {install_path} |xargs')
+        if res:
             # get monitor port
-            res = invoke_cmd(channel, f"cat {install_path}/config.conf |grep port |head -3 |grep =")
+            res = execute_cmd(client, f"cat /{install_path}/config.conf |grep port |head -3 |grep =")
             agent_port = res.split('=')[-1].strip()
             logger.info(f'Agent port is {agent_port}')
             # get pid
-            pid = get_pid_by_port(channel, agent_port)
-            if pid > 0:
+            res = execute_cmd(client, f"netstat -nlp|grep {agent_port} |grep LISTEN")
+            logger.info(f'Agent status is {res}')
+            if res:
+                pid = res.split('LISTEN')[-1].split('/')[0].strip()
                 # kill -9 pid
-                _ = invoke_cmd(channel, f'kill -9 {pid}')
+                _ = execute_cmd(client, 'kill -9 ' + pid)
             # check port again
-            res = get_pid_by_port(channel, agent_port)
+            res = execute_cmd(client, f"netstat -nlp|grep {agent_port} |grep LISTEN")
+            logger.info(f'Kill Agent, status is {res}')
             if res:
                 raise MyException('Uninstall failure, please try again ~')
             # rm -rf
-            _ = invoke_cmd(channel, f'rm -rf {install_path}')
-            res = invoke_cmd(channel, f'ls {install_path}')
-            if 'config.conf' in res:
+            _ = execute_cmd(client, f'rm -rf {install_path}')
+            res = execute_cmd(client, f'ls {install_path} |xargs')
+            if res:
                 raise MyException('Uninstall failure, please try again ~')
+        else:
+            logger.info('Have been uninstalled ~')
     except MyException as err:
         raise MyException(err.msg)
     except:
@@ -240,28 +205,34 @@ def uninstall_agent(channel, install_path):
         raise MyException('Uninstall failure ~')
 
 
-def deploy_agent(channel, deploy_path, file_name, address):
+def deploy_agent(client, local_path, deploy_path, file_name, address):
     try:
-        _ = invoke_cmd(channel, f'chmod 777 {deploy_path}/server')
-        _ = invoke_cmd(channel, f'echo "address = {address}" >> {deploy_path}/config.conf')
+        uninstall_agent(client, deploy_path)
+        deploy_first_step(client, local_path, deploy_path, file_name)
+        _ = execute_cmd(client, f'chmod 777 {deploy_path}/server')
+        logger.info(f'chmod 777 {deploy_path}/server')
+        _ = execute_cmd(client, f'echo "address = {address}" >> {deploy_path}/config.conf')
+        logger.info(f'write address {address} to {deploy_path}/config.conf')
         # startup monitor
-        _ = invoke_cmd(channel, f"echo '#!/bin/sh' >> {deploy_path}/start.sh")
-        _ = invoke_cmd(channel, f"echo 'nohup ./server > /dev/null 2>&1 &' >> {deploy_path}/start.sh")
-        _ = invoke_cmd(channel, f"echo 'sleep 5' >> {deploy_path}/start.sh")
-        _ = invoke_cmd(channel, f'cd {deploy_path}; sh start.sh')
+        _ = execute_cmd(client, f"echo '#!/bin/sh' >> {deploy_path}/start.sh")
+        _ = execute_cmd(client, f"echo 'nohup ./server > /dev/null 2>&1 &' >> {deploy_path}/start.sh")
+        _ = execute_cmd(client, f"echo 'sleep 5' >> {deploy_path}/start.sh")
+        _ = execute_cmd(client, f'cd {deploy_path}; sh start.sh')
     except MyException as err:
-        _ = invoke_cmd(channel, f'rm -rf {deploy_path}')
+        _ = execute_cmd(client, f'rm -rf {deploy_path}')
         raise MyException(err.msg)
     except:
         logger.error(traceback.format_exc())
-        _ = invoke_cmd(channel, f'rm -rf {deploy_path}')  # clear folder
+        _ = execute_cmd(client, f'rm -rf {deploy_path}')  # clear folder
         raise MyException('Deploy failure ~')
 
 
-def deploy_jmeter(channel, deploy_path, file_name):
+def deploy_jmeter(client, local_path, deploy_path, file_name):
     try:
+        uninstall_jmeter(client, deploy_path)
+        deploy_first_step(client, local_path, deploy_path, file_name)
         jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
-        res = invoke_cmd(channel, f'ls {jmeter_executor}')
+        res = execute_cmd(client, f'ls {jmeter_executor} |xargs')
         if 'cannot' in res:
             logger.error(f'Not Found {jmeter_executor} ~')
             raise MyException('Deploy failure, please deploy JMeter again ~')
@@ -270,27 +241,39 @@ def deploy_jmeter(channel, deploy_path, file_name):
         raise MyException('Deploy failure, please try again ~')
 
 
-def deploy_java(channel, deploy_path, file_name):
+def deploy_java(client, local_path, deploy_path, file_name):
     try:
-        _ = invoke_cmd(channel, f'chmod -R 755 {deploy_path}')
+        uninstall_java(client, deploy_path)
+        deploy_first_step(client, local_path, deploy_path, file_name)
+        _ = execute_cmd(client, f'chmod -R 755 {deploy_path}')
         # clear Java variables from /etc/profile
-        _ = invoke_cmd(channel, "sed -i '/JAVA_HOME/d' /etc/profile")
-        _ = invoke_cmd(channel, "sed -i '/JAVA_BIN/d' /etc/profile")
-        _ = invoke_cmd(channel, "sed -i '/JRE_HOME/d' /etc/profile")
+        _ = execute_cmd(client, "sed -i '/JAVA_HOME/d' /etc/profile")
+        _ = execute_cmd(client, "sed -i '/JAVA_BIN/d' /etc/profile")
+        _ = execute_cmd(client, "sed -i '/JRE_HOME/d' /etc/profile")
+        logger.info(f'delete java variable from /etc/profile')
         # write Java variables
-        _ = invoke_cmd(channel, f"echo 'export JAVA_HOME={deploy_path}' >> /etc/profile")
-        _ = invoke_cmd(channel, f"echo 'export JAVA_BIN={deploy_path}/bin' >> /etc/profile")
-        _ = invoke_cmd(channel, f"echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile")
-        _ = invoke_cmd(channel, 'source /etc/profile')
-        _ = invoke_cmd(channel, 'sh /etc/profile')
-        _ = invoke_cmd(channel, 'source /etc/profile')
+        _ = execute_cmd(client, f"echo 'export JAVA_HOME={deploy_path}' >> /etc/profile")
+        _ = execute_cmd(client, f"echo 'export JAVA_BIN={deploy_path}/bin' >> /etc/profile")
+        _ = execute_cmd(client, f"echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile")
+        logger.info(f'write java variable to /etc/profile')
+        _ = execute_cmd(client, 'source /etc/profile')
+        _ = execute_cmd(client, 'sh /etc/profile')
+        _ = execute_cmd(client, 'source /etc/profile')
     except:
         logger.error(traceback.format_exc())
         raise MyException('Deploy failure, please try again ~')
 
 
-def unzip_file(client, deploy_path, file_name):
+def deploy_first_step(client, local_path, deploy_path, file_name):
     try:
+        # create folder
+        _ = execute_cmd(client, f'mkdir {deploy_path}')
+        logger.info(f'mkdir {deploy_path}')
+        # sftp
+        sftp = client.open_sftp()
+        sftp.put(local_path, f'{deploy_path}/{file_name}')
+        sftp.close()
+        logger.info(f'sftp {local_path} to {deploy_path}/{file_name}')
         # unzip file
         if 'zip' in file_name:
             cmd = f'unzip -o -q {deploy_path}/{file_name} -d {deploy_path}'
@@ -315,38 +298,35 @@ def unzip_file(client, deploy_path, file_name):
         raise MyException('Deploy failure ~')
 
 
-def uninstall_jmeter(channel, install_path):
+def uninstall_jmeter(client, install_path):
     # rm -rf
-    _ = invoke_cmd(channel, f'rm -rf {install_path}')
-    res = invoke_cmd(channel, f'ls {install_path}')
+    _ = execute_cmd(client, f'rm -rf {install_path}')
+    res = execute_cmd(client, f'ls {install_path} |xargs')
     if 'bin' in res:
         raise MyException('Uninstall failure, please try again ~')
 
 
-def uninstall_java(channel, install_path):
-    # rm -rf
-    _ = invoke_cmd(channel, f'rm -rf {install_path}')
-    res = invoke_cmd(channel, f'ls {install_path}')
-    if 'bin' in res:
-        raise MyException('Uninstall failure, please try again ~')
+def uninstall_java(client, install_path):
+    uninstall_jmeter(client, install_path)
     # clear Java variables from /etc/profile
-    _ = invoke_cmd(channel, "sed -i '/JAVA_HOME/d' /etc/profile")
-    _ = invoke_cmd(channel, "sed -i '/JAVA_BIN/d' /etc/profile")
-    _ = invoke_cmd(channel, "sed -i '/JRE_HOME/d' /etc/profile")
-    if check_java_status(channel):
+    _ = execute_cmd(client, "sed -i '/JAVA_HOME/d' /etc/profile")
+    _ = execute_cmd(client, "sed -i '/JAVA_BIN/d' /etc/profile")
+    _ = execute_cmd(client, "sed -i '/JRE_HOME/d' /etc/profile")
+    if check_java_status(client):
         logger.warning('Uninstall JAVA failure ~')
         raise MyException('Uninstall JAVA failure ~')
 
 
-def check_agent_status(channel, deploy_path):
+def check_agent_status(client, deploy_path):
     try:
-        res = invoke_cmd(channel, f'ls {deploy_path}')
-        if res:
-            res = invoke_cmd(channel, f"cat {deploy_path}/config.conf |grep port |head -3 |grep =")
+        res = execute_cmd(client, f'ls {deploy_path} |xargs')
+        if 'cannot' not in res:
+            res = execute_cmd(client, f"cat {deploy_path}/config.conf |grep port |head -3 |grep =")
             agent_port = res.split('=')[-1].strip()
             logger.info(f'Agent port is {agent_port}')
-            res = get_pid_by_port(channel, agent_port)
-            if res > 0:
+            res = execute_cmd(client, f"netstat -nlp|grep {agent_port} |grep LISTEN")
+            logger.info(f'Agent port status: {res}')
+            if res:
                 return True
             else:
                 return False
@@ -358,7 +338,29 @@ def check_agent_status(channel, deploy_path):
         return False
 
 
-def check_java_status(channel):
+def check_jmeter_agent_status(client, jmeter_path):
+    channel = client.invoke_shell()
+    while channel.recv_ready():
+        _ = channel.recv(1024)
+        if not channel.recv_ready():
+            break
+    res = invoke_cmd(channel, 'java -version', is_split=False, timeout=1)
+    if 'Environment' not in res:
+        return 1
+
+    jmeter_executor = os.path.join(jmeter_path, 'bin', 'jmeter')
+    res = invoke_cmd(channel, f'{jmeter_executor} -v |grep Apache', is_split=False, timeout=3)
+    if 'Copyright' not in res:
+        return 2
+    return 0
+
+
+def check_java_status(client):
+    channel = client.invoke_shell()
+    while channel.recv_ready():
+        _ = channel.recv(1024)
+        if not channel.recv_ready():
+            break
     res = invoke_cmd(channel, 'java -version', is_split=False, timeout=1)
     if 'Environment' in res:
         return True
@@ -366,7 +368,12 @@ def check_java_status(channel):
         return False
 
 
-def check_jmeter_status(channel, deploy_path):
+def check_jmeter_status(client, deploy_path):
+    channel = client.invoke_shell()
+    while channel.recv_ready():
+        _ = channel.recv(1024)
+        if not channel.recv_ready():
+            break
     jmeter_executor = os.path.join(deploy_path, 'bin', 'jmeter')
     res = invoke_cmd(channel, f'{jmeter_executor} -v |grep Apache', is_split=False, timeout=3)
     if 'Copyright' in res:
@@ -375,24 +382,12 @@ def check_jmeter_status(channel, deploy_path):
         return False
 
 
-def get_pid_by_port(channel, port):
-    res = invoke_cmd(channel, f"netstat -nlp|grep {port} |grep LISTEN")
-    if res:
-        pid = res.split('LISTEN')[-1].split('/')[0].strip()
-        try:
-            return int(pid)
-        except ValueError:
-            return 0
-    else:
-        return 0
-
-
-def check_sysstat_version(channel):
+def check_sysstat_version(client):
     """
     Check sysstat version
     """
     try:
-        version = invoke_cmd(channel, "iostat -V |grep ersion |awk '{print $3}' |awk -F '.' '{print $1}'")
+        version = execute_cmd(client, "iostat -V |grep ersion |awk '{print $3}' |awk -F '.' '{print $1}'")
         v = int(version.strip())
         if v < 12:
             msg = 'The iostat version is too low, please upgrade to version 12+, download link: ' \
@@ -407,7 +402,7 @@ def check_sysstat_version(channel):
         return {'code': 1, 'msg': msg}
 
     try:
-        version = invoke_cmd(channel, "pidstat -V |grep ersion |awk '{print $3}' |awk -F '.' '{print $1}'")
+        version = execute_cmd(client, "pidstat -V |grep ersion |awk '{print $3}' |awk -F '.' '{print $1}'")
         v = int(version.strip())
         if v < 12:
             msg = 'The pidstat version is too low, please upgrade to version 12+, download link: ' \
