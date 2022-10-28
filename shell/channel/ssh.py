@@ -226,7 +226,7 @@ def get_server_info(host, port, user, pwd, current_time):
         return {'code': 1, 'msg': 'error ~'}
 
 
-def execute_cmd(client,command):
+def execute_cmd(client, command):
     _, stdout, _ = client.exec_command(command)
     result = stdout.read().decode("utf-8").strip()
     return result
