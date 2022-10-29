@@ -15,14 +15,9 @@ logger = logging.getLogger('django')
 
 
 def invoke_cmd(channel, command, is_split=True, timeout=0.5):
-    start_time = time.time()
-    data = ''
     channel.send(f'{command}\n')
-    while True:
-        time.sleep(0.2)
-        data += channel.recv(1024).decode('utf-8')
-        if time.time() - start_time > timeout:
-            break
+    time.sleep(timeout)
+    data = channel.recv(1024).decode('utf-8')
 
     if is_split:
         try:
@@ -214,21 +209,14 @@ def deploy_agent(client, local_path, deploy_path, file_name, address):
         # startup monitor
         _ = execute_cmd(client, f"echo '#!/bin/sh' >> {deploy_path}/start.sh")
         _ = execute_cmd(client, f"echo 'nohup ./server > /dev/null 2>&1 &' >> {deploy_path}/start.sh")
-        _ = execute_cmd(client, f"echo 'sleep 6' >> {deploy_path}/start.sh")
+        _ = execute_cmd(client, f"echo 'sleep 5' >> {deploy_path}/start.sh")
         if 'jmeter_agent' in deploy_path:
-            res = execute_cmd(client, f"cat {deploy_path}/config.conf |grep port |head -3 |grep =")
-            agent_port = res.split('=')[-1].strip()
-            logger.info(f'Agent port is {agent_port}')
-            _ = execute_cmd(client, f"echo 'pid=$(netstat -nlp|grep {agent_port} |grep LISTEN)' >> {deploy_path}/start.sh")
-            _ = execute_cmd(client, f"echo 'echo $pid' >> {deploy_path}/start.sh")
             channel = client.invoke_shell()
             while channel.recv_ready():
                 _ = channel.recv(1024)
                 if not channel.recv_ready():
                     break
-            res = invoke_cmd(channel, f'cd {deploy_path}; sh start.sh', is_split=False, timeout=8)
-            if 'tcp' not in res:
-                raise MyException('Deploy jmeter-agent failure, please try later ~')
+            _ = invoke_cmd(channel, f'cd {deploy_path}; sh start.sh', is_split=False, timeout=3)
         else:
             _ = execute_cmd(client, f'cd {deploy_path}; sh start.sh')
     except MyException as err:
