@@ -479,6 +479,7 @@ document.getElementById("room_operator").onchange = function () {
                     let s = '';
                     let room_type = ['Used to Applications', 'Used to Middleware', 'Used to Pressure Test'];
                     for (let i=0; i<data['data'].length; i++) {
+                        if (data['data'][i]['pk'] === '520') {continue;}
                         s += '<option value="' + data['data'][i]['pk'] + '">' + data['data'][i]['fields']['name'] + ' - ' + room_type[data['data'][i]['fields']['type']] + '</option>';
                     }
                     document.getElementById("room_id").innerHTML = s;

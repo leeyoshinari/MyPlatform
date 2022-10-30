@@ -98,7 +98,9 @@
                         <select id="Server-room">
                             <option value=""></option>
                             {% for room in rooms %}
-                                <option value="{{ room.id }}">{{ room.name }} - {{ room.type|get_value_from_list:'room_type' }}</option>
+                                {% if room.id != '520' %}
+                                    <option value="{{ room.id }}">{{ room.name }} - {{ room.type|get_value_from_list:'room_type' }}</option>
+                                {% endif %}
                             {% endfor %}
                         </select>
                     </div>

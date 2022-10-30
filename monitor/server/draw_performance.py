@@ -47,13 +47,25 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
             startTime = strfDeltaTime(600)
 
         s_time = time.time()
-        if endTime:
-            sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
-                  f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"server_{group}\" where room='{room}' and host='{host}' and time>='{startTime}' " \
-                  f"and time<'{endTime}' tz('Asia/Shanghai')"
+        if host != 'all':
+            if endTime:
+                sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
+                      f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"server_{group}\" where room='{room}' and host='{host}' and time>='{startTime}' " \
+                      f"and time<'{endTime}' tz('Asia/Shanghai')"
+            else:
+                sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
+                      f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"server_{group}\" where room='{room}' and host='{host}' and time>='{startTime}'"
         else:
-            sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
-                  f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"server_{group}\" where room='{room}' and host='{host}' and time>='{startTime}'"
+            if endTime:
+                sql = f"select first(c_time) as c_time, mean(cpu) as cpu, mean(iowait) as iowait, mean(usr_cpu) as usr_cpu, mean(mem) as mem, mean(mem_available) as mem_available, " \
+                      f"mean(jvm) as jvm, mean(disk) as disk, mean(disk_r) as disk_r, mean(disk_w) as disk_w, mean(disk_d) as disk_d, mean(rec) as rec, mean(trans) as trans, " \
+                      f"mean(net) as net, mean(tcp) as tcp, mean(retrans) as retrans, mean(port_tcp) as port_tcp, mean(close_wait) as close_wait, mean(time_wait) as time_wait " \
+                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}' and time<'{endTime}' tz('Asia/Shanghai')"
+            else:
+                sql = f"select first(c_time) as c_time, mean(cpu) as cpu, mean(iowait) as iowait, mean(usr_cpu) as usr_cpu, mean(mem) as mem, mean(mem_available) as mem_available, " \
+                      f"mean(jvm) as jvm, mean(disk) as disk, mean(disk_r) as disk_r, mean(disk_w) as disk_w, mean(disk_d) as disk_d, mean(rec) as rec, mean(trans) as trans, " \
+                      f"mean(net) as net, mean(tcp) as tcp, mean(retrans) as retrans, mean(port_tcp) as port_tcp, mean(close_wait) as close_wait, mean(time_wait) as time_wait " \
+                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}'"
         logger.info(f'Execute sql: {sql}')
         last_time = startTime
         datas = settings.INFLUX_CLIENT.query(sql)

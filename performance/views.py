@@ -2,13 +2,16 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
+import os
 import time
 import logging
 import traceback
 from django.db.models.deletion import ProtectedError
+from django.conf import settings
 from .models import TestPlan, ThreadGroup, TransactionController
 from .models import HTTPRequestHeader, HTTPSampleProxy, PerformanceTestTask
 from .taskViews import start_test
+from .common.fileController import delete_local_file
 from common.Result import result
 from common.generator import toTimeStamp
 from common.multiThread import start_thread
@@ -19,15 +22,33 @@ logger = logging.getLogger('django')
 is_auto_run = False
 
 
+def delete_file_from_disk(file_path):
+    path_list = file_path.split('/')
+    if settings.FILE_STORE_TYPE == '0':
+        file_folder = os.path.join(settings.FILE_ROOT_PATH, path_list[-2])
+        file_local_path = os.path.join(file_folder, path_list[-1])
+        os.remove(file_local_path)
+        _ = delete_local_file(file_folder)
+    else:
+        settings.MINIO_CLIENT.delete_file(path_list[-2], path_list[-1])
+
+
 def delete(request):
     if request.method == 'POST':
         try:
             delete_type = request.POST.get('type')
             delete_id = request.POST.get('id')
             if delete_type == 'plan':
-                TestPlan.objects.get(id=delete_id).delete()
+                plan = TestPlan.objects.get(id=delete_id)
+                if plan.is_file == 1:
+                    delete_file_from_disk(plan.file_path)
+                plan.delete()
             if delete_type == 'group':
-                ThreadGroup.objects.get(id=delete_id).delete()
+                group = ThreadGroup.objects.get(id=delete_id)
+                if group.file:
+                    file_path = group.file.get('file_path')
+                    delete_file_from_disk(file_path)
+                group.delete()
             if delete_type == 'controller':
                 TransactionController.objects.get(id=delete_id).delete()
             if delete_type == 'sample':
@@ -35,7 +56,10 @@ def delete(request):
             if delete_type == 'header':
                 HTTPRequestHeader.objects.get(id=delete_id).delete()
             if delete_type == 'task':
-                PerformanceTestTask.objects.get(id=delete_id).delete()
+                task = PerformanceTestTask.objects.get(id=delete_id)
+                if task.path:
+                    delete_file_from_disk(task.path)
+                task.delete()
             logger.info(f'{delete_type} {delete_id} is deleted success ~')
             return result(msg='Delete success ~')
         except ProtectedError:

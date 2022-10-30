@@ -19,10 +19,11 @@ from . import views
 
 app_name = 'monitor'
 urlpatterns = [
+    path('register/getinfo', views.get_room_group_by_host, name='get_room_group_by_host'),
     path('server/home', views.home, name='home'),
     path('server/visualize', views.visualize, name='visualize'),
     path('server/register', views.registers, name='register'),
-    path('server/register/first', views.register_first, name='register_first'),
+    #path('server/register/first', views.register_first, name='register_first'),
     path('server/getPortAndDisk', views.get_port_disk, name='get_port_disk'),
     path('server/plotMonitor', views.plot_monitor, name='plot_monitor'),
     path('register/notification', views.notice, name='notification'),

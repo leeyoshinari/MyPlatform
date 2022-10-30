@@ -125,7 +125,8 @@ def upload_file(request):
                 ff.close()
                 zip_file_url = f'{settings.STATIC_URL}files/{file_id}/{file_id}.zip'
             else:
-                zip_file_url = upload_file_by_path(settings.FILE_STORE_TYPE, zip_file_path)
+                res = settings.MINIO_CLIENT.upload_file_by_path(file_name, zip_file_path)
+                zip_file_url = f'{res.bucket_name}/{res.object_name}'
             del_file = delete_local_file(temp_file_path)
             if del_file['code'] == 1:
                 logger.error(del_file['msg'])
@@ -173,16 +174,19 @@ def add_to_task(request):
                 os.remove(source_jmeter_path)       # remove source jmx file
                 os.remove(jmeter_zip_file_path)
                 # write zip file to temp path
-                temp_file_path = os.path.join(settings.TEMP_PATH, task_id)
+                temp_file_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
                 if not os.path.exists(temp_file_path):
                     os.mkdir(temp_file_path)
                 zip_file_path = os.path.join(temp_file_path, task_id + '.zip')
                 zip_file(test_jmeter_path, zip_file_path)
                 # upload file
                 if settings.FILE_STORE_TYPE == '0':
-                    zip_file_url = f'{settings.STATIC_URL}temp/{task_id}/{task_id}.zip'
+                    zip_file_url = f'{settings.STATIC_URL}files/{task_id}/{task_id}.zip'
                 else:
-                    zip_file_url = upload_file_by_path(settings.FILE_STORE_TYPE, zip_file_path)
+                    res = settings.MINIO_CLIENT.upload_file_by_path(task_id + '.zip', zip_file_path)
+                    zip_file_url = f'{res.bucket_name}/{res.object_name}'
+                    os.remove(zip_file_path)
+                    _ = delete_local_file(temp_file_path)
                 logger.info(f'zip file is written successfully, operator: {username}, zip file: {zip_file_url}')
                 task_path = f'{settings.FILE_URL}{zip_file_url}'
                 del_file = delete_local_file(test_jmeter_path)

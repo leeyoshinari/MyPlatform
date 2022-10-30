@@ -5,16 +5,6 @@ import os
 import requests
 import zipfile
 
-def upload_file_by_path(store_type, file_path):
-    """
-        store_type: 1-MinIO, 2-other,todo
-    """
-    return ''
-
-
-def upload_file_by_bytes(file_bytes):
-    pass
-
 
 def download_file_to_path(url, file_path):
     with open(file_path, 'wb') as f:
@@ -24,14 +14,6 @@ def download_file_to_path(url, file_path):
 def download_file_to_bytes(url):
     res = requests.get(url)
     return res.content
-
-
-def get_request(url):
-    return requests.get(url)
-
-
-def delete_remote_file(url):
-    pass
 
 
 def delete_local_file(path):

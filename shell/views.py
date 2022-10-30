@@ -26,7 +26,7 @@ logger = logging.getLogger('django')
 current_path = os.path.abspath(os.path.dirname(__file__))
 upload_file_path = os.path.join(current_path, 'uploadFile')
 deploy_path = settings.DEPLOY_PATH
-local_file_path = os.path.join(settings.BASE_DIR, 'MyPlatform', 'files')
+local_file_path = os.path.join(settings.BASE_DIR, 'static', 'autoDeploy')
 if not os.path.exists(upload_file_path):
     os.mkdir(upload_file_path)
 if not os.path.exists(local_file_path):
@@ -460,7 +460,7 @@ def get_all_room(request):
     if request.method == 'GET':
         try:
             username = request.user.username
-            rooms = ServerRoom.objects.all().order_by('-id')
+            rooms = ServerRoom.objects.all().order_by('-create_time')
             logger.info(f'Get All Groups success, operator: {username}')
             return result(data=json.loads(serializers.serialize('json', rooms)))
         except:

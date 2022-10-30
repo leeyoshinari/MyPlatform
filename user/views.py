@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
+import json
 import logging
 import traceback
 from django.shortcuts import render, redirect
@@ -103,3 +104,14 @@ def course(request):
             return render(request, 'course_en.html')
     else:
         return render(request, '404.html')
+
+
+def register_first(request):
+    if request.method == 'POST':
+        value = request.body.decode()
+        data = json.loads(value)
+        logger.info(f"Agent: {data['host']}:{data['port']} registers successfully ~")
+        return result(msg='Agent registers successfully ~',data={'influx': {'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
+                      'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE},
+                      'redis': {'host': settings.REDIS_HOST, 'port': settings.REDIS_PORT, 'password': settings.REDIS_PWD,
+                       'db': settings.REDIS_DB}, 'key_expire': settings.PERFORMANCE_EXPIRE, 'deploy_path': settings.DEPLOY_PATH})

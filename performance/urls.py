@@ -37,7 +37,6 @@ urlpatterns = [
     path('plan/variable', planViews.edit_variable, name='plan_variable'),
 
     path('task', taskViews.home, name='task_home'),
-    path('task/register/first', taskViews.register_first, name='agent_register'),
     path('task/register', taskViews.register, name='agent_register'),
     path('task/status', taskViews.get_running_status, name='task_status'),
     path('task/add', taskViews.add_to_task, name='task_add'),
@@ -61,6 +60,7 @@ urlpatterns = [
     path('group/copy', threadViews.copy_group, name='group_copy'),
     path('group/cookie', threadViews.edit_cookie, name='group_cookie'),
     path('group/file/upload', threadViews.upload_file, name='group_upload_file'),
+    path('group/file/delete', threadViews.delete_file, name='group_delete_file'),
 
     path('controller', controllerViews.home, name='controller_home'),
     path('controller/add', controllerViews.add_group, name='controller_add'),

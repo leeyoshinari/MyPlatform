@@ -9,6 +9,7 @@ import traceback
 from django.shortcuts import render, redirect, resolve_url
 from django.conf import settings
 from .models import TestPlan, ThreadGroup, TransactionController
+from .views import delete_file_from_disk
 from common.Result import result
 from common.generator import primaryKey
 import common.Request as Request
@@ -153,10 +154,32 @@ def upload_file(request):
                 file_path = os.path.join(file_folder, file_name)
                 with open(file_path, 'wb') as f:
                     f.write(form.file.read())
-            return result(msg=f'{file_name} Upload Success ~', data=f'{settings.FILE_URL}{settings.STATIC_URL}files/{plan_id}/{file_name}')
+                file_url = f'{settings.FILE_URL}{settings.STATIC_URL}files/{plan_id}/{file_name}'
+            else:
+                res = settings.MINIO_CLIENT.upload_file_bytes(file_name, form.file, form.size)
+                file_url = f'{settings.FILE_URL}{res.bucket_name}/{res.object_name}'
+            return result(msg=f'{file_name} Upload Success ~', data=file_url)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg=f'{file_name} Upload Failure ~', data=file_name)
+
+
+def delete_file(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            group_id = request.POST.get('group_id')
+            file_path = request.POST.get('file_path')
+            delete_file_from_disk(file_path)
+            if group_id:
+                group = ThreadGroup.objects.get(id=group_id)
+                group.file = None
+                group.save()
+            logger.info(f'Delete file {file_path} success, operator: {username}')
+            return result(msg='Delete file success ~')
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Delete file failure ~')
 
 
 def edit_cookie(request):

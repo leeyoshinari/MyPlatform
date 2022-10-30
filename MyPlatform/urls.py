@@ -16,12 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
-from user.views import home, course
+from user.views import home, course, register_first
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('home', home, name='home'),
     path('course', course, name='course'),
+    path('register/first', register_first, name='register_first'),
     path('user/', include('user.urls'), name='user'),
     path('shell/', include('shell.urls'), name='shell'),
     path('monitor/', include('monitor.urls'), name='monitor'),

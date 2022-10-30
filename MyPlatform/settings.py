@@ -15,6 +15,7 @@ from pathlib import Path
 
 import redis
 import influxdb
+from common.MinIOStorage import MinIOStorage
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -204,8 +205,10 @@ LOGGING = {
 HEARTBEAT = 12  # heart beat time, unit: second(s)
 PERFORMANCE_EXPIRE = 604800  # performance test redis keys expire time, 7D
 
-#The path of deploying agent
-DEPLOY_PATH =get_config('deployPath')
+# The path of deploying agent
+DEPLOY_PATH = get_config('deployPath')
+# The collector-agent address
+COLLECTOR_AGENT_ADDRESS = get_config('collectorAgentAddress')
 
 # files
 # files store local path
@@ -217,6 +220,12 @@ if not os.path.exists(TEMP_PATH):
     os.mkdir(TEMP_PATH)
 if not os.path.exists(FILE_ROOT_PATH):
     os.mkdir(FILE_ROOT_PATH)
+
+if FILE_STORE_TYPE == '1':
+    MINIO_HOST = get_config('MinIOHost')
+    MINIO_ACCESSKEY = get_config('MinIOAccessKey')
+    MINIO_SECRETKEY = get_config('MinIOSecretKey')
+    MINIO_CLIENT = MinIOStorage(MINIO_HOST, MINIO_ACCESSKEY, MINIO_SECRETKEY)
 
 # Redis
 REDIS_HOST = get_config('RedisHost')

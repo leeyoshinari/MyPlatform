@@ -141,16 +141,19 @@ def add_to_task(request):
                             download_file_to_path(csv_file_path_url, csv_file_path)
                         logger.info(f'jmx file and csv file are written successfully, operator: {username}')
                         # write zip file to temp path
-                        temp_file_path = os.path.join(settings.TEMP_PATH, task_id)
+                        temp_file_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
                         if not os.path.exists(temp_file_path):
                             os.mkdir(temp_file_path)
                         zip_file_path = os.path.join(temp_file_path, task_id + '.zip')
                         zip_file(test_jmeter_path, zip_file_path)
                         # upload file
                         if settings.FILE_STORE_TYPE == '0':
-                            zip_file_url = f'{settings.STATIC_URL}temp/{task_id}/{task_id}.zip'
+                            zip_file_url = f'{settings.STATIC_URL}files/{task_id}/{task_id}.zip'
                         else:
-                            zip_file_url = upload_file_by_path(settings.FILE_STORE_TYPE, zip_file_path)
+                            res = settings.MINIO_CLIENT.upload_file_by_path(task_id + '.zip', zip_file_path)
+                            zip_file_url = f'{res.bucket_name}/{res.object_name}'
+                            os.remove(zip_file_path)
+                            _ = delete_local_file(temp_file_path)
                         logger.info(f'zip file is written successfully, operator: {username}, zip file: {zip_file_url}')
                         task_path = f'{settings.FILE_URL}{zip_file_url}'
                         del_file = delete_local_file(test_jmeter_path)
@@ -193,7 +196,17 @@ def delete_task(request):
         try:
             username = request.user.username
             task_id = request.GET.get('id')
-            task = PerformanceTestTask.objects.get(id=task_id).delete()
+            task = PerformanceTestTask.objects.get(id=task_id)
+            if settings.FILE_STORE_TYPE == '0':
+                local_file_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
+                del_file = delete_local_file(local_file_path)
+                if del_file['code'] == 1:
+                    logger.error(del_file['msg'])
+                    return result(code=1, msg=del_file['msg'])
+            else:
+                path_list = task.path.split('/')
+                settings.MINIO_CLIENT.delete_file(path_list[-2], path_list[-1])
+            task.delete()
             logger.info(f'Delete task {task.id} success, operator: {username}')
             return result(msg='Delete task success ~')
         except:

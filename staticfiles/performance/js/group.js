@@ -164,6 +164,7 @@ function upload_file(url) {
                             $.Toast(res['msg'], 'success');
                             document.getElementById('download_file').style.display = '';
                             document.getElementById('delete_file').style.display = '';
+                            document.getElementById('upload_file').style.display = 'none';
                             let s = res['data'].split('/');
                             document.getElementById('file_path').value = s[s.length-1];
                             document.getElementById('file_path').name = res['data'];
@@ -190,13 +191,32 @@ function download_file() {
     window.open(document.getElementById('file_path').name);
 }
 
-function delete_file() {
-    document.getElementById('download_file').style.display = 'none';
-    document.getElementById('delete_file').style.display = 'none';
-    document.getElementById('file_path').name = '';
-    document.getElementById('file_path').value = '';
-    let small_div = document.getElementsByClassName('small-div');
-    for(let i=0; i<small_div.length; i++) {
-        small_div[i].style.display = 'none';
+function delete_file(url, group_id) {
+    let post_data = {
+        group_id: group_id,
+        plan_id: document.getElementById('planid').value,
+        file_path: document.getElementById('file_path').name
     }
+    $.ajax({
+        type: 'post',
+        url: url,
+        data: post_data,
+        dataType: 'json',
+        success: function (data) {
+            if (data['code'] === 0) {
+                document.getElementById('download_file').style.display = 'none';
+                document.getElementById('delete_file').style.display = 'none';
+                document.getElementById('upload_file').style.display = '';
+                document.getElementById('file_path').name = '';
+                document.getElementById('file_path').value = '';
+                let small_div = document.getElementsByClassName('small-div');
+                for(let i=0; i<small_div.length; i++) {
+                    small_div[i].style.display = 'none';
+                }
+                $.Toast(data['msg'], 'success');
+            } else {
+                $.Toast(data['msg'], 'error');
+            }
+        }
+    })
 }

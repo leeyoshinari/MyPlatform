@@ -61,6 +61,9 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
             if res['code'] > 0:
                 raise MyException(res['msg'])
             deploy_agent(client, local_path, monitor_path, file_name, address)
+        if package_type == 'collector-agent':
+            collector_path = os.path.join(deploy_path, 'collector_agent')
+            deploy_agent(client, local_path, collector_path, file_name, address)
         if package_type == 'jmeter-agent':
             jmeter_path = os.path.join(deploy_path, 'JMeter')
             jmeter_agent_path = os.path.join(deploy_path, 'jmeter_agent')
@@ -109,6 +112,10 @@ def check_deploy_status(host, port, user, pwd, deploy_path, current_time, packag
             monitor_path = os.path.join(deploy_path, 'monitor_agent')
             if not check_agent_status(client, monitor_path):
                 raise MyException('Deploy monitor-agent failure, please try later ~')
+        if package_type == 'collector-agent':
+            collector_path = os.path.join(deploy_path, 'collector_agent')
+            if not check_agent_status(client, collector_path):
+                raise MyException('Deploy collector-agent failure, please try later ~')
         if package_type == 'jmeter-agent':
             jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
             if not check_agent_status(client, jmeter_path):
@@ -151,6 +158,9 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
     if package_type == 'monitor-agent':
         monitor_path = os.path.join(deploy_path, 'monitor_agent')
         uninstall_agent(client, monitor_path)
+    if package_type == 'collector-agent':
+        collector_path = os.path.join(deploy_path, 'collector_agent')
+        uninstall_agent(client, collector_path)
     if package_type == 'jmeter-agent':
         jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
         uninstall_agent(client, jmeter_path)
