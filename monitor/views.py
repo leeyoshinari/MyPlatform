@@ -253,9 +253,8 @@ def plot_monitor(request):
                     res = draw_data_from_db(room=room_id, group=group_identifier['key'], host=host, startTime=start_time, endTime=end_time)
                     if res['code'] == 1:
                         raise Exception(res['msg'])
-                    monitor_data = monitor_server.get_value_by_host('Server_' + host)
-                    res.update({'gc': monitor_data['gc']})
-                    res['gc'].append(monitor_data['ffgc'])
+                    res.update({'gc': server_dict['gc']})
+                    res['gc'].append(server_dict['ffgc'])
                     if res['gc'][0] == -1 and res['gc'][2] == -1:
                         res['flag'] = 0
                     return JsonResponse(res)

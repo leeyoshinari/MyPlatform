@@ -60,12 +60,12 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
                 sql = f"select first(c_time) as c_time, mean(cpu) as cpu, mean(iowait) as iowait, mean(usr_cpu) as usr_cpu, mean(mem) as mem, mean(mem_available) as mem_available, " \
                       f"mean(jvm) as jvm, mean(disk) as disk, mean(disk_r) as disk_r, mean(disk_w) as disk_w, mean(disk_d) as disk_d, mean(rec) as rec, mean(trans) as trans, " \
                       f"mean(net) as net, mean(tcp) as tcp, mean(retrans) as retrans, mean(port_tcp) as port_tcp, mean(close_wait) as close_wait, mean(time_wait) as time_wait " \
-                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}' and time<'{endTime}' tz('Asia/Shanghai')"
+                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}' and time<'{endTime}' group by time({settings.SAMPLING_INTERVAL}s) fill(linear) tz('Asia/Shanghai')"
             else:
                 sql = f"select first(c_time) as c_time, mean(cpu) as cpu, mean(iowait) as iowait, mean(usr_cpu) as usr_cpu, mean(mem) as mem, mean(mem_available) as mem_available, " \
                       f"mean(jvm) as jvm, mean(disk) as disk, mean(disk_r) as disk_r, mean(disk_w) as disk_w, mean(disk_d) as disk_d, mean(rec) as rec, mean(trans) as trans, " \
                       f"mean(net) as net, mean(tcp) as tcp, mean(retrans) as retrans, mean(port_tcp) as port_tcp, mean(close_wait) as close_wait, mean(time_wait) as time_wait " \
-                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}'"
+                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}' group by time({settings.SAMPLING_INTERVAL}s) fill(linear)"
         logger.info(f'Execute sql: {sql}')
         last_time = startTime
         datas = settings.INFLUX_CLIENT.query(sql)
@@ -73,7 +73,10 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
             for data in datas.get_points():
                 if data['time'] == startTime: continue
                 last_time = data['time']
-                post_data['cpu_time'].append(data['c_time'])
+                if data['c_time']:
+                    post_data['cpu_time'].append(data['c_time'])
+                else:
+                    continue
                 post_data['cpu'].append(data['cpu'])
                 post_data['iowait'].append(data['iowait'])
                 # post_data['usr_cpu'].append(data['usr_cpu'])
