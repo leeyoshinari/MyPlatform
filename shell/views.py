@@ -382,9 +382,12 @@ def deploy_package(request):
             groups = request.user.groups.all()
             host = request.POST.get('host')
             package_id = request.POST.get('id')
-            address = f"{request.POST.get('address')}/{settings.CONTEXT}"
             servers = Servers.objects.get(host=host, group__in=groups)
             package = Packages.objects.get(id=package_id)
+            if package.type == 'collector-agent':
+                address = f"{request.POST.get('address')}/{settings.CONTEXT}"
+            else:
+                address = settings.COLLECTOR_AGENT_ADDRESS
             if not os.path.exists(package.path):
                 return result(code=1, msg=f'{package.name} is not exist ~')
             deploy(host = servers.host, port = servers.port, user = servers.user, pwd = servers.pwd, deploy_path=deploy_path,
