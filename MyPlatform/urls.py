@@ -30,5 +30,5 @@ urlpatterns = [
 ]
 
 urlpatterns = [
-    path(f'{settings.CONTEXT}/', include(urlpatterns))
+    path(f'{settings.PREFIX}/', include(urlpatterns))
 ]

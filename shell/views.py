@@ -174,6 +174,7 @@ def create_group(request):
             group_id = request.POST.get('GroupId')
             group_key = request.POST.get('GroupKey')
             group_type = request.POST.get('GroupType')
+            prefix = request.POST.get('Prefix')
             if group_type == 'add':
                 group = Group.objects.create(name=group_name)
                 users = User.objects.filter(is_staff=1)
@@ -185,7 +186,7 @@ def create_group(request):
                     logger.error(f"{identifier.key} has existed, operator: {username}")
                     return result(code=1, msg=f"{identifier.key} has existed, Group Name is {identifier.group.name}")
                 except GroupIdentifier.DoesNotExist:
-                    identifier = GroupIdentifier.objects.create(id=primaryKey(), group_id=group.id, key=group_key)
+                    identifier = GroupIdentifier.objects.create(id=primaryKey(), group_id=group.id, key=group_key, prefix=prefix)
             if group_type == 'delete':
                 group = Group.objects.get(id=group_id).delete()
             logger.info(f'{group_type} group {group_name} success, operator: {username}')
@@ -385,7 +386,7 @@ def deploy_package(request):
             servers = Servers.objects.get(host=host, group__in=groups)
             package = Packages.objects.get(id=package_id)
             if package.type == 'collector-agent':
-                address = f"{request.POST.get('address')}/{settings.CONTEXT}"
+                address = f"{request.POST.get('address')}/{settings.PREFIX}"
             else:
                 address = settings.COLLECTOR_AGENT_ADDRESS
             if not os.path.exists(package.path):

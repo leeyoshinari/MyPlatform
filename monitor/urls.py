@@ -29,6 +29,4 @@ urlpatterns = [
     path('register/notification', views.notice, name='notification'),
     path('server/change/group', views.change_group, name='change_group'),
     path('server/change/room', views.change_room, name='change_room'),
-
-    path('nginx/register/first', views.nginx_register_first, name='nginx_register_first'),
 ] if settings.IS_MONITOR == 1 else []

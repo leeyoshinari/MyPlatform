@@ -222,6 +222,7 @@ document.getElementById('createGroup').addEventListener('click', function () {
         let GroupKey = document.getElementById("group_identifier_2").value;
         let group_operator = document.getElementById("group_operator").value;
         let group_id = document.getElementById("group_id").value;
+        let prefix = document.getElementById("url-prefix").value;
 
         if (group_operator === 'add' && !GroupName) {
             $.Toast('Please input group name ~ ', 'error');
@@ -236,7 +237,8 @@ document.getElementById('createGroup').addEventListener('click', function () {
             GroupName: GroupName,
             GroupId: group_id,
             GroupType: group_operator,
-            GroupKey: GroupKey
+            GroupKey: GroupKey,
+            Prefix: prefix
         }
         $.ajax({
             type: 'POST',
@@ -247,7 +249,6 @@ document.getElementById('createGroup').addEventListener('click', function () {
             success: function (data) {
                 if (data['code'] !== 0) {
                     $.Toast(data['msg'], 'error');
-                    return;
                 } else {
                     $.Toast(data['msg'], 'success');
                     modal.style.display = "none";
@@ -440,6 +441,7 @@ document.getElementById("group_operator").onchange = function () {
     if (operate_type === 'add') {
         document.getElementById("group_input").style.display = 'block';
         document.getElementById("group_identifier").style.display = 'block';
+        document.getElementById("group_prefix").style.display = 'block';
         document.getElementById("group_select").style.display = 'none';
     } else {
         $.ajax({
@@ -454,6 +456,7 @@ document.getElementById("group_operator").onchange = function () {
                     document.getElementById("group_id").innerHTML = s;
                     document.getElementById("group_input").style.display = 'none';
                     document.getElementById("group_identifier").style.display = 'none';
+                    document.getElementById("group_prefix").style.display = 'none';
                     document.getElementById("group_select").style.display = 'block';
                 } else {
                     $.Toast(data['msg'], 'error');

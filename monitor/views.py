@@ -164,7 +164,7 @@ def get_room_group_by_host(request):
             servers = Servers.objects.get(host=host)
             identifier = GroupIdentifier.objects.get(group_id=servers.group_id)
             logger.info(f'Get host {host} room and group success ~')
-            return result(msg='success!', data={'roomId': servers.room.id, 'groupKey': identifier.key})
+            return result(msg='success!', data={'roomId': servers.room.id, 'groupKey': identifier.key, 'prefix': identifier.prefix})
         except Servers.DoesNotExist:
             logger.error(f"Host: {host} is not set in 'shell->server'")
             return result(code=1, msg=f"Host: {host} is not existed !")
@@ -344,28 +344,6 @@ def change_room(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Error, please try later ~')
-
-
-def nginx_register_first(request):
-    """
-    register
-    """
-    if request.method == 'POST':
-        logger.debug(f'The request parameters are {request.body}')
-        datas = json.loads(request.body)
-        try:
-            servers = Servers.objects.get(host=datas['host'])
-            identifier = GroupIdentifier.objects.get(group_id=servers.group_id)
-            return result(msg='registered successfully!', data={'influx': {'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
-                      'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE},
-                      'redis': {'host': settings.REDIS_HOST, 'port': settings.REDIS_PORT, 'password': settings.REDIS_PWD,
-                       'db': settings.REDIS_DB}, 'roomId': servers.room.id, 'groupKey': identifier.key})
-        except Servers.DoesNotExist:
-            logger.error(f"Host: {datas['host']} is not set in 'shell->server'")
-            return result(code=1, msg=f"Host: {datas['host']} is not set in 'shell->server'")
-        except:
-            logger.error(traceback.format_exc())
-            return result(code=1, msg='Register Error ~')
 
 
 def nginx_home(request):
