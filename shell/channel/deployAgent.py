@@ -64,6 +64,9 @@ def deploy(host, port, user, pwd, deploy_path, current_time, local_path, file_na
         if package_type == 'collector-agent':
             collector_path = os.path.join(deploy_path, 'collector_agent')
             deploy_agent(client, local_path, collector_path, file_name, address)
+        if package_type == 'nginx-agent':
+            nginx_path = os.path.join(deploy_path, 'nginx_agent')
+            deploy_agent(client, local_path, nginx_path, file_name, address)
         if package_type == 'jmeter-agent':
             jmeter_path = os.path.join(deploy_path, 'JMeter')
             jmeter_agent_path = os.path.join(deploy_path, 'jmeter_agent')
@@ -116,6 +119,10 @@ def check_deploy_status(host, port, user, pwd, deploy_path, current_time, packag
             collector_path = os.path.join(deploy_path, 'collector_agent')
             if not check_agent_status(client, collector_path):
                 raise MyException('Deploy collector-agent failure, please try later ~')
+        if package_type == 'nginx-agent':
+            nginx_path = os.path.join(deploy_path, 'nginx_agent')
+            if not check_agent_status(client, nginx_path):
+                raise MyException('Deploy nginx-agent failure, please try later ~')
         if package_type == 'jmeter-agent':
             jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
             if not check_agent_status(client, jmeter_path):
@@ -161,6 +168,9 @@ def stop_deploy(host, port, user, pwd, current_time, package_type, deploy_path):
     if package_type == 'collector-agent':
         collector_path = os.path.join(deploy_path, 'collector_agent')
         uninstall_agent(client, collector_path)
+    if package_type == 'nginx-agent':
+        nginx_path = os.path.join(deploy_path, 'nginx_agent')
+        uninstall_agent(client, nginx_path)
     if package_type == 'jmeter-agent':
         jmeter_path = os.path.join(deploy_path, 'jmeter_agent')
         uninstall_agent(client, jmeter_path)
