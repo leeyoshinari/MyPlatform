@@ -140,6 +140,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'zh-Hans'
 TIME_ZONE = 'Asia/Shanghai'
+GMT = int(get_config('GMT'))
 USE_I18N = True
 USE_L10N = True
 USE_TZ = False

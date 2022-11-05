@@ -16,6 +16,7 @@ from common.Result import result
 from .server.request import Request
 from .server.process import Process
 from .server.draw_performance import draw_data_from_db
+from common.generator import strfDeltaTime
 
 
 logger = logging.getLogger('django')
@@ -125,8 +126,8 @@ def visualize(request):
             spec_host = spec_host if spec_host else 'all'
             spec_group = request.GET.get('group')
             spec_room = request.GET.get('room')
-            starttime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()-600))
-            endtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            starttime = strfDeltaTime(-600)
+            endtime = strfDeltaTime()
             groups = request.user.groups.all().order_by('-id')
             if spec_group:
                 servers = Servers.objects.values('host', 'room_id').filter(group_id=spec_group).order_by('-id')
@@ -134,12 +135,13 @@ def visualize(request):
                 servers = Servers.objects.values('host', 'room_id').filter(group__in=groups).order_by('-id')
             room_list = [s['room_id'] for s in servers]
             rooms = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
-            keys = monitor_server.get_all_keys()
-            hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
-            if not hosts:
-                logger.error(f'You have no servers to view, please check permission ~')
-                return render(request, '404.html')
-            logger.info(f'Access visualization page, operaotr: {username}')
+            hosts=['127']
+            # keys = monitor_server.get_all_keys()
+            # hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
+            # if not hosts:
+            #     logger.error(f'You have no servers to view, please check permission ~')
+            #     return render(request, '404.html')
+            # logger.info(f'Access visualization page, operaotr: {username}')
             return render(request, 'monitor/visualize.html', context={'ip': hosts, 'groups': groups,'rooms': rooms, 'starttime': starttime,
                 'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec_host': spec_host, 'spec_group': spec_group, 'spec_room': spec_room})
         except:

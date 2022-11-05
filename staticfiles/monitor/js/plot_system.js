@@ -603,10 +603,12 @@ function quickSort(arr){
     }
     return quickSort(left).concat(temp,quickSort(right));
 }
-function date_to_date(current_date, delta=0) {
-    let timestamp = new Date(current_date).getTime();
-    let D = new Date(timestamp + delta * 1000);
-    return format_date(D);
+function date_to_date(current_date=null, delta=0) {
+    if (current_date) {
+        return format_date(new Date(new Date(current_date).getTime() + delta * 1000));
+    } else {
+        return format_date(new Date(new Date().getTime() + delta * 1000));
+    }
 }
 
 function format_date(D) {
@@ -628,33 +630,72 @@ function plot_change(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available,
     options = myChart.getOption();
     for(let i=0; i<x_label.length; i++) {
         options.xAxis[0].data.push(x_label[i]);
+        options.xAxis[0].data.shift();
         options.xAxis[1].data.push(x_label[i]);
+        options.xAxis[1].data.shift();
         options.xAxis[2].data.push(x_label[i]);
+        options.xAxis[2].data.shift();
         options.xAxis[3].data.push(x_label[i]);
+        options.xAxis[3].data.shift();
         options.xAxis[4].data.push(x_label[i]);
+        options.xAxis[4].data.shift();
         options.series[0].data.push(cpu[i]);
+        options.series[0].data.shift();
         options.series[1].data.push(iowait[i]);
+        options.series[1].data.shift();
         options.series[2].data.push(mem_available[i]);
+        options.series[2].data.shift();
         options.series[3].data.push(mem[i]);
-        options.series[5].data.push(disk_r[i]);
-        options.series[6].data.push(disk_w[i]);
-        options.series[7].data.push(IO[i]);
-        options.series[8].data.push(rec[i]);
-        options.series[9].data.push(trans[i]);
-        options.series[10].data.push(net[i]);
-        options.series[11].data.push(tcp[i]);
-        options.series[12].data.push(retrans[i]);
-        options.series[13].data.push(port_tcp[i]);
-        options.series[14].data.push(time_wait[i]);
-        options.series[15].data.push(close_wait[i]);
+        options.series[3].data.shift();
         if (is_jvm === 1) {
             options.series[4].data.push(jvm[i]);
+            options.series[4].data.shift();
         }
+        options.series[5].data.push(disk_r[i]);
+        options.series[5].data.shift();
+        options.series[6].data.push(disk_w[i]);
+        options.series[6].data.shift();
+        options.series[7].data.push(IO[i]);
+        options.series[7].data.shift();
+        options.series[8].data.push(rec[i]);
+        options.series[8].data.shift();
+        options.series[9].data.push(trans[i]);
+        options.series[9].data.shift();
+        options.series[10].data.push(net[i]);
+        options.series[10].data.shift();
+        options.series[11].data.push(tcp[i]);
+        options.series[11].data.shift();
+        options.series[12].data.push(retrans[i]);
+        options.series[12].data.shift();
+        options.series[13].data.push(port_tcp[i]);
+        options.series[13].data.shift();
+        options.series[14].data.push(time_wait[i]);
+        options.series[14].data.shift();
+        options.series[15].data.push(close_wait[i]);
+        options.series[15].data.shift();
     }
     cpu_sorted = [...options.series[0].data];
     iowait_sorted = [...options.series[1].data];
     cpu_sorted.sort(function (a, b) {return a - b});
     iowait_sorted.sort(function (a, b) {return a - b});
+    document.getElementById('starttime').value = options.xAxis[0].data[0];
     options.title[0].text = 'CPU(%), Max: ' + cpu_sorted.slice(-1)[0].toFixed(2) + '%, 90%Line CPU: ' + cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2) + '%, 90%Line IOWait: ' + iowait_sorted[parseInt(0.9 * iowait_sorted.length)].toFixed(2) + '%';
     myChart.setOption(options);
+}
+
+
+function change_period() {
+    let tp = document.getElementById('time-period').value;
+    if (tp === '0') {
+        document.getElementById('starttime').style.display = 'inline';
+        document.getElementById('endtime').style.display = 'inline';
+        document.getElementById('h-line').style.display = 'inline';
+    } else {
+        document.getElementById('starttime').style.display = 'none';
+        document.getElementById('endtime').style.display = 'none';
+        document.getElementById('h-line').style.display = 'none';
+        document.getElementById('endtime').value = date_to_date();
+        document.getElementById('starttime').value = date_to_date(null, -1 * parseInt(tp));
+        plot_init('all');
+    }
 }

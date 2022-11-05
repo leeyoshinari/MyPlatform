@@ -5,7 +5,7 @@ import time
 import logging
 import traceback
 from django.conf import settings
-from common.generator import strfDeltaTime
+from common.generator import strfDeltaTime, local2utc
 
 logger = logging.getLogger('django')
 
@@ -44,28 +44,31 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
 
     try:
         if not startTime:     # If there is a start time and an end time
-            startTime = strfDeltaTime(600)
+            startTime = strfDeltaTime(-600)
+        startTime = local2utc(startTime, settings.GMT)
 
         s_time = time.time()
         if host != 'all':
             if endTime:
+                endTime = local2utc(endTime, settings.GMT)
                 sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
                       f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"server_{group}\" where room='{room}' and host='{host}' and time>='{startTime}' " \
-                      f"and time<'{endTime}' tz('Asia/Shanghai')"
+                      f"and time<'{endTime}';"
             else:
                 sql = f"select c_time, cpu, iowait, usr_cpu, mem, mem_available, jvm, disk, disk_r, disk_w, disk_d, rec, trans, " \
-                      f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"server_{group}\" where room='{room}' and host='{host}' and time>='{startTime}'"
+                      f"net, tcp, retrans, port_tcp, close_wait, time_wait from \"server_{group}\" where room='{room}' and host='{host}' and time>='{startTime}';"
         else:
             if endTime:
+                endTime = local2utc(endTime, settings.GMT)
                 sql = f"select first(c_time) as c_time, mean(cpu) as cpu, mean(iowait) as iowait, mean(usr_cpu) as usr_cpu, mean(mem) as mem, mean(mem_available) as mem_available, " \
                       f"mean(jvm) as jvm, mean(disk) as disk, mean(disk_r) as disk_r, mean(disk_w) as disk_w, mean(disk_d) as disk_d, mean(rec) as rec, mean(trans) as trans, " \
                       f"mean(net) as net, mean(tcp) as tcp, mean(retrans) as retrans, mean(port_tcp) as port_tcp, mean(close_wait) as close_wait, mean(time_wait) as time_wait " \
-                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}' and time<'{endTime}' group by time({settings.SAMPLING_INTERVAL}s) fill(linear) tz('Asia/Shanghai')"
+                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}' and time<'{endTime}' group by time({settings.SAMPLING_INTERVAL}s) fill(linear);"
             else:
                 sql = f"select first(c_time) as c_time, mean(cpu) as cpu, mean(iowait) as iowait, mean(usr_cpu) as usr_cpu, mean(mem) as mem, mean(mem_available) as mem_available, " \
                       f"mean(jvm) as jvm, mean(disk) as disk, mean(disk_r) as disk_r, mean(disk_w) as disk_w, mean(disk_d) as disk_d, mean(rec) as rec, mean(trans) as trans, " \
                       f"mean(net) as net, mean(tcp) as tcp, mean(retrans) as retrans, mean(port_tcp) as port_tcp, mean(close_wait) as close_wait, mean(time_wait) as time_wait " \
-                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}' group by time({settings.SAMPLING_INTERVAL}s) fill(linear)"
+                      f"from \"server_{group}\" where room='{room}' and time>='{startTime}' group by time({settings.SAMPLING_INTERVAL}s) fill(linear);"
         logger.info(f'Execute sql: {sql}')
         last_time = startTime
         datas = settings.INFLUX_CLIENT.query(sql)

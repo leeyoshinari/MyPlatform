@@ -18,7 +18,7 @@ from .common.getRedis import *
 from .common.fileController import *
 from .common.request import http_request
 from common.Result import result, json_result
-from common.generator import primaryKey, strfTime, strfDeltaTime, toTimeStamp
+from common.generator import primaryKey, strfTime, strfDeltaTime, toTimeStamp, local2utc
 import influxdb
 # Create your views here.
 
@@ -549,16 +549,19 @@ def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=N
         conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
                                        settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
         if not start_time:     # If there is a start time and an end time
-            start_time = strfDeltaTime(1800)
+            start_time = strfDeltaTime(-1800)
         if not end_time:
             end_time = strfTime()
 
+        start_time = local2utc(start_time, settings.GMT)
+        end_time = local2utc(end_time, settings.GMT)
+
         if delta == '520':
             sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
-                  f"host='{host}' and time>'{start_time}'"
+                  f"host='{host}' and time>'{start_time}';"
         else:
             sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \
-                  f"host='{host}' and time>'{start_time}' and time<='{end_time}' tz('Asia/Shanghai')"
+                  f"host='{host}' and time>'{start_time}' and time<='{end_time}';"
 
         logger.info(f'Execute SQL: {sql}')
         datas = conn.query(sql)
