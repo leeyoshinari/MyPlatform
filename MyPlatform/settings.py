@@ -40,6 +40,7 @@ ALLOWED_HOSTS = ['*']
 IS_ATIJMETER = int(get_config('isATIJMeter'))
 IS_MONITOR = int(get_config('isMonitor'))
 IS_PERF = int(get_config('isPerformanceTest'))
+IS_NGINX = int(get_config('isNginxFlow'))
 SAMPLING_INTERVAL = int(get_config('samplingInterval'))
 
 # Application definition

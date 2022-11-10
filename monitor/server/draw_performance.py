@@ -156,3 +156,89 @@ def get_lines(datas):
               round(nic[int(len(nic) * 0.99)], 3)]
 
     return {'line': [line75, line90, line95, line99]}
+
+
+def query_nginx_detail_summary(group_key, source, order_key, order_by, start_time, end_time, limit_num, path):
+    res = {'code': 0, 'msg': 'Successful!'}
+    try:
+        post_data = []
+        if not start_time:
+            start_time = strfDeltaTime(-600)
+        if not end_time:
+            end_time = strfDeltaTime()
+        start_time = local2utc(start_time, settings.GMT)
+        end_time = local2utc(end_time, settings.GMT)
+        s_time = time.time()
+        if path:
+            sql = f"select * from (select path, count(1) as sample, mean(rt) as rt, sum(size) as size, sum(error) as error, count(1) / (max(time)-min(time)) as qps from 'nginx_{group_key}' " \
+                  f"where source='{source}' and path='{path}' and time > '{start_time}' and time < '{end_time}' group by path) order by '{order_key}' {order_by} limit {limit_num};"
+        else:
+            sql = f"select * from (select path, count(1) as sample, mean(rt) as rt, sum(size) as size, sum(error) as error, count(1) / (max(time)-min(time)) as qps from 'nginx_{group_key}' " \
+                  f"where source='{source}' and time > '{start_time}' and time < '{end_time}' group by path) order by '{order_key}' {order_by} limit {limit_num};"
+        logger.info(f'Execute sql: {sql}')
+        datas = settings.INFLUX_CLIENT.query(sql)
+        if datas:
+            for data in datas.get_points():
+                post_data.append({'path': data['path'], 'sample': data['sample'], 'qps': data['qps'], 'rt': data['rt'], 'size': data['size'], 'error': data['error']})
+        else:
+            res['msg'] = 'No Nginx summary data is found, please check it again.'
+            res['code'] = 1
+        res.update({'post_data': post_data})
+        logger.info(f'Time consuming to query is {time.time() - s_time}')
+    except:
+        logger.error(traceback.format_exc())
+        res['msg'] = 'Query Nginx summary data error, please check it again ~'
+        res['code'] = 1
+
+    del post_data
+    return res
+
+
+def query_nginx_detail_by_path(group_key, source, path, start_time, end_time):
+    post_data = {
+        'time': '',
+        'c_time': [],
+        'qps': [],
+        'rt': [],
+        'size': [],
+        'error': []
+    }
+    res = {'code': 0, 'msg': 'Successful!'}
+    try:
+        if not start_time:
+            start_time = strfDeltaTime(-600)
+        if not end_time:
+            end_time = strfDeltaTime()
+        start_time = local2utc(start_time, settings.GMT)
+        end_time = local2utc(end_time, settings.GMT)
+        s_time = time.time()
+        sql = f"select first(c_time) as c_time, count(1) as qps, mean(rt) as rt, sum(size) as size, sum(error) as error from 'nginx_{group_key}' " \
+              f"where source='{source}' and path='{path}' and time > '{start_time}' and time < '{end_time}' group by time(1s) fill(linear);"
+        logger.info(f'Execute sql: {sql}')
+        last_time = start_time
+        datas = settings.INFLUX_CLIENT.query(sql)
+        if datas:
+            for data in datas.get_points():
+                if data['time'] == start_time: continue
+                last_time = data['time']
+                if data['c_time']:
+                    post_data['c_time'].append(data['c_time'])
+                else:
+                    continue
+                post_data['qps'].append(data['qps'])
+                post_data['rt'].append(data['rt'])
+                post_data['size'].append(data['size'])
+                post_data['error'].append(data['error'])
+            post_data['time'] = last_time
+        else:
+            res['msg'] = 'No Nginx data is found, please check it again.'
+            res['code'] = 1
+        res.update({'post_data': post_data})
+        logger.info(f'Time consuming to query is {time.time() - s_time}')
+    except:
+        logger.error(traceback.format_exc())
+        res['msg'] = 'Query Nginx data error, please check it again ~'
+        res['code'] = 1
+
+    del post_data
+    return res

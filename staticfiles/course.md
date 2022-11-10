@@ -4,7 +4,8 @@
 1、服务器管理，可以统一查看服务器的基本信息；<br>
 2、Shell 远程连接，支持本地和服务器之间的文件上传和下载；<br>
 3、服务器资源监控；<br>
-4、性能测试工具，提供自动化压测和分布式压测的能力；<br>
+4、Nginx 访问日志流量收集；<br>
+5、性能测试工具，提供自动化压测和分布式压测的能力；<br>
 
 ## 项目目录
 - MyPlatform - 项目文件
@@ -50,7 +51,7 @@
 支持权限控制，将用户添加进项目组中，用户就只能看到项目组下的服务器，可以避免未授权的访问和服务器密码到处传播。
 ### 具体使用
 #### 设置项目组
-点击 Create Group 创建项目组，需要设置项目组和项目组应用的唯一标识符。唯一标识符一般在整个公司是唯一的，对于在服务器上，通过'ps -ef | grep 唯一标识符 | grep -v grep' 命令可以查找到一条进程。<br>
+点击 Create Group 创建项目组，需要设置项目组和项目组应用的唯一标识符。唯一标识符一般在整个公司是唯一的，对于在服务器上，通过`ps -ef | grep 唯一标识符 | grep -v grep` 命令可以查找到一条进程。<br>
 该按钮仅管理员可见。
 #### 设置服务器所在机房
 点击 Create Server Room 创建机房，设置机房时主要有3个选项，分别是用于应用、用于中间件、用于压测。为什么有这3个呢？<br>
@@ -88,7 +89,7 @@
 ### 可视化
 监控结果可视化，分项目组和机房查看，可选择任意时间段（监控数据保留时长在配置中设置）。<br>
 主要监控下面数据：<br>
-- CPU：CPU 总使用率、iowait 使用流程
+- CPU：CPU 总使用率、iowait 使用率
 - 内存：剩余内存、可用内存、JVM内存（仅Java）
 - 磁盘：磁盘读写速度、磁盘IO
 - 网络：网络上行和下行速度、网络使用率
@@ -239,7 +240,7 @@ python3 manage.py migrate
 python3 manage.py createsuperuser
 ```
 
-6、数据初始化，不初始化会导致上传jmeter文件报错；
+6、数据初始化，不初始化会导致报错；
 ```shell script
 python3 manage.py loaddata initdata.json
 ```
@@ -251,16 +252,16 @@ python3 manage.py collectstatic
 
 8、修改`startup.sh`中的端口号；
 
-9、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`tencent`是url上下文，即url前缀，可根据自己需要修改)<br>
+9、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
 （1）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
 ```shell script
-location /tencent/static {
+location /platform/static {
     alias /home/MyPlatform/static;
 }
 ```
 （2）动态http请求：
 ```shell script
-location /tencent {
+location /platform {
      proxy_pass  http://127.0.0.1:15200;
      proxy_set_header Host $proxy_host;
      proxy_set_header X-Real-IP $remote_addr;
@@ -281,9 +282,9 @@ location /shell {  # 必须是shell
 sh startup.sh
 ```
 
-11、访问页面，url是 `http://ip:port/上下文`
+11、访问页面，url是 `http://ip:port/config.conf中的prefix`
 
-12、访问权限控制页面，url是 `http://ip:port/上下文/admin`
+12、访问权限控制页面，url是 `http://ip:port/config.conf中的prefix/admin`
 
 13、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
 
@@ -301,7 +302,7 @@ sh startup.sh
 
 ### 性能测试怎么区分压测流量和正常流量？
 如果你是在页面上手动编写的脚本，那么当脚本执行时，会自动把请求头中的 `User-Agent` 的值设置成 `PerformanceTest`，故可根据 `User-Agent` 区分压测流量。<br>
-如果你是在`Upload JMeter`页面手动上传本地调试好的脚本，那么脚本中的请求头必须包含 `User-Agent`，当执行脚本时，会自动把请求头中的 `User-Agent` 的值替换成 `PerformanceTest`。所以你的本地脚本中的请求头必须包含 `User-Agent`。
+如果你是在`Upload JMeter`页面手动上传本地调试好的脚本，那么脚本中的请求头必须包含 `User-Agent` 字段，当执行脚本时，会自动把请求头中的 `User-Agent` 的值替换成 `PerformanceTest`。所以你的本地脚本中的请求头必须包含 `User-Agent` 字段。
 
 ### 性能测试的某个接口的请求怎么mock，或者写入影子表/影子库？
 本工具只提供通用的压测能力，可根据请求头的 `User-Agent` 区分是否是压测流量。由于服务端的部署架构、语言和业务的不同，因此没法提供各语言的探针，可自己结合实际情况编写探针，来实现mock功能，或将数据写入影子表/影子库，或走影子链路。

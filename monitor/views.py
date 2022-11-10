@@ -15,8 +15,8 @@ from common.Email import sendEmail
 from common.Result import result
 from .server.request import Request
 from .server.process import Process
-from .server.draw_performance import draw_data_from_db
-from common.generator import strfDeltaTime
+from .server.draw_performance import draw_data_from_db, query_nginx_detail_summary, query_nginx_detail_by_path
+from common.generator import strfDeltaTime, local2utc
 
 
 logger = logging.getLogger('django')
@@ -142,7 +142,7 @@ def visualize(request):
             #     logger.error(f'You have no servers to view, please check permission ~')
             #     return render(request, '404.html')
             # logger.info(f'Access visualization page, operaotr: {username}')
-            return render(request, 'monitor/visualize.html', context={'ip': hosts, 'groups': groups,'rooms': rooms, 'starttime': starttime,
+            return render(request, 'monitor/visualize.html', context={'ip': hosts, 'groups': groups,'rooms': rooms, 'starttime': starttime, 'is_staff': request.user.is_staff,
                 'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec_host': spec_host, 'spec_group': spec_group, 'spec_room': spec_room})
         except:
             logger.error(traceback.format_exc())
@@ -353,24 +353,57 @@ def nginx_home(request):
         try:
             username = request.user.username
             groups = request.user.groups.all()
+            return render(request, 'monitor/nginx.html', context={'groups': groups})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404,html')
 
 
-def query_nginx_summary(group_key, start_time, end_time):
-    pass
+def query_nginx_summary(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            group_key = request.POST.get('groupKey')
+            source = request.POST.get('source')
+            sort_key = request.POST.get('sortKey')
+            limit_num = request.POST.get('limitNum')
+            path = request.POST.get('path')
+            time_period = int(request.POST.get('timePeriod'))
+            if time_period == 0:
+                start_time = request.POST.get('startTime')
+                end_time = request.POST.get('endTime')
+            else:
+                start_time = strfDeltaTime(-time_period)
+                end_time = strfDeltaTime()
+            res = query_nginx_detail_summary(group_key, source, sort_key, 'desc', start_time, end_time, limit_num, path.strip())
+            if res['code'] == 1:
+                raise Exception(res['msg'])
+            logger.info(f'Query nginx summary data success, operator: {username}')
+            return JsonResponse(res)
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Query Error ~')
 
 
-def query_nginx_detail_summary(group_key, search_type, start_time, end_time):
-    if search_type == 'performance':
-        pass
-    else:
-        pass
-
-
-def query_nginx_detail(group_key, search_type, start_time, end_time):
-    if search_type == 'performance':
-        pass
-    else:
-        pass
+def query_nginx_detail(request):
+    if request.method == 'POST':
+        try:
+            username = request.user.username
+            group_key = request.POST.get('groupKey')
+            source = request.POST.get('source')
+            path = request.POST.get('path')
+            time_period = int(request.POST.get('timePeriod'))
+            if time_period == 0:
+                start_time = request.POST.get('startTime')
+                end_time = request.POST.get('endTime')
+            else:
+                start_time = strfDeltaTime(-time_period)
+                end_time = strfDeltaTime()
+            res = query_nginx_detail_by_path(group_key, source, path, start_time, end_time)
+            if res['code'] == 1:
+                raise Exception(res['msg'])
+            logger.info(f'Query nginx summary data success, operator: {username}')
+            return JsonResponse(res)
+        except:
+            logger.error(traceback.format_exc())
+            return result(code=1, msg='Query Error ~')

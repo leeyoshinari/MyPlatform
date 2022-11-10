@@ -30,7 +30,7 @@
                         <span style="color:aliceblue;">>></span>
                         <a href="{% url 'monitor:home' %}" style="color:aliceblue; text-decoration: none;">Monitor</a>
                     </div>
-                    {% if not is_staff %}
+                    {% if is_staff %}
                         <div class="container" style="float: left; margin-right: 20px; width: 200px;">
                             <div class="navbar-header">
                                 <a class="navbar-brand" style="padding: 10px;" href="{% url 'monitor:home' %}">

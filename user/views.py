@@ -90,7 +90,7 @@ def home(request):
         is_staff = request.user.is_staff
         return render(request, 'home.html', context={'username': username, 'is_monitor': settings.IS_MONITOR,
                                                      'isATIJMeter': settings.IS_ATIJMETER, 'is_staff': is_staff,
-                                                     'is_perf': settings.IS_PERF})
+                                                     'is_perf': settings.IS_PERF, 'is_nginx': settings.IS_NGINX})
     else:
         return render(request, '404.html')
 
