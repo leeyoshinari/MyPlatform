@@ -45,7 +45,8 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
     try:
         if not startTime:     # If there is a start time and an end time
             startTime = strfDeltaTime(-600)
-        startTime = local2utc(startTime, settings.GMT)
+        if 'T' not in startTime:
+            startTime = local2utc(startTime, settings.GMT)
 
         s_time = time.time()
         if host != 'all':
@@ -166,7 +167,8 @@ def query_nginx_detail_summary(group_key, source, order_key, order_by, start_tim
             start_time = strfDeltaTime(-600)
         if not end_time:
             end_time = strfDeltaTime()
-        start_time = local2utc(start_time, settings.GMT)
+        if 'T' not in start_time:
+            start_time = local2utc(start_time, settings.GMT)
         end_time = local2utc(end_time, settings.GMT)
         s_time = time.time()
         if path:
@@ -209,7 +211,8 @@ def query_nginx_detail_by_path(group_key, source, path, start_time, end_time):
             start_time = strfDeltaTime(-600)
         if not end_time:
             end_time = strfDeltaTime()
-        start_time = local2utc(start_time, settings.GMT)
+        if 'T' not in start_time:
+            start_time = local2utc(start_time, settings.GMT)
         end_time = local2utc(end_time, settings.GMT)
         s_time = time.time()
         sql = f"select first(c_time) as c_time, count(1) as qps, mean(rt) as rt, sum(size) as size, sum(error) as error from 'nginx_{group_key}' " \
