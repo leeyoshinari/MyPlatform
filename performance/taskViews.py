@@ -553,7 +553,8 @@ def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=N
         if not end_time:
             end_time = strfTime()
 
-        start_time = local2utc(start_time, settings.GMT)
+        if 'T' not in start_time:
+            start_time = local2utc(start_time, settings.GMT)
         end_time = local2utc(end_time, settings.GMT)
 
         if delta == '520':
