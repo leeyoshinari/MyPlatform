@@ -555,7 +555,8 @@ def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=N
 
         if 'T' not in start_time:
             start_time = local2utc(start_time, settings.GMT)
-        end_time = local2utc(end_time, settings.GMT)
+        if 'T' not in end_time:
+            end_time = local2utc(end_time, settings.GMT)
 
         if delta == '520':
             sql = f"select c_time, samples, tps, avg_rt, min_rt, max_rt, err, active from performance_jmeter_task where task='{task_id}' and " \

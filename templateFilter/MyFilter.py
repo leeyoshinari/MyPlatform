@@ -68,8 +68,8 @@ def parse_url_name(v1):
 
 
 @register.filter
-def get_room_list(v1, v2):
+def get_dict(v1, v2):
     try:
-        return v1[v2]
+        return v1[str(v2)]
     except:
         return 0

@@ -16,53 +16,17 @@ function plot_figure(myChart, details, x_label, samples, tps, avg_rt, min_rt, ma
     details[9].getElementsByTagName("span")[0].innerText = (sum(error) / total_sample * 100).toFixed(4) + "%";
 
     option = {
-        grid: [
-            {
-                left: '5%',
-                right: '5%',
-                top: 50,
-                height: 350
-            }
-        ],
-
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'cross'
-            }
-        },
-
+        grid: [{left: '5%', right: '5%', top: 50, height: 350}],
+        tooltip: {trigger: 'axis', axisPointer: {type: 'cross'}},
         color: ['black', 'blue', 'orange', 'green', 'gray', 'red'],
-        legend: [
-            {
-                data: ['Samples', 'TPS', 'RT(Average)', 'RT(Min)', 'RT(Max)', 'ERROR'],
-                x: 'center',
-                icon: 'line'
-            }
-        ],
-
+        legend: [{data: ['Samples', 'TPS', 'RT(Average)', 'RT(Min)', 'RT(Max)', 'ERROR'], x: 'center', icon: 'line'}],
         dataZoom: [
-            {
-                xAxisIndex: [0],
-                type: 'inside',
-                startValue: 0,
-                endValue: samples.length
-            },
-            {
-                xAxisIndex: [0],
-                type: 'slider',
-                startValue: 0,
-                endValue: samples.length
-            }
+            {xAxisIndex: [0], type: 'inside', startValue: 0, endValue: samples.length},
+            {xAxisIndex: [0], type: 'slider', startValue: 0, endValue: samples.length}
         ],
         yAxis: [
-            {
-                name: 'Monitor',
-                type: 'value'
-            },
-            {
-                type: 'value'
-            }
+            {name: 'Monitor', type: 'value'},
+            {type: 'value'}
         ],
         xAxis: {
                 gridIndex: 0,

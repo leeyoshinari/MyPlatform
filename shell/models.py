@@ -45,6 +45,7 @@ class Servers(models.Model):
     disk = models.CharField(max_length=8, verbose_name='disk')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
     update_time = models.DateTimeField(auto_now=True, verbose_name='Update time')
+    creator = models.CharField(max_length=50, verbose_name='creator')
     operator = models.CharField(max_length=50, verbose_name='operator')
     objects = models.Manager()
 

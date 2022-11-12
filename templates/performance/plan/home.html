@@ -47,7 +47,7 @@
             <td title="{{ plan.comment }}"><a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">{{ plan.name }}</a></td>
             <td style="text-align: center;">{{ plan.type | get_value_from_list:'plan_type' }}</td>
             <td style="text-align: center;">{{ plan.schedule | get_value_from_list:'plan_schedule' }}</td>
-            <td style="text-align: center;">{{ plan.server_room.name }} ({{ server_num_rooms | get_room_list:plan.server_room.id }} idle)</td>
+            <td style="text-align: center;">{{ plan.server_room.name }} ({{ server_num_rooms | get_list:plan.server_room.id }} idle)</td>
             <td style="text-align: center;">{{ plan.target_num }}</td>
             <td style="text-align: center;">{{ plan.duration }}</td>
             <td>

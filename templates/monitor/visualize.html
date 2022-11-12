@@ -189,7 +189,6 @@
                                 data['post_data']['trans'], data['post_data']['net'], data['post_data']['tcp'], data['post_data']['retrans'],
                                 data['post_data']['port_tcp'], data['post_data']['close_wait'], data['post_data']['time_wait'], data['flag']);
                             document.getElementById('start-time').value = data['post_data']['time'];
-                            document.getElementById('endtime').value = date_to_date(data['post_data']['time'], 0);
                         }
                     } else {
                         $.Toast(data['msg'], 'error');

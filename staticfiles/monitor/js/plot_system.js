@@ -37,131 +37,59 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 text: 'CPU(%), Max: ' + cpu_sorted.slice(-1)[0].toFixed(2) + '%, 90%Line CPU: ' + cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2) + '%, 90%Line IOWait: ' + iowait_sorted[parseInt(0.9 * iowait_sorted.length)].toFixed(2) + '%',
                 x: 'center',
                 y: 5,
-                textStyle: {
-                    fontSize: 13
-                }
+                textStyle: {fontSize: 13}
             },
             {
                 text: 'Memory(G), Min Available: ' + findMin(mem_available).toFixed(2) + 'G, Min Free: ' + findMin(mem).toFixed(2) + 'G',
                 x: 'center',
                 y: 305,
-                textStyle: {
-                    fontSize: 13
-                }
+                textStyle: {fontSize: 13}
             },
             {
                 text: 'IO, Max IO: ' + IO_sorted.slice(-1)[0].toFixed(2) + '%, Avg Read: ' + average(disk_r_sorted).toFixed(2) + 'MB/s, Avg Write: ' + average(disk_w_sorted).toFixed(2) + 'MB/s',
                 x: 'center',
                 y: 605,
-                textStyle: {
-                    fontSize: 13
-                }
+                textStyle: {fontSize: 13}
             },
             {
                 text: 'NetWork, Max Net: ' + net_sorted.slice(-1)[0].toFixed(2) + '%, Avg Recv: ' + average(rec_sorted).toFixed(2) + 'MB/s, Avg Trans: ' + average(trans_sorted).toFixed(2) + 'MB/s',
                 x: 'center',
                 y: 905,
-                textStyle: {
-                    fontSize: 13
-                }
+                textStyle: {fontSize: 13}
             },
             {
                 text: 'TCP, Max System-TCP: ' + findMax(tcp) + ', Max Port-TCP: '+ findMax(port_tcp),
                 x: 'center',
                 y: 1205,
-                textStyle: {
-                    fontSize: 13
-                }
+                textStyle: {fontSize: 13}
             }
         ],
 
         grid: [
-            {
-                left: '5%',
-                right: '5%',
-                top: 50,
-                height: 200
-            },
-            {
-                left: '5%',
-                right: '5%',
-                top: 350,
-                height: 200
-            },
-            {
-                left: '5%',
-                right: '5%',
-                top: 650,
-                height: 200
-            },
-            {
-                left: '5%',
-                right: '5%',
-                top: 950,
-                height: 200
-            },
-            {
-                left: '5%',
-                right: '5%',
-                top: 1250,
-                height: 200
-            }
+            {left: '5%', right: '5%', top: 50, height: 200},
+            {left: '5%', right: '5%', top: 350, height: 200},
+            {left: '5%', right: '5%', top: 650, height: 200},
+            {left: '5%', right: '5%', top: 950, height: 200},
+            {left: '5%', right: '5%', top: 1250, height: 200}
         ],
 
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'cross'
-            }
-        },
+        tooltip: {trigger: 'axis', axisPointer: {type: 'cross'}},
 
         color: ['red', 'blue', 'red', 'orange', 'blue', 'blue', 'orange', 'red', 'orange', 'red', 'red', 'blue', 'orange', 'gray', 'green'],
         legend: [
-            {
-                data: ['CPU', 'IOWait'],
-                x: 'center',
-                y: 25,
-                icon: 'line'
-            },
-            {
-                data: ['Available', 'Free'],
-                x: 'center',
-                y: 325,
-                icon: 'line'
-            },
-            {
-                data: ['rMB/s', 'wMB/s', 'IO'],
-                x: 'center',
-                y: 625,
-                icon: 'line'
-            },
-            {
-                data: ['rMB/s', 'tMB/s', 'Net'],
-                x: 'center',
-                y: 925,
-                icon: 'line'
-            },
+            {data: ['CPU', 'IOWait'], x: 'center', y: 25, icon: 'line'},
+            {data: ['Available', 'Free'], x: 'center', y: 325, icon: 'line'},
+            {data: ['rMB/s', 'wMB/s', 'IO'], x: 'center', y: 625, icon: 'line'},
+            {data: ['rMB/s', 'tMB/s', 'Net'], x: 'center', y: 925, icon: 'line'},
             {
                 data: ['TCP', 'TCP Retrans', 'Port-TCP', 'Time-Wait', 'Close-Wait'],
-                x: 'center',
-                y: 1225,
-                icon: 'line'
+                x: 'center', y: 1225, icon: 'line'
             }
         ],
 
         dataZoom: [
-            {
-                xAxisIndex: [0, 1, 2, 3, 4],
-                type: 'inside',
-                startValue: 0,
-                endValue: cpu.length
-            },
-            {
-                xAxisIndex: [0, 1, 2, 3, 4],
-                type: 'slider',
-                startValue: 0,
-                endValue: cpu.length
-            }
+            {xAxisIndex: [0, 1, 2, 3, 4], type: 'inside', startValue: 0, endValue: cpu.length},
+            {xAxisIndex: [0, 1, 2, 3, 4], type: 'slider', startValue: 0, endValue: cpu.length}
         ],
 
         xAxis: [
@@ -170,124 +98,54 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 type: 'category',
                 boundaryGap: false,
                 data: x_label,
-                axisTick: {
-                    alignWithLabel: true,
-                    interval: 'auto'
-                },
-                axisLabel: {
-                    interval: 'auto',
-                    showMaxLabel: true
-                }
+                axisTick: {alignWithLabel: true, interval: 'auto'},
+                axisLabel: {interval: 'auto', showMaxLabel: true}
             },
             {
                 gridIndex: 1,
                 type: 'category',
                 boundaryGap: false,
                 data: x_label,
-                axisTick: {
-                    alignWithLabel: true,
-                    interval: 'auto'
-                },
-                axisLabel: {
-                    interval: 'auto',
-                    showMaxLabel: true
-                }
+                axisTick: {alignWithLabel: true, interval: 'auto'},
+                axisLabel: {interval: 'auto', showMaxLabel: true}
             },
             {
                 gridIndex: 2,
                 type: 'category',
                 boundaryGap: false,
                 data: x_label,
-                axisTick: {
-                    alignWithLabel: true,
-                    interval: 'auto'
-                },
-                axisLabel: {
-                    interval: 'auto',
-                    showMaxLabel: true
-                }
+                axisTick: {alignWithLabel: true, interval: 'auto'},
+                axisLabel: {interval: 'auto', showMaxLabel: true}
             },
             {
                 gridIndex: 3,
                 type: 'category',
                 boundaryGap: false,
                 data: x_label,
-                axisTick: {
-                    alignWithLabel: true,
-                    interval: 'auto'
-                },
-                axisLabel: {
-                    interval: 'auto',
-                    showMaxLabel: true
-                }
+                axisTick: {alignWithLabel: true, interval: 'auto'},
+                axisLabel: {interval: 'auto', showMaxLabel: true}
             },
             {
                 gridIndex: 4,
                 type: 'category',
                 boundaryGap: false,
                 data: x_label,
-                axisTick: {
-                    alignWithLabel: true,
-                    interval: 'auto'
-                },
-                axisLabel: {
-                    interval: 'auto',
-                    showMaxLabel: true
-                }
+                axisTick: {alignWithLabel: true, interval: 'auto'},
+                axisLabel: {interval: 'auto', showMaxLabel: true}
             }
         ],
 
         yAxis: [
-            {
-                gridIndex: 0,
-                name: 'CPU(%)',
-                type: 'value',
-                // max: 100
-            },
+            {gridIndex: 0, name: 'CPU(%)', type: 'value'},
             {gridIndex: 0},
-            {
-                gridIndex: 1,
-                name: 'Memory(G)',
-                type: 'value',
-                // max: Math.max(findMax(mem) + 1, findMax(mem_available) + 1).toFixed(2)
-            },
+            {gridIndex: 1, name: 'Memory(G)', type: 'value'},
             {gridIndex: 1},
-            {
-                gridIndex: 2,
-                name: 'Speed(MB/s)',
-                type: 'value',
-                // max: Math.max(disk_r_sorted.slice(-1)[0], disk_w_sorted.slice(-1)[0]).toFixed(2)
-            },
-            {
-                gridIndex: 2,
-                name: 'IO(%)',
-                type: 'value',
-                // max: IO_sorted.slice(-1)[0].toFixed(2)
-            },
-            {
-                gridIndex: 3,
-                name: 'Speed(MB/s)',
-                type: 'value',
-                // max: Math.max(rec_sorted.slice(-1)[0], trans_sorted.slice(-1)[0]).toFixed(2)
-            },
-            {
-                gridIndex: 3,
-                name: 'Net(%)',
-                type: 'value',
-                // max: net_sorted.slice(-1)[0].toFixed(2)
-            },
-            {
-                gridIndex: 4,
-                name: 'TCP',
-                type: 'value',
-                // max: (findMax(tcp) * 1.02).toFixed(1)
-            },
-            {
-                gridIndex: 4,
-                name: 'TCP Retrans',
-                type: 'value',
-                // max: (findMax(retrans) * 1.2)
-            }
+            {gridIndex: 2, name: 'Speed(MB/s)', type: 'value'},
+            {gridIndex: 2, name: 'IO(%)', type: 'value'},
+            {gridIndex: 3, name: 'Speed(MB/s)', type: 'value'},
+            {gridIndex: 3, name: 'Net(%)', type: 'value'},
+            {gridIndex: 4, name: 'TCP', type: 'value',},
+            {gridIndex: 4, name: 'TCP Retrans', type: 'value'}
         ],
         series: [
             {
@@ -296,10 +154,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'red'
-                },
+                lineStyle: {width: 1, color: 'red'},
                 data: cpu
             },
             {
@@ -308,10 +163,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'blue'
-                },
+                lineStyle: {width: 1, color: 'blue'},
                 data: iowait
             },
             // {
@@ -320,10 +172,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
             //     xAxisIndex: 0,
             //     yAxisIndex: 0,
             //     showSymbol: false,
-            //     lineStyle: {
-            //         width: 1,
-            //         color: 'orange'
-            //     },
+            //     lineStyle: {width: 1,color: 'orange'},
             //     data: usr_cpu
             // },
             {
@@ -332,10 +181,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 1,
                 yAxisIndex: 2,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'red'
-                },
+                lineStyle: {width: 1, color: 'red'},
                 data: mem_available
             },
             {
@@ -344,10 +190,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 1,
                 yAxisIndex: 2,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'orange'
-                },
+                lineStyle: {width: 1, color: 'orange'},
                 data: mem
             },
             {
@@ -356,10 +199,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 1,
                 yAxisIndex: 2,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'blue'
-                },
+                lineStyle: {width: 1, color: 'blue'},
                 data: []
             },
             {
@@ -368,10 +208,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 2,
                 yAxisIndex: 4,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'blue'
-                },
+                lineStyle: {width: 1, color: 'blue'},
                 data: disk_r
             },
             {
@@ -380,10 +217,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 2,
                 yAxisIndex: 4,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'orange'
-                },
+                lineStyle: {width: 1, color: 'orange'},
                 data: disk_w
             },
             {
@@ -392,10 +226,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 2,
                 yAxisIndex: 5,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'red'
-                },
+                lineStyle: {width: 1, color: 'red'},
                 data: IO
             },
             {
@@ -404,10 +235,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 3,
                 yAxisIndex: 6,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'blue'
-                },
+                lineStyle: {width: 1, color: 'blue'},
                 data: rec
             },
             {
@@ -416,10 +244,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 3,
                 yAxisIndex: 6,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'orange'
-                },
+                lineStyle: {width: 1, color: 'orange'},
                 data: trans
             },
             {
@@ -428,10 +253,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 3,
                 yAxisIndex: 7,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'red'
-                },
+                lineStyle: {width: 1, color: 'red'},
                 data: net
             },
             {
@@ -440,10 +262,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 4,
                 yAxisIndex: 8,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'red'
-                },
+                lineStyle: {width: 1, color: 'red'},
                 data: tcp
             },
             {
@@ -452,10 +271,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 4,
                 yAxisIndex: 8,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'blue'
-                },
+                lineStyle: {width: 1, color: 'blue'},
                 data: retrans
             },
             {
@@ -464,10 +280,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 4,
                 yAxisIndex: 9,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'orange'
-                },
+                lineStyle: {width: 1, color: 'orange'},
                 data: port_tcp
             },
             {
@@ -476,10 +289,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 4,
                 yAxisIndex: 9,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'gray'
-                },
+                lineStyle: {width: 1, color: 'gray'},
                 data: time_wait
             },
             {
@@ -488,10 +298,7 @@ function plot(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available, jvm, I
                 xAxisIndex: 4,
                 yAxisIndex: 9,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'green'
-                },
+                lineStyle: {width: 1, color: 'green'},
                 data: close_wait
             }
         ]
@@ -679,6 +486,7 @@ function plot_change(myChart, x_label, cpu, iowait, usr_cpu, mem, mem_available,
     cpu_sorted.sort(function (a, b) {return a - b});
     iowait_sorted.sort(function (a, b) {return a - b});
     document.getElementById('starttime').value = options.xAxis[0].data[0];
+    document.getElementById('endtime').value = options.xAxis[0].data.slice(-1)[0];
     options.title[0].text = 'CPU(%), Max: ' + cpu_sorted.slice(-1)[0].toFixed(2) + '%, 90%Line CPU: ' + cpu_sorted[parseInt(0.9 * cpu_sorted.length)].toFixed(2) + '%, 90%Line IOWait: ' + iowait_sorted[parseInt(0.9 * iowait_sorted.length)].toFixed(2) + '%';
     myChart.setOption(options);
 }

@@ -49,7 +49,7 @@ def index(request):
             logger.info(f'access shell index.html. operator: {username}')
             return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page,
                                                                 'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1,
-                                                                'rooms': rooms, 'is_staff': is_staff})
+                                                                'rooms': rooms, 'is_staff': is_staff, 'operator': username})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -94,7 +94,7 @@ def add_server(request):
 
             server = Servers.objects.create(id = current_time, group_id = group_id, name=server_name, room_id=room_id,
                                    host=server_ip, port = int(port), user = sshname, pwd = password, system = system,
-                                   cpu = cpu, arch=arch, mem = mem, disk = disk, operator=username)
+                                   cpu = cpu, arch=arch, mem = mem, disk = disk, creator=username, operator=username)
             logger.info(f'Add server success. ip: {server.host}, operator: {username}, time: {server.id}')
             return result(code=0, msg='Add server success ~ ')
         except Exception as err:

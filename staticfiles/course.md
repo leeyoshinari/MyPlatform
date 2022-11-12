@@ -25,9 +25,9 @@
 - 文件服务器：MinIO - 用于存储文件
 - 性能测试工具：JMeter - 用于执行 JMeter 脚本
 
-## 架构图
+## 部署架构图
 
-## 技术方案
+如需满足较多用户使用，请部署集群；如需高可用，请自行部署keepalive。
 
 
 ## Requirements
@@ -45,6 +45,75 @@
 - redis==4.1.1
 - requests==2.27.1
 - sqlparse==0.4.2
+
+## 部署
+1、克隆 `git clone https://github.com/leeyoshinari/MyPlatform.git` ；
+
+2、部署数据库、InfluxDB、Redis、MinIO；（ps：暂不支持 InfluxDB2.x 版本）
+
+3、进入目录 `cd MyPlatform`，修改配置文件`config.conf`；
+
+4、数据库初始化，依次执行下面命令；<br>
+```shell script
+python3 manage.py migrate
+python3 manage.py makemigrations shell performance
+python3 manage.py migrate
+```
+
+5、创建超级管理员账号；
+```shell script
+python3 manage.py createsuperuser
+```
+
+6、数据初始化，不初始化会导致报错；
+```shell script
+python3 manage.py loaddata initdata.json
+```
+
+7、处理所有静态文件；
+```shell script
+python3 manage.py collectstatic
+```
+
+8、修改`startup.sh`中的端口号；
+
+9、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
+（1）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
+```shell script
+location /platform/static {
+    alias /home/MyPlatform/static;
+}
+```
+（2）动态http请求：
+```shell script
+location /platform {
+     proxy_pass  http://127.0.0.1:15200;
+     proxy_set_header Host $proxy_host;
+     proxy_set_header X-Real-IP $remote_addr;
+     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
+（3）websocket协议通信：
+```shell script
+location /shell {  # 必须是shell
+    proxy_pass http://127.0.0.1:15200;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+}
+```
+
+10、启动
+```
+sh startup.sh
+```
+
+11、访问页面，url是 `http://ip:port/config.conf中的prefix`
+
+12、访问权限控制页面，url是 `http://ip:port/config.conf中的prefix/admin`
+
+13、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
+
+14、部署性能测试执行工具，[快点我](https://github.com/leeyoshinari/jmeter_agent)
 
 ## Shell 工具
 该工具可以查看管理服务器，并可以直接在浏览器上远程连接 Linux。
@@ -95,7 +164,7 @@
 - 网络：网络上行和下行速度、网络使用率
 - TCP：系统的TCP连接总数、TCP重传数，端口的TCP数量、time-wait数量、close-wait数量
 
-查看监控结果时，默认展示指定项目组和机房下的所有服务器资源的平均值，左侧展示的时服务器列表，排列顺序按照CPU、IO、网络使用率权重（5:3:2）排序，颜色也按照这个权重计算展示。点击某个服务器，即可查看该服务器的资源监控数据。页面所有数据每隔10s刷新一次。<br>
+查看监控结果时，默认展示指定项目组和机房下的所有服务器资源的平均值，左侧展示的是服务器列表，排列顺序按照CPU、IO、网络使用率权重（5:3:2）排序，颜色也按照这个权重计算展示。点击某个服务器，即可查看该服务器的资源监控数据。页面所有数据每隔10s刷新一次。<br>
 
 ## 性能测试工具
 现在开源的、最好用的性能测试工具是JMeter，很多公司的性能测试平台的底层都用的是JMeter，所以本工具底层也是用JMeter实现的，而且原滋原味的保留了JMeter的所有功能，让您像在本地使用JMeter一样的丝般顺滑，使用体验远超某电商的全链路压测平台。
@@ -221,74 +290,6 @@ Action列具有的一些操作：
 - Download logs：下载该施压机的JMeter执行的日志；
 - Change TPS：调整单个施压机的TPS；
 
-## 部署
-1、克隆 `git clone https://github.com/leeyoshinari/MyPlatform.git` ；
-
-2、部署数据库、InfluxDB、Redis、MinIO；
-
-3、进入目录 `cd MyPlatform`，修改配置文件`config.conf`；
-
-4、数据库初始化，依次执行下面命令；<br>
-```shell script
-python3 manage.py migrate
-python3 manage.py makemigrations shell performance
-python3 manage.py migrate
-```
-
-5、创建超级管理员账号；
-```shell script
-python3 manage.py createsuperuser
-```
-
-6、数据初始化，不初始化会导致报错；
-```shell script
-python3 manage.py loaddata initdata.json
-```
-
-7、处理所有静态文件；
-```shell script
-python3 manage.py collectstatic
-```
-
-8、修改`startup.sh`中的端口号；
-
-9、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
-（1）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
-```shell script
-location /platform/static {
-    alias /home/MyPlatform/static;
-}
-```
-（2）动态http请求：
-```shell script
-location /platform {
-     proxy_pass  http://127.0.0.1:15200;
-     proxy_set_header Host $proxy_host;
-     proxy_set_header X-Real-IP $remote_addr;
-     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-}
-```
-（3）websocket协议通信：
-```shell script
-location /shell {  # 必须是shell
-    proxy_pass http://127.0.0.1:15200;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-}
-```
-
-10、启动
-```
-sh startup.sh
-```
-
-11、访问页面，url是 `http://ip:port/config.conf中的prefix`
-
-12、访问权限控制页面，url是 `http://ip:port/config.conf中的prefix/admin`
-
-13、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
-
-14、部署性能测试执行工具，[快点我](https://github.com/leeyoshinari/jmeter_agent)
 
 ## QAQ：
 ### 为什么shell会经常提醒 Session is in closed status？
@@ -296,6 +297,11 @@ sh startup.sh
 
 ### 为什么自动部署agent包时一直不成功？
 首先核对Linux系统发行版本和CPU架构是否和部署包一致，然后查看部署日志。部署路径是配置文件`config.conf`中的`deployPath`。<br>
+
+### 怎么判断是否需要增加集群节点数？
+对于该平台的集群：在远程连接Linux时，如果由于非网络原因和服务器卡顿的原因导致命令的响应速度经常跟不上你的手速，那么应该增加平台的集群节点数；
+对于collector-agent：因为服务器资源监控是秒级，且近似实时，在查看服务器资源监控图时，如果刷新页面后展示的时间比当前时间晚5~10秒，那么就需要增加 collector-agent 集群节点数。
+以上纯属个人建议，请根据实际情况合理增加集群节点数。
 
 ### 单台施压机支持的QPS多少？
 建议每台施压机的QPS不要超过1000/s。如果发现压力上不来，请先排除施压机和被测系统问题后，再增加一台施压机。<br>

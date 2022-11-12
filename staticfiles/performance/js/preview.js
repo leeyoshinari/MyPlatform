@@ -71,41 +71,16 @@ function preview(title, x, y) {
     let myChart = echarts.init(figure);
 
     option = {
-        grid: [
-            {
-                left: '10%',
-                right: '10%',
-                top: 30,
-                height: 150
-            }
-        ],
-
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'cross'
-            }
-        },
-
-        yAxis: [
-            {
-                name: title,
-                type: 'value'
-            }
-        ],
+        grid: [{left: '10%', right: '10%', top: 30, height: 150}],
+        tooltip: {trigger: 'axis', axisPointer: {type: 'cross'}},
+        yAxis: [{name: title, type: 'value'}],
         xAxis: {
                 gridIndex: 0,
                 type: 'category',
                 boundaryGap: false,
                 data: x,
-                axisTick: {
-                    alignWithLabel: true,
-                    interval: 'auto'
-                },
-                axisLabel: {
-                    interval: 'auto',
-                    showMaxLabel: true
-                }
+                axisTick: {alignWithLabel: true, interval: 'auto'},
+                axisLabel: {interval: 'auto', showMaxLabel: true}
             },
         series: [
             {
@@ -115,10 +90,7 @@ function preview(title, x, y) {
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
-                lineStyle: {
-                    width: 1,
-                    color: 'red'
-                },
+                lineStyle: {width: 1, color: 'red'},
                 data: y
             }
         ]

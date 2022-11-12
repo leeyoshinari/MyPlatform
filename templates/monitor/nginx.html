@@ -1,4 +1,5 @@
 {% load static %}
+{% load myFilter %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -13,7 +14,6 @@
         <script src="{% static 'monitor/js/bootstrap.js' %}"></script>
         <script src="{% static 'monitor/js/toast.script.js' %}"></script>
         <script src="{% static 'monitor/js/echarts.common.js' %}"></script>
-{#        <script src="{% static 'monitor/js/nginx.js' %}"></script>#}
     </head>
 
     <body>
@@ -28,13 +28,13 @@
                     <span class="navbar-brand" style="padding: 8px; color: white;">Group: </span>
                 </div>
                 <div class="navbar-left">
-                    <select id="group" style="margin-left: 0; height: 32px; width: 300px; margin-top: 2px;" onchange="get_summary('{% url 'monitor:nginx_summary' %}')">
+                    <select id="group" style="margin-left: 0; height: 32px; width: 300px; margin-top: 2px;">
                         <option value=""></option>
                         {% for foo in groups %}
                             {% if foo.id == spec_group %}
-                                <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
+                                <option value="{{ groupKey | get_dict:foo.id }}" selected>{{ foo.name }}</option>
                             {% else %}
-                                <option value="{{ foo.id }}">{{ foo.name }}</option>
+                                <option value="{{ groupKey | get_dict:foo.id }}">{{ foo.name }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -42,23 +42,23 @@
             </div>
         </div>
         <div style="width: 96%; margin-left: 3%;">
-            Source: <select id="source" style="width: 140px; height: 26px; margin-right: 20px;" onchange="get_summary('{% url 'monitor:nginx_summary' %}')">
-                        <option value="normal" selected>Normal Data</option>
-                        <option value="test">Performance Test</option>
+            Source: <select id="source" style="width: 140px; height: 26px; margin-right: 20px;">
+                        <option value="Normal" selected>Normal Data</option>
+                        <option value="PerformanceTest">Performance Test</option>
             </select>
-            Sort Type: <select id="sort-type" style="width: 69px; height: 26px; margin-right: 20px;" onchange="get_summary('{% url 'monitor:nginx_summary' %}')">
+            Sort Type: <select id="sort-type" style="width: 69px; height: 26px; margin-right: 20px;">
                         <option value="qps" selected>QPS</option>
                         <option value="rt">Time</option>
                         <option value="size">Size</option>
                         <option value="error">Error</option>
             </select>
-            Total Number: <select id="total-number" style="width: 69px; height: 26px; margin-right: 20px;" onchange="get_summary('{% url 'monitor:nginx_summary' %}')">
+            Total Number: <select id="total-number" style="width: 69px; height: 26px; margin-right: 20px;">
                     <option value="10">10</option>
                     <option value="20">20</option>
                     <option value="50">50</option>
-                    <option value="100">100</option>
+                    <option value="9999">ALL</option>
             </select>
-            Time Period: <select id="time-period" style="width: 116px; height: 26px; margin-right: 20px;" onchange="change_period('{% url 'monitor:nginx_summary' %}');">
+            Time Period: <select id="time-period" style="width: 116px; height: 26px; margin-right: 20px;">
                     <option value="600">Last 10 min</option>
                     <option value="1800">Last 30 min</option>
                     <option value="3600">Last 1 hour</option>
@@ -68,23 +68,21 @@
                     <option value="0">Other time</option>
             </select>
             <input type="text" name="starttime" id="starttime" style="width: 147px; display: none;"> <span id="h-line" style="display: none;"> - </span>
-            <input type="text" name="endtime" id="endtime" style="margin-right: 20px; width: 147px; display: none;">
-            Search: <input type="text" id="path-name" style="margin-right: 20px; width: 250px;" placeholder="Search by path name">
+            <input type="text" name="{% url 'monitor:nginx_detail' %}" id="endtime" style="margin-right: 20px; width: 147px; display: none;">
+            Search: <input type="text" id="path-name" name="{% url 'monitor:nginx_summary' %}" style="margin-right: 20px; width: 250px;" placeholder="Search by path name">
             <button type="button" id="SearchList" style="width: 6%;">&nbsp;Search&nbsp;</button>
         </div>
         <div class="figure-region" style="width: 99%; margin-left: 0;"></div>
         <div class="myModal">
-            <div class="modal-content" style="width: 42%;">
+            <div class="modal-content" style="width: 80%;">
                 <div class="modal-header"><span class="close">&times;</span></div>
-                <div class="modal-body"><div id="preview" style="width: 100%; height: 200px;"></div></div>
+                <div class="modal-body"><div id="preview" style="width: 100%; height: 600px;"></div></div>
             </div>
         </div>
         <br>
         <input id="start-time" type="text" value="" style="display: none;">
         <div class="modal_cover"><div class="modal_gif"></div></div>
-        <script type="text/javascript">
-            document.getElementById('path-name').name = '{% url 'monitor:nginx_detail' %}';
-        </script>
+        <script type="text/javascript"></script>
         <script src="{% static 'monitor/js/nginx.js' %}"></script>
     </body>
 </html>

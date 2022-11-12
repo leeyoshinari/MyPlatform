@@ -64,16 +64,16 @@ python3 manage.py collectstatic
 
 7、修改`startup.sh`中的端口号；
 
-8、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`tencent`是url上下文，即url前缀，可根据自己需要修改)<br>
+8、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
 （1）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
 ```shell script
-location /tencent/static {
+location /platform/static {
     alias /home/MyPlatform/static;
 }
 ```
 （2）动态http请求：
 ```shell script
-location /tencent {
+location /platform {
      proxy_pass  http://127.0.0.1:15200;
      proxy_set_header Host $proxy_host;
      proxy_set_header X-Real-IP $remote_addr;

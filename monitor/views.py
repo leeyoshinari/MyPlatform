@@ -353,7 +353,11 @@ def nginx_home(request):
         try:
             username = request.user.username
             groups = request.user.groups.all()
-            return render(request, 'monitor/nginx.html', context={'groups': groups})
+            group_key = GroupIdentifier.objects.values('key', 'group_id').filter(group__in=groups)
+            group_key_dict = {}
+            for keys in group_key:
+                group_key_dict.update({str(keys['group_id']): keys['key']})
+            return render(request, 'monitor/nginx.html', context={'groups': groups, 'groupKey': group_key_dict})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404,html')
@@ -375,9 +379,9 @@ def query_nginx_summary(request):
             else:
                 start_time = strfDeltaTime(-time_period)
                 end_time = strfDeltaTime()
-            res = query_nginx_detail_summary(group_key, source, sort_key, 'desc', start_time, end_time, limit_num, path.strip())
+            res = query_nginx_detail_summary(group_key, source, sort_key, 'desc', start_time, end_time, int(limit_num), path.strip())
             if res['code'] == 1:
-                raise Exception(res['msg'])
+                return result(code=1, msg='Not Found Nginx summary data, please check it again ~')
             logger.info(f'Query nginx summary data success, operator: {username}')
             return JsonResponse(res)
         except:
@@ -392,17 +396,13 @@ def query_nginx_detail(request):
             group_key = request.POST.get('groupKey')
             source = request.POST.get('source')
             path = request.POST.get('path')
-            time_period = int(request.POST.get('timePeriod'))
-            if time_period == 0:
-                start_time = request.POST.get('startTime')
-                end_time = request.POST.get('endTime')
-            else:
-                start_time = strfDeltaTime(-time_period)
-                end_time = strfDeltaTime()
+            # time_period = int(request.POST.get('timePeriod'))
+            start_time = request.POST.get('startTime')
+            end_time = request.POST.get('endTime')
             res = query_nginx_detail_by_path(group_key, source, path, start_time, end_time)
             if res['code'] == 1:
-                raise Exception(res['msg'])
-            logger.info(f'Query nginx summary data success, operator: {username}')
+                return result(code=1, msg='No Nginx data is found, please check it again ~')
+            logger.info(f'Query nginx data success, operator: {username}')
             return JsonResponse(res)
         except:
             logger.error(traceback.format_exc())

@@ -5,7 +5,7 @@ import time
 import logging
 import traceback
 from django.conf import settings
-from common.generator import strfDeltaTime, local2utc
+from common.generator import strfDeltaTime, local2utc, utc2local, toTimeStamp
 
 logger = logging.getLogger('django')
 
@@ -76,9 +76,9 @@ def draw_data_from_db(room, group, host, startTime=None, endTime=None):
         if datas:
             for data in datas.get_points():
                 if data['time'] == startTime: continue
-                last_time = data['time']
                 if data['c_time']:
                     post_data['cpu_time'].append(data['c_time'])
+                    last_time = data['time']
                 else:
                     continue
                 post_data['cpu'].append(data['cpu'])
@@ -169,23 +169,27 @@ def query_nginx_detail_summary(group_key, source, order_key, order_by, start_tim
             end_time = strfDeltaTime()
         if 'T' not in start_time:
             start_time = local2utc(start_time, settings.GMT)
-        end_time = local2utc(end_time, settings.GMT)
+        if 'T' not in end_time:
+            end_time = local2utc(end_time, settings.GMT)
         s_time = time.time()
         if path:
-            sql = f"select * from (select path, count(1) as sample, mean(rt) as rt, sum(size) as size, sum(error) as error, count(1) / (max(time)-min(time)) as qps from 'nginx_{group_key}' " \
-                  f"where source='{source}' and path='{path}' and time > '{start_time}' and time < '{end_time}' group by path) order by '{order_key}' {order_by} limit {limit_num};"
+            path = path.replace('/', '\/')
+            sql = f"select count(rt) as sample, mean(rt) as rt, sum(size) as size, sum(error) as error from nginx_{group_key} " \
+                  f"where source='{source}' and path=~/{path}/ and time > '{start_time}' and time < '{end_time}' group by path;"
         else:
-            sql = f"select * from (select path, count(1) as sample, mean(rt) as rt, sum(size) as size, sum(error) as error, count(1) / (max(time)-min(time)) as qps from 'nginx_{group_key}' " \
-                  f"where source='{source}' and time > '{start_time}' and time < '{end_time}' group by path) order by '{order_key}' {order_by} limit {limit_num};"
+            sql = f"select count(rt) as sample, mean(rt) as rt, sum(size) as size, sum(error) as error from nginx_{group_key} " \
+                  f"where source='{source}' and time > '{start_time}' and time < '{end_time}' group by path;"
         logger.info(f'Execute sql: {sql}')
         datas = settings.INFLUX_CLIENT.query(sql)
         if datas:
-            for data in datas.get_points():
-                post_data.append({'path': data['path'], 'sample': data['sample'], 'qps': data['qps'], 'rt': data['rt'], 'size': data['size'], 'error': data['error']})
+            duration = toTimeStamp(utc2local(end_time, settings.GMT)) - toTimeStamp(utc2local(start_time, settings.GMT))
+            for data in datas._get_series():
+                post_data.append({'path': data.get('tags').get('path'), 'sample': data.get('values')[0][1], 'qps': data.get('values')[0][1]/duration, 'rt': data.get('values')[0][2], 'size': data.get('values')[0][3]/1024, 'error': data.get('values')[0][4]})
         else:
             res['msg'] = 'No Nginx summary data is found, please check it again.'
             res['code'] = 1
-        res.update({'post_data': post_data})
+        post_data.sort(key=lambda x: (-x[order_key]))
+        res.update({'data': post_data[:limit_num]})
         logger.info(f'Time consuming to query is {time.time() - s_time}')
     except:
         logger.error(traceback.format_exc())
@@ -215,7 +219,7 @@ def query_nginx_detail_by_path(group_key, source, path, start_time, end_time):
             start_time = local2utc(start_time, settings.GMT)
         end_time = local2utc(end_time, settings.GMT)
         s_time = time.time()
-        sql = f"select first(c_time) as c_time, count(1) as qps, mean(rt) as rt, sum(size) as size, sum(error) as error from 'nginx_{group_key}' " \
+        sql = f"select first(c_time) as c_time, count(rt) as qps, mean(rt) as rt, sum(size) as size, sum(error) as error from nginx_{group_key} " \
               f"where source='{source}' and path='{path}' and time > '{start_time}' and time < '{end_time}' group by time(1s) fill(linear);"
         logger.info(f'Execute sql: {sql}')
         last_time = start_time
@@ -223,20 +227,20 @@ def query_nginx_detail_by_path(group_key, source, path, start_time, end_time):
         if datas:
             for data in datas.get_points():
                 if data['time'] == start_time: continue
-                last_time = data['time']
                 if data['c_time']:
                     post_data['c_time'].append(data['c_time'])
+                    last_time = data['time']
                 else:
                     continue
                 post_data['qps'].append(data['qps'])
                 post_data['rt'].append(data['rt'])
-                post_data['size'].append(data['size'])
+                post_data['size'].append(data['size']/1024)
                 post_data['error'].append(data['error'])
             post_data['time'] = last_time
         else:
             res['msg'] = 'No Nginx data is found, please check it again.'
             res['code'] = 1
-        res.update({'post_data': post_data})
+        res.update({'data': post_data})
         logger.info(f'Time consuming to query is {time.time() - s_time}')
     except:
         logger.error(traceback.format_exc())
