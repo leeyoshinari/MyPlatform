@@ -202,6 +202,7 @@ function show_figure(path) {
         if (timePeriod !== '0') {clearInterval(detail_timer);}
         modal.style.display = "none";
     }
+    document.getElementById('path-title').innerText = path;
     get_detail(path);
 
     window.onclick = function(event) {

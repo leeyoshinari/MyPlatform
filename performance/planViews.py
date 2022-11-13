@@ -12,6 +12,7 @@ from .models import TestPlan, ThreadGroup, TransactionController, HTTPSampleProx
 from shell.models import Servers, ServerRoom
 from .common.parseJmx import read_jmeter_from_byte
 from .common.getRedis import *
+from .threadViews import copy_one_group
 from common.Result import result
 from common.generator import primaryKey, strfTime
 import common.Request as Request
@@ -207,8 +208,7 @@ def copy_plan(request):
             plans.save()
             thread_groups = ThreadGroup.objects.filter(plan_id=plan_id)
             for thread_group in thread_groups:
-                res = Request.get(request.headers.get('Host'), f'{resolve_url("perf:group_copy")}?plan_id={plans.id}&id={thread_group.id}', cookies=request.headers.get('cookie'))
-                logger.info(res)
+                copy_one_group(plans.id, thread_group.id, username)
             logger.info(f'Copy plan {plan_id} success, target plan is {plans.id}, operator: {username}')
             return redirect(resolve_url('perf:plan_home') + '?keyWord=' + keyWord)
         except:

@@ -202,13 +202,7 @@ def copy_sample(request):
             username = request.user.username
             sample_id = request.GET.get('id')
             controller_id = request.GET.get('controller_id')
-            samples = HTTPSampleProxy.objects.get(id=sample_id)
-            samples.id = primaryKey()
-            samples.name = samples.name + ' - Copy'
-            if controller_id: samples.controller_id = controller_id
-            samples.operator = username
-            samples.save()
-            logger.info(f'Copy HTTP Sample {sample_id} success, target HTTP Sample is {samples.id}, operator: {username}')
+            copy_one_sample(controller_id, sample_id, username)
             return redirect(resolve_url('perf:sample_home') + '?id=' + controller_id)
         except:
             logger.error(traceback.format_exc())
@@ -228,3 +222,12 @@ def get_header_by_method(request):
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get headers error ~')
+
+def copy_one_sample(controller_id, sample_id, username):
+    samples = HTTPSampleProxy.objects.get(id=sample_id)
+    samples.id = primaryKey()
+    samples.name = samples.name + ' - Copy'
+    if controller_id: samples.controller_id = controller_id
+    samples.operator = username
+    samples.save()
+    logger.info(f'Copy HTTP Sample {sample_id} success, target HTTP Sample is {samples.id}, operator: {username}')

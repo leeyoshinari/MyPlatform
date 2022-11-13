@@ -93,15 +93,24 @@ window.onunload = function (event) {
     sock.send(JSON.stringify(data_msg));
 };
 
-// document.onclick = function () {
-//     let selection = window.getSelection();
-//     console.log(selection);
-//     console.log(window.getSelection);
-//     if (window.getSelection) {
-//         console.log(111111);
-//         document.execCommand('Copy');
-//     }
-// };
+term.attachCustomKeyEventHandler(e => {
+  if (e.key === 'v' && e.ctrlKey) {
+    return false;
+  }
+  if (e.key === 'c' && e.ctrlKey) {
+      try {
+          let selection = document.getElementsByClassName('xterm-selection')[0].getElementsByTagName('div')[0].style.width;
+          if (selection === '0px') {
+              return true;
+          } else {
+              document.execCommand('Copy');
+              return false;
+          }
+      } catch (e) {
+          return true;
+      }
+  }
+});
 
 function upload_file(path) {
     let fileUpload_input = document.getElementById("fileUpload-input");

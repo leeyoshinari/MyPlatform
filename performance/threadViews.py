@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect, resolve_url
 from django.conf import settings
 from .models import TestPlan, ThreadGroup, TransactionController
 from .views import delete_file_from_disk
+from .controllerViews import copy_one_controller
 from common.Result import result
 from common.generator import primaryKey
 import common.Request as Request
@@ -216,17 +217,21 @@ def copy_group(request):
             username = request.user.username
             group_id = request.GET.get('id')
             plan_id = request.GET.get('plan_id')
-            groups = ThreadGroup.objects.get(id=group_id)
-            groups.id = primaryKey()
-            groups.name = groups.name + ' - Copy'
-            if plan_id: groups.plan_id = plan_id
-            groups.operator = username
-            groups.save()
-            controllers = TransactionController.objects.filter(thread_group_id=group_id)
-            for controller in controllers:
-                res = Request.get(request.headers.get('Host'), f'{resolve_url("perf:controller_copy")}?id={controller.id}&group_id={groups.id}', cookies=request.headers.get('cookie'))
-            logger.info(f'Copy thread group {group_id} success, target thread group is {groups.id}, operator: {username}')
+            copy_one_group(plan_id, group_id, username)
             return redirect(resolve_url('perf:group_home') + '?id=' + plan_id)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Copy thread group Failure ~')
+
+
+def copy_one_group(plan_id, group_id, username):
+    groups = ThreadGroup.objects.get(id=group_id)
+    groups.id = primaryKey()
+    groups.name = groups.name + ' - Copy'
+    if plan_id: groups.plan_id = plan_id
+    groups.operator = username
+    groups.save()
+    controllers = TransactionController.objects.filter(thread_group_id=group_id)
+    for controller in controllers:
+        copy_one_controller(groups.id, controller.id, username)
+    logger.info(f'Copy thread group {group_id} success, target thread group is {groups.id}, operator: {username}')

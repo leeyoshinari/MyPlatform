@@ -12,7 +12,7 @@
 - staticfiles - 静态文件
 - templates - 模板文件
 - templateFilter - 模板自定义过滤器
-- common - 通用的函数
+- common - 通用的方法
 - user - 用户相关
 - shell - shell 工具
 - monitor - 监控工具
@@ -26,8 +26,22 @@
 - 性能测试工具：JMeter - 用于执行 JMeter 脚本
 
 ## 部署架构图
-
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
 如需满足较多用户使用，请部署集群；如需高可用，请自行部署keepalive。
+
+### 说明
+collector-agent
+数据收集工具。所有agent的数据都会发给collector-agent，然后由collector-agent统一写influxDB/写redis。<br>
+这样可以避免：如果每个agent单独连接数据库，可能会导致数据库连接不够用或者超过服务器允许的连接数。但也会有一个问题：如果agent太多，导致collector-agent不能及时写库，那就增大collector-agent的线程池大小，如果还不行，那就集群部署，增加集群节点。
+
+monitor-agent
+服务器资源监控工具。通过执行Linux命令实时采集服务器的 CPU、内存、磁盘、网络、TCP 等数据。
+
+nginx-agent
+nginx流量采集工具。通过实时处理nginx的访问日志(access.log)，将接口的访问信息(访问时间、客户端IP、接口名称、请求方法、协议、状态码、请求体大小、响应时间)等存储到数据库，方便后续回看。<br>
+
+jmeter-agent
+性能测试执行工具。通过调用JMeter执行性能测试，非常便捷地执行分布式压测。
 
 
 ## Requirements
@@ -49,7 +63,7 @@
 ## 部署
 1、克隆 `git clone https://github.com/leeyoshinari/MyPlatform.git` ；
 
-2、部署数据库、InfluxDB、Redis、MinIO；（ps：暂不支持 InfluxDB2.x 版本）
+2、部署数据库、InfluxDB、Redis、MinIO；（ps：暂不支持 InfluxDB2.x 版本，建议部署[influxdb-1.8.3](https://dl.influxdata.com/influxdb/releases/influxdb-1.8.3.x86_64.rpm )）
 
 3、进入目录 `cd MyPlatform`，修改配置文件`config.conf`；
 
@@ -78,25 +92,32 @@ python3 manage.py collectstatic
 8、修改`startup.sh`中的端口号；
 
 9、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
-（1）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
+（1）upstream 配置
+```shell script
+upstream myplatform-server {
+    server 127.0.0.1:15200;
+    server 127.0.0.1:15201;
+}
+```
+（2）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
 ```shell script
 location /platform/static {
     alias /home/MyPlatform/static;
 }
 ```
-（2）动态http请求：
+（3）动态http请求：
 ```shell script
 location /platform {
-     proxy_pass  http://127.0.0.1:15200;
+     proxy_pass  http://myplatform-server;
      proxy_set_header Host $proxy_host;
      proxy_set_header X-Real-IP $remote_addr;
      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 }
 ```
-（3）websocket协议通信：
+（4）websocket协议通信：
 ```shell script
 location /shell {  # 必须是shell
-    proxy_pass http://127.0.0.1:15200;
+    proxy_pass http://myplatform-server;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection "upgrade";
 }
@@ -111,13 +132,18 @@ sh startup.sh
 
 12、访问权限控制页面，url是 `http://ip:port/config.conf中的prefix/admin`
 
-13、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
+13、部署数据收集工具，[快点我](https://github.com/leeyoshinari/collector_agent)
 
-14、部署性能测试执行工具，[快点我](https://github.com/leeyoshinari/jmeter_agent)
+14、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
+
+15、部署性能测试执行工具，[快点我](https://github.com/leeyoshinari/jmeter_agent)
+
+16、部署Nginx流量采集工具，[快点我](https://github.com/leeyoshinari/nginx_agent)
 
 ## Shell 工具
 该工具可以查看管理服务器，并可以直接在浏览器上远程连接 Linux。
-支持权限控制，将用户添加进项目组中，用户就只能看到项目组下的服务器，可以避免未授权的访问和服务器密码到处传播。
+支持权限控制，将用户添加进项目组中，用户就只能看到项目组下的服务器，可以避免未授权的访问。
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/shell_home.JPG)
 ### 具体使用
 #### 设置项目组
 点击 Create Group 创建项目组，需要设置项目组和项目组应用的唯一标识符。唯一标识符一般在整个公司是唯一的，对于在服务器上，通过`ps -ef | grep 唯一标识符 | grep -v grep` 命令可以查找到一条进程。<br>
@@ -133,17 +159,20 @@ sh startup.sh
 点击 Add User 将用户添加到某个项目组中 或 从某个项目组中移除。添加用户后，该用户就可以看到并访问这个项目组中的所有服务器。管理员默认可以查看所有服务器。<br>
 该按钮仅管理员可见
 #### 服务器列表
-每个添加的服务器都会展示在列表中，可以概览服务器的基本信息（系统、CPU、内存、磁盘）。Action 列可以操作服务器，在这里可以打开 Shell 远程连接 Linux；其中的编辑和删除的功能仅管理员可见。
+每个添加的服务器都会展示在列表中，可以概览服务器的基本信息（系统、CPU、内存、磁盘）。Action 列可以操作服务器，在这里可以打开 Shell 远程连接 Linux；其中的编辑和删除的功能仅创建人和管理员可见。
 #### 远程连接服务器
-点击 OpenShell 即可打开 Shell 远程连接 Linux，可以同时打开很多个页面。在打开的 Shell 中，可以上传文件到服务器，或者下载文件到本地。为了安全，上传和下载的入口也是可以关闭的。<br>
+点击 OpenShell 即可打开 Shell 远程连接 Linux，可以同时打开很多个页面，如下:
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
+在打开的 Shell 中，可以上传文件到服务器，或者下载文件到本地。为了安全，上传和下载的入口也是可以关闭的。<br>
 在上传文件时，首先会弹出输入框，需要填入文件上传到哪个目录（绝对路径，不填默认 /home 目录），然后选择文件上传。<br>
 在下载文件时，也会弹出输入框，需要填入文件的完整路径（绝对路径），必须填文件路径，不能填目录路径，然后可通过浏览器下载到本地。<br>
-#### 部署 Agent
-点击 Deploy 会打开新的页面，这个页面可以管理部署包、自动部署和卸载。<br>
-如果没有对应的Linux系统发行版本和CPU架构的部署包，需要准备对应的部署包，并上传。上传时会选择Linux系统发行版本、CPU架构和部署包类型（当前只支持部署 [monitor-agent](https://github.com/leeyoshinari/monitor_agent) 、[jmeter-agent](https://github.com/leeyoshinari/jmeter_agent) 、[nginx-agent](https://github.com/leeyoshinari/nginx_agent) 、java、jmeter）。<br>
-在点击部署/卸载前，请仔细核对当前服务器的Linux系统发行版本和CPU架构是否和部署包的Linux系统发行版本和CPU架构一致。
-
-注意：一般的Linux可执行文件会区分系统发行版本和CPU架构，因此需要提前准备好对应的系统和CPU架构的部署包。
+#### 自动部署Agent
+点击 Deploy 会打开新的页面，这个页面可以上传部署包、自动部署和卸载。<br>
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/shell_deploy.JPG)
+由于一些部署包区分Linux发行版本和CPU架构，故需要先准备好对应的部署包，然后上传到平台，通过该平台进行部署。如果部署包不区分Linux发行版本和CPU架构，上传部署包时可随意选择一种。
+该平台下面的所有agent都可以且只能通过该平台自动部署（当前只支持部署 [monitor-agent](https://github.com/leeyoshinari/monitor_agent) 、[jmeter-agent](https://github.com/leeyoshinari/jmeter_agent) 、[nginx-agent](https://github.com/leeyoshinari/nginx_agent) 、java、jmeter）。为了方便部署，所有的agent的配置文件已经简化到不能再简化了，一般情况下不需要修改任何配置，所有的配置都从平台自动获取。建议部署顺序：先部署Java(仅施压机部署且没有部署)，再部署JMeter(仅施压机部署)，再部署collector-agent，剩下就部署其他需要部署的agent了。<br>
+在点击部署/卸载前，请仔细核对当前服务器的Linux系统发行版本和CPU架构是否和部署包的Linux系统发行版本和CPU架构一致。<br>
+注：极少数情况下需要修改agent配置文件，例如：你的nginx部署方式和99%的人都不一样，无法自动获取nginx的日志路径，这时就需要修改配置文件。
 
 ## 服务器资源监控
 该工具主要用于监控服务器资源使用情况，主要有一下功能：
@@ -155,8 +184,10 @@ sh startup.sh
 相较于之前的服务器资源监控工具（[快点我查看](https://github.com/leeyoshinari/performance_monitor) ），此次进行了大刀阔斧地改进，首先不再是单独的工具，而是集成进平台中，和平台中的其他工具可以无缝对接；其次是使用了全新的交互和监控方案，并引入了项目组和机房，更加适用于大规模集群部署的应用。
 ### 首页
 首页展示了所有已经部署监控的服务器，这里可以概览服务器资源的当前使用情况。这个入口仅管理员可以看到，这里展示的是所有已经部署监控的服务器，可分项目组查询。
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/monitor_home.JPG)
 ### 可视化
 监控结果可视化，分项目组和机房查看，可选择任意时间段（监控数据保留时长在配置中设置）。<br>
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/monitor_figure.JPG)
 主要监控下面数据：<br>
 - CPU：CPU 总使用率、iowait 使用率
 - 内存：剩余内存、可用内存、JVM内存（仅Java）
@@ -165,6 +196,14 @@ sh startup.sh
 - TCP：系统的TCP连接总数、TCP重传数，端口的TCP数量、time-wait数量、close-wait数量
 
 查看监控结果时，默认展示指定项目组和机房下的所有服务器资源的平均值，左侧展示的是服务器列表，排列顺序按照CPU、IO、网络使用率权重（5:3:2）排序，颜色也按照这个权重计算展示。点击某个服务器，即可查看该服务器的资源监控数据。页面所有数据每隔10s刷新一次。<br>
+
+## Nginx流量采集工具
+该工具主要用于解析Nginx的access.log，从日志中提取出接口访问数据。<br>
+首页页面展示的信息是根据接口聚合后的结果（过滤掉静态文件的请求），默认按照QPS排序，可选按响应时间、请求体大小、请求错误数量排序；可分别查看压测流量和正常流量。
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/nginx_summary.JPG)
+点击每个接口，可查看该接口的每秒数据变化图
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/nginx_detail.JPG)
+注意：为了采集到上述数据，需要修改nginx日志格式，详见[nginx-agent部署](https://github.com/leeyoshinari/nginx_agent )
 
 ## 性能测试工具
 现在开源的、最好用的性能测试工具是JMeter，很多公司的性能测试平台的底层都用的是JMeter，所以本工具底层也是用JMeter实现的，而且原滋原味的保留了JMeter的所有功能，让您像在本地使用JMeter一样的丝般顺滑，使用体验远超某电商的全链路压测平台。
@@ -188,9 +227,21 @@ sh startup.sh
 ### 具体使用
 #### 在页面新增JMeter脚本
 ##### 添加 Test Plan
-在左侧点击 Test Plan，可以查看测试计划。<br>
+在左侧点击 Test Plan，可以查看测试计划，可以在测试计划列表中看到：<br>
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/plan_home.JPG)
+Server Room 列可以查看该机房里空闲的施压机数量；<br>
+Action列具有的一些操作：
+- Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
+- Copy：复制，快速复制一个测试计划；
+- Variables：设置全局变量，对应JMeter中的测试计划中的“用户自定义的变量”；
+- ThreadGroup：往测试计划中添加线程组；
+- StartTest：开始执行性能测试。如果是手动执行，则会立即开始压测；如果是自动执行，也会生成一个压测任务，等待压测时间开始执行；
+
+点击 Variables，可以设置全局变量，如下：
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/plan_variable.JPG)
 
 点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/plan_add.JPG)
 - tearDown：对应JMeter中的 Test Plan 中的设置“主线程结束后运行tearDown线程组”；
 - Serialize：对应JMeter中的 Test Plan 中的设置“独立运行每个线程组（例如在一个组运行结束后启动下一个）”；
 - runType：指定压测脚本运行类型，可选指定线程数运行和指定TPS运行；
@@ -202,32 +253,28 @@ sh startup.sh
 - Server Number：施压机数，执行压测时，设置的机房里必须有足够数量的空闲的施压机；
 - isDebug：如果设置Debug模式，则脚本在执行时候会生成jtl文件，该文件包含每一个请求的结果，正式测试时，建议设置非Debug模式，以免影响施压机性能；
 
-添加完成后，可以在测试计划列表中看到：<br>
-Server Room 列可以查看该机房里空闲的施压机数量；<br>
-Action列具有的一些操作：
-- Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
-- Copy：复制，快速复制一个测试计划；
-- Variables：设置全局变量，对应JMeter中的测试计划中的“用户自定义的变量”；
-- ThreadGroup：往测试计划中添加线程组；
-- StartTest：开始执行性能测试。如果是手动执行，则会立即开始压测；如果是自动执行，也会生成一个压测任务，等待压测时间开始执行；
 
 ##### 添加 Thread Group
-在左侧点击 Thread Group，可以查看所有的线程组；如果在 Test Plan 中点击 ThreadGroup，可以查看该测试计划下的所有线程组。<br>
-点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）
-- Plan ID：将该线程组绑定到指定的测试计划；
-- Ramp Time：在这个时间内启动所有的线程，对应JMeter线程组中的“Ramp-Up时间（秒）”；
-- CSVDataSet：上传压测需要的文件，需要设置变量名称（英文逗号分割）、分隔符、遇到文件结束符是否继续、线程共享模式，这里的设置和JMeter中的CSV数据文件设置一样；
-
-添加完成后，可以在线程组列表中看到：<br>
+在左侧点击 Thread Group，可以查看所有的线程组；如果在 Test Plan 中点击 ThreadGroup，可以查看该测试计划下的所有线程组。可以在线程组列表中看到：<br>
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
 Action列具有的一些操作：
 - Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
 - Copy：复制，快速复制一个线程组；
 - Cookies：如果压测需要cookies，可以在这里设置；对应的是JMeter中的Http Cookie管理器；
 - Controller：往线程组中添加控制器；
 
+点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
+- Plan ID：将该线程组绑定到指定的测试计划；
+- Ramp Time：在这个时间内启动所有的线程，对应JMeter线程组中的“Ramp-Up时间（秒）”；
+- CSVDataSet：上传压测需要的文件，需要设置变量名称（英文逗号分割）、分隔符、遇到文件结束符是否继续、线程共享模式，这里的设置和JMeter中的CSV数据文件设置一样；
+
+添加完成后
+
 ##### 添加控制器
 在左侧点击 Controller，可以查看所有的控制器；如果在 Thread Group 中点击 Controller，可以查看该线程组下的所有控制器。<br>
 添加完成后，可以在控制器列表中看到：<br>
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
 Action列具有的一些操作：
 - Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
 - Copy：复制，快速复制一个控制器；
@@ -236,6 +283,7 @@ Action列具有的一些操作：
 ##### 添加取样器
 在左侧点击 HTTP Sample，可以查看所有的取样器；如果在 Controller 中点击 HttpSample，可以查看该控制器下的所有取样器。<br>
 点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
 - Controller ID：把该取样器绑定到指定的控制器；
 - Protocol：协议，可选HTTP或HTTPs；
 - Domain Name：域名或ip；
@@ -254,7 +302,7 @@ Action列具有的一些操作：
 
 ##### 添加请求头
 在左侧点击 HTTP Header，可以查看所有的请求头；在设置请求头时，只需要把字段和值填入即可，这里也可以引用变量，引用格式和JMeter一样。
-
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
 以上，就完成了在这个工具上手动编写压测脚本。如果已有本地的已经调试好的JMeter脚本，且是按照上面说的结构，可以在 Test Plan 页面直接点击 Import Plan 按钮导入进系统中。导入后会对文件进行解析，可能会有少许修改，可以在页面手动核对和修改。
 
 #### Upload JMeter
@@ -272,12 +320,13 @@ Action列具有的一些操作：
 
 #### Test Task
 在左侧点击 Test Task 可以查看所有的测试任务，所有待执行、执行中、已停止的测试记录都会显示在这里，只有测试完成后，才会显示Sample、TPS、RT、Error等数据。<br>
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
 在Actions列，可以下载每个任务执行的JMeter文件，如果压测出现问题，可以下载文件看看是哪里出现问题了。
 
 ##### 查看压测详情
 在压测执行时或压测结束后，可以查看压测详情。
 当开始执行压测后，首先会生成压测所需要的文件，然后传给施压机，施压机会执行压测文件。此时页面会自动跳转到查看压测详情页面，由于压测初始化和产生压测结果需要时间，故需要等待一会儿才会在页面看到数据。<br>
-
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
 在压测详情页面可以的操作（页面右上角）：
 - Stop：会立即停止压测；
 - Change TPS：统一调整所有施压机的TPS；

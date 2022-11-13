@@ -7,6 +7,7 @@ import traceback
 from django.conf import settings
 from django.shortcuts import render, redirect, resolve_url
 from .models import ThreadGroup, TransactionController, HTTPSampleProxy
+from .sampleViews import copy_one_sample
 from common.Result import result
 from common.generator import primaryKey
 import common.Request as Request
@@ -117,18 +118,20 @@ def copy_controller(request):
             username = request.user.username
             controller_id = request.GET.get('id')
             group_id = request.GET.get('group_id')
-            controllers = TransactionController.objects.get(id=controller_id)
-            controllers.id = primaryKey()
-            controllers.name = controllers.name + ' - Copy'
-            if group_id: controllers.thread_group_id = group_id
-            controllers.operator = username
-            controllers.save()
-            samples = HTTPSampleProxy.objects.filter(controller_id=controller_id)
-            for sample in samples:
-                res = Request.get(request.headers.get('Host'), f'{resolve_url("perf:sample_copy")}?id={sample.id}&controller_id={controllers.id}', cookies=request.headers.get('cookie'))
-            logger.info(f'Copy controller {controller_id} success, target controller is {controllers.id}, operator: {username}')
+            copy_one_controller(group_id, controller_id, username)
             return redirect(resolve_url('perf:controller_home') + '?id=' + group_id)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Copy controller Failure ~')
 
+def copy_one_controller(group_id, controller_id, username):
+    controllers = TransactionController.objects.get(id=controller_id)
+    controllers.id = primaryKey()
+    controllers.name = controllers.name + ' - Copy'
+    if group_id: controllers.thread_group_id = group_id
+    controllers.operator = username
+    controllers.save()
+    samples = HTTPSampleProxy.objects.filter(controller_id=controller_id)
+    for sample in samples:
+        copy_one_sample(controllers.id, sample.id, username)
+    logger.info(f'Copy controller {controller_id} success, target controller is {controllers.id}, operator: {username}')
