@@ -273,7 +273,6 @@ function plot_figure(data) {
             {
                 name: 'QPS(/s)',
                 type: 'line',
-                step: 'end',
                 xAxisIndex: 0,
                 yAxisIndex: 0,
                 showSymbol: false,
@@ -283,7 +282,6 @@ function plot_figure(data) {
             {
                 name: 'RT(ms)',
                 type: 'line',
-                step: 'end',
                 xAxisIndex: 1,
                 yAxisIndex: 1,
                 showSymbol: false,
@@ -293,7 +291,6 @@ function plot_figure(data) {
             {
                 name: 'Size(Mbs)',
                 type: 'line',
-                step: 'end',
                 xAxisIndex: 2,
                 yAxisIndex: 2,
                 showSymbol: false,
@@ -303,7 +300,6 @@ function plot_figure(data) {
             {
                 name: 'Error(times)',
                 type: 'line',
-                step: 'end',
                 xAxisIndex: 3,
                 yAxisIndex: 3,
                 showSymbol: false,

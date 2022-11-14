@@ -533,8 +533,8 @@ def query_data(request):
             end_time = request.GET.get('endTime')
             if not start_time:
                 tasks = PerformanceTestTask.objects.get(id=task_id)
-                start_time = tasks.start_time
-                end_time = tasks.end_time
+                start_time = str(tasks.start_time)
+                end_time = str(tasks.end_time)
             return json_result(get_data_from_influx(delta, task_id, host=host, start_time=start_time, end_time=end_time))
         except:
             logger.error(traceback.format_exc())
