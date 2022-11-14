@@ -184,7 +184,7 @@ def query_nginx_detail_summary(group_key, source, order_key, order_by, start_tim
         if datas:
             duration = toTimeStamp(utc2local(end_time, settings.GMT)) - toTimeStamp(utc2local(start_time, settings.GMT))
             for data in datas._get_series():
-                post_data.append({'path': data.get('tags').get('path'), 'sample': data.get('values')[0][1], 'qps': data.get('values')[0][1]/duration, 'rt': data.get('values')[0][2], 'size': data.get('values')[0][3]/1024, 'error': data.get('values')[0][4]})
+                post_data.append({'path': data.get('tags').get('path'), 'sample': data.get('values')[0][1], 'qps': data.get('values')[0][1]/duration, 'rt': data.get('values')[0][2], 'size': data.get('values')[0][3]/1048576, 'error': data.get('values')[0][4]})
         else:
             res['msg'] = 'No Nginx summary data is found, please check it again.'
             res['code'] = 1
@@ -234,7 +234,7 @@ def query_nginx_detail_by_path(group_key, source, path, start_time, end_time):
                     continue
                 post_data['qps'].append(data['qps'])
                 post_data['rt'].append(data['rt'])
-                post_data['size'].append(data['size']/1024)
+                post_data['size'].append(data['size']/1048576)
                 post_data['error'].append(data['error'])
             post_data['time'] = last_time
         else:

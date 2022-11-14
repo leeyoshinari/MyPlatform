@@ -337,7 +337,7 @@ Action列具有的一些操作：
 ##### 查看压测详情
 在压测执行时或压测结束后，可以查看压测详情。
 当开始执行压测后，首先会生成压测所需要的文件，然后传给施压机，施压机会执行压测文件。此时页面会自动跳转到查看压测详情页面，由于压测初始化和产生压测结果需要时间，故需要等待一会儿才会在页面看到数据。<br>
-![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/task_detail.JPG)
 在压测详情页面可以的操作（页面右上角）：
 - Stop：会立即停止压测；
 - Change TPS：统一调整所有施压机的TPS；
