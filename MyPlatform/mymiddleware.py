@@ -7,9 +7,6 @@ from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
 
 class AccessAuthMiddleWare(MiddlewareMixin):
-    """
-    登陆验证
-    """
     def process_request(self, request):
         if re.search(settings.EXCLUDE_URL, request.path):
             return None

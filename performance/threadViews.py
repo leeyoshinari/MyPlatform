@@ -13,7 +13,6 @@ from .views import delete_file_from_disk
 from .controllerViews import copy_one_controller
 from common.Result import result
 from common.generator import primaryKey
-import common.Request as Request
 # Create your views here.
 
 

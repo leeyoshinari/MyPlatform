@@ -19,7 +19,6 @@ from .common.fileController import *
 from .common.request import http_request
 from common.Result import result, json_result
 from common.generator import primaryKey, strfTime, strfDeltaTime, toTimeStamp, local2utc
-import influxdb
 # Create your views here.
 
 
@@ -342,7 +341,7 @@ def download_log(request):
             task_id = request.GET.get('id')
             host = request.GET.get('host')
             url = f"http://{host}:{get_value_by_host('jmeterServer_'+host, 'port')}/download/{task_id}"
-            response = StreamingHttpResponse(get_request(url))
+            response = StreamingHttpResponse(download_file_to_bytes(url))
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = f'attachment;filename="{task_id}-log.zip"'
             logger.info(f'{task_id}-log.zip download successful, operator: {username}')
@@ -546,8 +545,6 @@ def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=N
     query_data = {'time': [], 'c_time': [], 'samples': [], 'tps': [], 'avg_rt': [], 'min_rt': [], 'max_rt': [], 'err': [], 'active': []}
     res = {'code': 0, 'data': None, 'message': 'Query InfluxDB Successful!'}
     try:
-        conn = influxdb.InfluxDBClient(settings.INFLUX_HOST, settings.INFLUX_PORT, settings.INFLUX_USER_NAME,
-                                       settings.INFLUX_PASSWORD, settings.INFLUX_DATABASE)
         if not start_time:     # If there is a start time and an end time
             start_time = strfDeltaTime(-1800)
         if not end_time:
@@ -566,7 +563,7 @@ def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=N
                   f"host='{host}' and time>'{start_time}' and time<='{end_time}';"
 
         logger.info(f'Execute SQL: {sql}')
-        datas = conn.query(sql)
+        datas = settings.INFLUX_CLIENT.query(sql)
         if datas:
             for data in datas.get_points():
                 if data['time'] == start_time: continue
@@ -584,7 +581,7 @@ def get_data_from_influx(delta, task_id, host='all', start_time=None, end_time=N
             res['code'] = 1
             logger.error('No data is found, please check or wait a minute.')
         res['data'] = query_data
-        del conn, query_data
+        del query_data
         logger.info('Query data success ~')
     except:
         logger.error(traceback.format_exc())

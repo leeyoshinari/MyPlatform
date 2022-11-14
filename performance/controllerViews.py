@@ -10,7 +10,6 @@ from .models import ThreadGroup, TransactionController, HTTPSampleProxy
 from .sampleViews import copy_one_sample
 from common.Result import result
 from common.generator import primaryKey
-import common.Request as Request
 # Create your views here.
 
 

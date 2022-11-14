@@ -372,6 +372,7 @@ def query_nginx_summary(request):
             sort_key = request.POST.get('sortKey')
             limit_num = request.POST.get('limitNum')
             path = request.POST.get('path')
+            path = path.replace('%', '').strip() if path else ''
             time_period = int(request.POST.get('timePeriod'))
             if time_period == 0:
                 start_time = request.POST.get('startTime')
@@ -379,7 +380,7 @@ def query_nginx_summary(request):
             else:
                 start_time = strfDeltaTime(-time_period)
                 end_time = strfDeltaTime()
-            res = query_nginx_detail_summary(group_key, source, sort_key, 'desc', start_time, end_time, int(limit_num), path.strip())
+            res = query_nginx_detail_summary(group_key, source, sort_key, 'desc', start_time, end_time, int(limit_num), path)
             if res['code'] == 1:
                 return result(code=1, msg='Not Found Nginx summary data, please check it again ~')
             logger.info(f'Query nginx summary data success, operator: {username}')

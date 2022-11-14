@@ -15,7 +15,6 @@ from .common.getRedis import *
 from .threadViews import copy_one_group
 from common.Result import result
 from common.generator import primaryKey, strfTime
-import common.Request as Request
 # Create your views here.
 
 
