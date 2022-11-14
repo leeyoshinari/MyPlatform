@@ -64,9 +64,9 @@ jmeter-agent
 
 2、部署数据库、InfluxDB、Redis、MinIO；（ps：暂不支持 InfluxDB2.x 版本，建议部署[influxdb-1.8.3](https://dl.influxdata.com/influxdb/releases/influxdb-1.8.3.x86_64.rpm )）
 
-3、按照第三方依赖包 `pip3 install -r requirements.txt`;
+3、安装第三方依赖包 `pip3 install -r requirements.txt`;
 
-4、进入目录 `cd MyPlatform`，修改配置文件`config.conf`；
+4、修改配置文件`config.conf`；
 
 5、数据库初始化，依次执行下面命令；<br>
 ```shell script

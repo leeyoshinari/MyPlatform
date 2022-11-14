@@ -159,7 +159,7 @@ def add_to_task(request):
             task_id = str(primaryKey())
             if plans.is_valid == 'true':
                 # write file to local
-                test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
+                test_jmeter_path = os.path.join(settings.TEMP_PATH, task_id)
                 if not os.path.exists(test_jmeter_path):
                     os.mkdir(test_jmeter_path)
                 jmeter_zip_file_path = os.path.join(test_jmeter_path, task_id + '.zip')
@@ -204,19 +204,19 @@ def add_to_task(request):
             else:
                 return result(msg=f'Add to test task success ~', data={'flag': 0})
         except MyException as err:
-            test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
+            test_jmeter_path = os.path.join(settings.TEMP_PATH, task_id)
             if os.path.exists(test_jmeter_path):
                 _ = delete_local_file(test_jmeter_path)
-            temp_file_path = os.path.join(settings.TEMP_PATH, task_id)
+            temp_file_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
             if os.path.exists(temp_file_path):
                 _ = delete_local_file(temp_file_path)
             logger.error(traceback.format_exc())
             return result(code=1, msg=err.msg)
         except:
-            test_jmeter_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
+            test_jmeter_path = os.path.join(settings.TEMP_PATH, task_id)
             if os.path.exists(test_jmeter_path):
                 _ = delete_local_file(test_jmeter_path)
-            temp_file_path = os.path.join(settings.TEMP_PATH, task_id)
+            temp_file_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
             if os.path.exists(temp_file_path):
                 _ = delete_local_file(temp_file_path)
             logger.error(traceback.format_exc())
