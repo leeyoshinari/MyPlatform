@@ -124,7 +124,7 @@ def auto_run_task():
                         task.status = 4
                         task.save()
                         logger.info(f'Modify task {task.id} status to Cancel ~')
-                    if task.plan.type == 1 and toTimeStamp(scheduler[0]['timing'], delta=-600) - time.time() < -60:
+                    if task.plan.type == 1 and toTimeStamp(scheduler[0]['timing'], delta=-60) - time.time() < -30:
                         task.status = 4
                         task.save()
                         logger.info(f'Modify task {task.id} status to Cancel ~')

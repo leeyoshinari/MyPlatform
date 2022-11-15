@@ -80,10 +80,6 @@ function edit_group(url, location_url, plan_id) {
 
 function save_cookie(url, location_url, plan_id) {
     let cookies = document.getElementsByClassName('row-cookie');
-    if (cookies.length < 1) {
-        $.Toast('Please add cookie firstly ~', 'warning');
-        return;
-    }
     let s = [];
     for (let i=0; i<cookies.length; i++) {
         let values = cookies[i].getElementsByTagName('input');

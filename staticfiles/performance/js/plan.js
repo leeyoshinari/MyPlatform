@@ -188,10 +188,6 @@ function edit_plan(url, location_url) {
 
 function save_variable(url, location_url, plan_id) {
     let variables = document.getElementsByClassName('row-var');
-    if (variables.length < 1) {
-        $.Toast('Please add variable firstly ~', 'warning');
-        return;
-    }
     let s = [];
     for (let i=0; i<variables.length; i++) {
         let values = variables[i].getElementsByTagName('input');
