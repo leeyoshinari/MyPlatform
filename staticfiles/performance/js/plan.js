@@ -23,7 +23,7 @@ function add_plan(url, location_url) {
     }
 
     let time_setting = [];
-    let current_time = Date.now() + 1800000;
+    let current_time = Date.now() + 300000;
     let s_t = Date.now();
     if (schedule === '1') {
         let time_settings = document.getElementById("add-timing").getElementsByClassName("value-div");
@@ -38,7 +38,7 @@ function add_plan(url, location_url) {
             s_t = new Date(timing).getTime();
             if (s_t < current_time) {
                 if (i === 0) {
-                    $.Toast('Please set time after 30 minutes.', 'error');
+                    $.Toast('Please set the time for 5 minutes from now.', 'error');
                     return;
                 } else {
                     $.Toast('Please pay attention to the order of time.', 'error');
@@ -117,7 +117,7 @@ function edit_plan(url, location_url) {
     }
 
     let time_setting = [];
-    let current_time = Date.now() + 180;
+    let current_time = Date.now() + 300000;
     let s_t = Date.now();
     if (schedule === '1') {
         let time_settings = document.getElementById("add-timing").getElementsByClassName("value-div");
@@ -132,7 +132,7 @@ function edit_plan(url, location_url) {
             s_t = new Date(timing).getTime();
             if (s_t < current_time) {
                 if (i === 0) {
-                    $.Toast('Please set time after 30 seconds.', 'error');
+                    $.Toast('Please set the time for 5 minutes from now.', 'error');
                     return;
                 } else {
                     $.Toast('Please pay attention to the order of time.', 'error');

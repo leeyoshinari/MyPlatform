@@ -114,13 +114,13 @@ def auto_run_task():
                     break
                 for task in tasks:
                     scheduler = task.plan.time_setting
-                    if task.plan.type == 0 and -30 <= toTimeStamp(scheduler[0]['timing']) - time.time() <= 10:
+                    if task.plan.type == 0 and -10 <= toTimeStamp(scheduler[0]['timing']) - time.time() <= 10:
                         start_test(task.id, None, 'admin')
                         logger.info(f'Task {task.id} - {task.plan.name} start success, type: Thread, operator: admin.')
-                    if task.plan.type == 1 and -60 <= toTimeStamp(scheduler[0]['timing'], delta=-600) - time.time() <= 10:
+                    if task.plan.type == 1 and -10 <= toTimeStamp(scheduler[0]['timing'], delta=-60) - time.time() <= 10:
                         start_test(task.id, None, 'admin')
                         logger.info(f'Task {task.id} - {task.plan.name} start success, type: TPS, operator: admin.')
-                    if task.plan.type == 0 and toTimeStamp(scheduler[0]['timing']) - time.time() < -60:
+                    if task.plan.type == 0 and toTimeStamp(scheduler[0]['timing']) - time.time() < -30:
                         task.status = 4
                         task.save()
                         logger.info(f'Modify task {task.id} status to Cancel ~')
@@ -130,6 +130,6 @@ def auto_run_task():
                         logger.info(f'Modify task {task.id} status to Cancel ~')
             except:
                 logger.error(traceback.format_exc())
-            time.sleep(30)
+            time.sleep(15)
     else:
         logger.info('Auto run task is running ~')

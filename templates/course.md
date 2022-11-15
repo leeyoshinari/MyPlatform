@@ -269,6 +269,9 @@ Action列具有的一些操作：
 - Cookies：如果压测需要cookies，可以在这里设置；对应的是JMeter中的Http Cookie管理器；
 - Controller：往线程组中添加控制器；
 
+Cookies 设置页面如下：
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/group_cookie.JPG)
+
 点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/group_add.JPG)
 - Plan ID：将该线程组绑定到指定的测试计划；

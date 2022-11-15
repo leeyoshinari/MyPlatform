@@ -22,8 +22,8 @@ def generate_test_plan(plans):
                 plans.comment, plans.tearDown, plans.serialize, var_str)
     return test_plan, plans.duration
 
-def generate_thread_group(tg, num_threads, duration, schedule):
-    if schedule == 1: duration += 600
+def generate_thread_group(tg, num_threads, ramp_time, duration, schedule):
+    if schedule == 1: duration += 300
     thread_group = '<ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="%s" enabled="%s">' \
                         '<stringProp name="ThreadGroup.on_sample_error">continue</stringProp><elementProp name=' \
                         '"ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" ' \
@@ -34,7 +34,7 @@ def generate_thread_group(tg, num_threads, duration, schedule):
                         'ThreadGroup.scheduler">true</boolProp><stringProp name="ThreadGroup.duration">%s</stringProp>' \
                         '<stringProp name="ThreadGroup.delay"></stringProp><boolProp name="ThreadGroup.same' \
                         '_user_on_next_iteration">false</boolProp></ThreadGroup>' %(tg.name, tg.is_valid, num_threads,
-                                                                                    tg.ramp_time, duration)
+                                                                                    ramp_time, duration)
 
     return thread_group
 
