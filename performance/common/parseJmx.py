@@ -295,14 +295,14 @@ def parse_ConstantThroughputTimer(jmeter_file, number_of_samples, enabled = 'tru
 def modify_jmeter(jmeter_path, target_path, run_type, schedule, num_threads, duration, number_of_samples):
     user_agent = '<elementProp name="User-Agent" elementType="Header"><stringProp name="Header.name">User-Agent' \
                  '</stringProp><stringProp name="Header.value">PerformanceTest</stringProp></elementProp>'
-    if schedule == 1: duration += 600
+    if schedule == 1: duration += 60
     with open(jmeter_path, 'r', encoding='utf-8') as f:
         jmeter_file = f.read()
     if run_type == 0:
         ThreadGroup = parse_ThreadGroup(jmeter_file, num_threads, 1, duration)
         ConstantThroughputTimer, num = parse_ConstantThroughputTimer(jmeter_file, number_of_samples, enabled='false')
     else:
-        ThreadGroup = parse_ThreadGroup(jmeter_file, 200, 10, duration)
+        ThreadGroup = parse_ThreadGroup(jmeter_file, 200, 200, duration)
         ConstantThroughputTimer, num = parse_ConstantThroughputTimer(jmeter_file, number_of_samples)
     res = re.sub('<ThreadGroup([\s\S]+?)ThreadGroup>', ThreadGroup, jmeter_file)
     if num == 0:

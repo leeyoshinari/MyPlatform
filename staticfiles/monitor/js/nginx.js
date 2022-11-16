@@ -180,7 +180,7 @@ function refresh_list(data) {
     document.getElementsByClassName('figure-region')[0].innerHTML = s;
     for (let i=0; i<data.length; i++) {
         s += '<div class="api-detail"><div class="url-path">' + (i+1) +'. ' + data[i]['path'] + '</div><div class="path-data">' +
-            'Total Samples: ' + data[i]['sample'] + ', QPS: ' + data[i]['qps'].toFixed(4) + '/s, Time: ' + data[i]['rt'].toFixed(2) + 'ms, Size: ' +
+            'Total Samples: ' + data[i]['sample'] + ', QPS: ' + data[i]['qps'].toFixed(4) + '/s, RT: ' + data[i]['rt'].toFixed(2) + 'ms, Body Size: ' +
             data[i]['size'].toFixed(2) + 'Mb, Error:' + data[i]['error'] + '</div></div>';
     }
     document.getElementsByClassName('figure-region')[0].innerHTML = s;

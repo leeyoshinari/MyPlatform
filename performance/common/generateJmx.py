@@ -23,7 +23,7 @@ def generate_test_plan(plans):
     return test_plan, plans.duration
 
 def generate_thread_group(tg, num_threads, ramp_time, duration, schedule):
-    if schedule == 1: duration += 300
+    if schedule == 1: duration += 60
     thread_group = '<ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="%s" enabled="%s">' \
                         '<stringProp name="ThreadGroup.on_sample_error">continue</stringProp><elementProp name=' \
                         '"ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" ' \

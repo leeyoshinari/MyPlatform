@@ -16,16 +16,17 @@
 {% endblock %}
 {% block table_head %}
     <tr class="table_style">
-        <th width="13%">Plan Name</th>
-        <th width="10%">Server Room</th>
-        <th width="9%">Status</th>
-        <th width="9%">Schedule</th>
-        <th width="9%"># Samples</th>
-        <th width="10%">Average(RT)</th>
+        <th width="11%">Plan Name</th>
+        <th width="9%">Server Room</th>
+        <th width="8%">Status</th>
+        <th width="8%">Schedule</th>
+        <th width="8%"># Samples</th>
+        <th width="8%">Average(RT)</th>
         <th width="8%">TPS(/s)</th>
         <th width="8%">Error(%)</th>
+        <th width="10%">Start Time</th>
         <th width="8%">Operator</th>
-        <th width="16%">Actions</th>
+        <th width="15%">Actions</th>
     </tr>
 {% endblock %}
 
@@ -37,14 +38,15 @@
             {% else %}
                 <td title="{{ task.plan.comment }}"><a href="{% url 'perf:plan_home' %}?keyWord={{ task.plan.name }}">{{ task.plan.name }}</a></td>
             {% endif %}
-            <td>{{ task.server_room.name }}</td>
+            <td title="{{ task.server_room.name }}" style="text-align: center;">{{ task.server_room.name }}</td>
             <td style="text-align: center;"><div class="round" style="background-color: {{ task.status | get_value_from_list:'task_color' }};"></div>{{ task.status | get_value_from_list:'task_status' }}</td>
             <td style="text-align: center;">{{ task.plan.schedule | get_value_from_list:'plan_schedule' }}</td>
             <td style="text-align: center;">{{ task.samples }}</td>
             <td style="text-align: center;">{{ task.average_rt }} ms</td>
             <td style="text-align: center;">{{ task.tps }}</td>
             <td style="text-align: center;">{{ task.error }} %</td>
-            <td style="text-align: center;">{{ task.operator }}</td>
+            <td title="{{ task.start_time | date:"Y-m-d H:i:s" }}" style="text-align: center;">{{ task.start_time | date:"Y-m-d H:i:s" }}</td>
+            <td title="{{ task.operator }}" style="text-align: center;">{{ task.operator }}</td>
             <td>
                 {% if task.status < 4 %}
                     {% if task.status == 0 and task.plan.schedule == 0 %}

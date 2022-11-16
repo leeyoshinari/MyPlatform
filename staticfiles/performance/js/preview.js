@@ -37,7 +37,7 @@ function preview_timing() {
     }
 
     if (test_type === '1') {
-        x.unshift(date_to_date(x[0], -300));
+        x.unshift(date_to_date(x[0], -60));
         y.unshift(2);
         x.push(timestamp_to_date(new Date(values_div[0].getElementsByTagName('input')[0].value).getTime() + parseInt(duration) * 1000));
         y.push(0);
