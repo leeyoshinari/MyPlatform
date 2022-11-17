@@ -19,7 +19,7 @@
 - performance - 性能测试平台
 
 ## 第三方组件
-- 关系型数据库：SQLite3 or MySQL - 用于存储平台数据
+- 关系型数据库：SQLite3 或 MySQL - 用于存储平台数据
 - 时序数据库：InfluxDB - 用于存储监控数据
 - 键值数据库：Redis - 用于集群/分布式数据同步
 - 文件服务器：MinIO - 用于存储文件
@@ -30,21 +30,24 @@
 如需满足较多用户使用，请部署集群；如需高可用，请自行部署keepalive。
 
 #### 说明
-collector-agent
+collector-agent<br>
 数据收集工具。所有agent的数据都会发给collector-agent，然后由collector-agent统一写InfluxDB/写redis。<br>
 这样可以避免：如果每个agent单独连接数据库，可能会导致数据库连接不够用或者超过服务器允许的连接数。但也会有一个问题：如果agent太多，导致collector-agent不能及时写库，那就增大collector-agent的线程池大小，如果还不行，那就集群部署，增加集群节点。
 
-monitor-agent
+monitor-agent<br>
 服务器资源监控工具。通过执行Linux命令实时采集服务器的 CPU、内存、磁盘、网络、TCP 等数据。
 
-nginx-agent
+nginx-agent<br>
 nginx流量采集工具。通过实时处理nginx的访问日志(access.log)，将接口的访问信息(访问时间、客户端IP、接口名称、请求方法、协议、状态码、请求体大小、响应时间)等存储到数据库。<br>
 
-jmeter-agent
-性能测试执行工具。通过调用JMeter执行性能测试，非常便捷地执行分布式压测。
+jmeter-agent<br>
+性能测试执行工具。通过调用JMeter执行性能测试，支持分布式压测和全链路压测。
 
 ## 第三方包
-当前本地开发环境的第三方包的版本：
+本地开发环境：
+- python 3.9.10
+
+第三方包的版本：
 - aiohttp==3.7.4.post0
 - aiohttp-jinja2==1.5
 - channels==3.0.4
@@ -60,11 +63,17 @@ jmeter-agent
 - sqlparse==0.4.2
 
 ## 部署
-1、克隆 `git clone https://github.com/leeyoshinari/MyPlatform.git` ；
+1、克隆 
+```shell script
+git clone https://github.com/leeyoshinari/MyPlatform.git
+``` 
 
-2、部署数据库、InfluxDB、Redis、MinIO；（ps：暂不支持 InfluxDB2.x 版本，建议部署[influxdb-1.8.3](https://dl.influxdata.com/influxdb/releases/influxdb-1.8.3.x86_64.rpm )）
+2、安装 MySQL(SQLite3不用安装，可直接使用)、InfluxDB、Redis、MinIO(可选安装，不安装文件存本地)；（ps：暂不支持 InfluxDB2.x 版本，建议安装[ influxdb-1.8.3](https://dl.influxdata.com/influxdb/releases/influxdb-1.8.3.x86_64.rpm )）
 
-3、安装第三方依赖包 `pip3 install -r requirements.txt`;
+3、安装第三方依赖包 
+```shell script
+pip3 install -r requirements.txt
+```
 
 4、修改配置文件`config.conf`；
 
@@ -153,7 +162,7 @@ sh startup.sh
 该按钮仅管理员可见。
 #### 设置服务器所在机房
 点击 Create Server Room 创建机房，设置机房时主要有3个选项，分别是用于应用、用于中间件、用于压测。为什么有这3个呢？<br>
-例如一个机房有100台服务器，项目组A用了40台部署自己的服务，项目组B也用了40台部署自己的服务，还有10台服务器部署了中间件，剩余10台可以用于压测，这3个选项就用于区分这些类型。因为这个平台把服务器管理、服务器监控和压测整合在一起了，为了能够区分，所以才加了3个选项；不像大公司的平台都是不同的人开发的不同的应用，只是把前端页面挂在一起。<br>
+例如一个机房有100台服务器，项目组A用了40台部署自己的服务，项目组B也用了40台部署自己的服务，还有10台服务器部署了中间件，剩余10台可以用于压测，这3个选项就用于区分这些类型。因为这个项目把服务器管理、服务器监控和压测整合在一起了，为了能够区分，所以才加了3个选项；不像大公司的平台都是不同的人开发的不同的应用，只是把前端页面挂在一起。<br>
 一般性能测试需要施压机和被测服务所在服务器在同一个机房，如果你就想跨机房压测，可以把不是同一个机房的服务器设置成同一个机房，假装它们在一起。
 该按钮仅管理员可见
 #### 添加服务器
@@ -167,7 +176,7 @@ sh startup.sh
 点击 OpenShell 即可打开 Shell 远程连接 Linux，可以同时打开很多个页面，如下:
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/shell_ternimal.JPG)
 
-为了提供更好的使用体验，提供了 Ctrl+C（复制）和 Ctrl+V（粘贴）快捷键，不仅如此，还仍然保留了 Ctrl+C 快捷键在 shell 中的终止前台进程的功能，而绝大部分 shell 工具是不支持这种功能的，领导再也不担心你敲命令慢了。<br>
+为了提供更好的使用体验，提供了 Ctrl+C（复制）和 Ctrl+V（粘贴）快捷键，不仅如此，还仍然保留了 Ctrl+C 快捷键在 shell 中的终止前台进程的功能，而绝大部分主流 shell 工具是不支持这种功能的，老板再也不担心你敲命令慢了。<br>
 
 在打开的 Shell 中，可以上传文件到服务器，或者下载文件到本地。为了安全，上传和下载的入口也是可以关闭的。<br>
 - 在上传文件时，首先会弹出输入框，需要填入文件上传到哪个目录（绝对路径，不填默认 /home 目录），然后选择文件上传。<br>
@@ -205,11 +214,12 @@ sh startup.sh
 
 ## Nginx流量采集工具
 该工具（[快点我部署](https://github.com/leeyoshinari/nginx_agent) ）主要用于解析Nginx的access.log，从日志中提取出接口访问数据。<br>
-首页页面展示的信息是根据接口聚合后的结果（过滤掉静态文件的请求），默认按照QPS排序，可选按响应时间、请求体大小、请求错误数量排序；可分别查看压测流量和正常流量。
+首页页面展示的信息是根据接口聚合后的结果（过滤掉静态文件的请求），默认按照QPS排序，可选按响应时间、响应体大小、响应错误数量排序；可分别查看压测流量和正常流量。
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/nginx_summary.JPG)
+
 点击每个接口，可查看该接口的每秒数据变化图
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/nginx_detail.JPG)
-注意：为了采集到上述数据，需要修改nginx日志格式，详见[nginx-agent部署](https://github.com/leeyoshinari/nginx_agent )
+注意：**为了采集到上述数据，需要修改nginx日志格式，详见[nginx-agent部署](https://github.com/leeyoshinari/nginx_agent )**
 
 ## 性能测试工具
 现在开源的、最好用的性能测试工具是JMeter，很多公司的性能测试平台的底层都用的是JMeter，所以本工具底层也是用JMeter实现的，而且原滋原味的保留了JMeter的所有功能，让您像在本地使用JMeter一样的丝般顺滑，使用体验远超某电商的全链路压测平台。

@@ -268,7 +268,8 @@ def parse_ThreadGroup(jmeter_file, num_threads, ramp_time, duration):
     if len(res) == 0:
         raise MyException('Not found ThreadGroup, Please add one ~')
     modify_str = re.sub('num_threads">(.*?)</stringProp>', f'num_threads">{num_threads}</stringProp>', res[0])
-    modify_str = re.sub('ramp_time">(.*?)</stringProp>', f'ramp_time">{ramp_time}</stringProp>', modify_str)
+    if ramp_time == 200:
+        modify_str = re.sub('ramp_time">(.*?)</stringProp>', f'ramp_time">{ramp_time}</stringProp>', modify_str)
     modify_str = re.sub('duration">(.*?)</stringProp>', f'duration">{duration}</stringProp>', modify_str)
     modify_str = re.sub('scheduler">(.*?)</boolProp>', f'scheduler">true</boolProp>', modify_str)
     modify_str = re.sub('LoopController.loops">(.*?)</intProp>', f'LoopController.loops">-1</intProp>', modify_str)
