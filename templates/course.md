@@ -158,7 +158,7 @@ sh startup.sh
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/shell_home.JPG)
 ### 具体使用
 #### 设置项目组
-点击 Create Group 创建项目组，需要设置项目组和项目组应用的唯一标识符。唯一标识符一般在整个公司是唯一的，对于在服务器上，通过`ps -ef | grep 唯一标识符 | grep -v grep` 命令可以查找到一条进程。<br>
+点击 Create Group 创建项目组，需要设置项目组和项目组应用的唯一标识符。唯一标识符一般在整个公司是唯一的，对于在服务器上，通过`ps -ef | grep 唯一标识符 | grep -v grep` 命令可以查找到唯一一个进程。<br>
 该按钮仅管理员可见。
 #### 设置服务器所在机房
 点击 Create Server Room 创建机房，设置机房时主要有3个选项，分别是用于应用、用于中间件、用于压测。为什么有这3个呢？<br>
@@ -243,14 +243,14 @@ sh startup.sh
 ### 具体使用
 #### 在页面新增JMeter脚本
 ##### 添加 Test Plan
-在左侧点击 Test Plan，可以查看测试计划，可以在测试计划列表中看到：<br>
+在左侧点击 Test Plan，可以查看测试计划，测试计划列表如下：<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/plan_home.JPG)
 Server Room 列可以查看该机房里空闲的施压机数量；<br>
 Action列具有的一些操作：
 - Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
 - Copy：复制，快速复制一个测试计划；
 - Variables：设置全局变量，对应JMeter中的测试计划中的“用户自定义的变量”；
-- ThreadGroup：往测试计划中添加线程组；
+- ThreadGroup：查看测试计划中的所有线程组；
 - StartTest：开始执行性能测试。如果是手动执行，则会立即开始压测；如果是自动执行，也会生成一个压测任务，等待压测时间开始执行；
 
 点击 Variables，可以设置全局变量，如下：
@@ -271,13 +271,13 @@ Action列具有的一些操作：
 
 
 ##### 添加 Thread Group
-在左侧点击 Thread Group，可以查看所有的线程组；如果在 Test Plan 中点击 ThreadGroup，可以查看该测试计划下的所有线程组。可以在线程组列表中看到：<br>
+在左侧点击 Thread Group，可以查看所有的线程组；如果在 Test Plan 中点击 ThreadGroup，可以查看该测试计划下的所有线程组。线程组列表如下：<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/group_home.JPG)
 Action列具有的一些操作：
 - Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
 - Copy：复制，快速复制一个线程组；
 - Cookies：如果压测需要cookies，可以在这里设置；对应的是JMeter中的Http Cookie管理器；
-- Controller：往线程组中添加控制器；
+- Controller：查看线程组中的所有控制器；
 
 Cookies 设置页面如下：
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/group_cookie.JPG)
@@ -288,19 +288,16 @@ Cookies 设置页面如下：
 - Ramp Time：在这个时间内启动所有的线程，对应JMeter线程组中的“Ramp-Up时间（秒）”；
 - CSVDataSet：上传压测需要的文件，需要设置变量名称（英文逗号分割）、分隔符、遇到文件结束符是否继续、线程共享模式，这里的设置和JMeter中的CSV数据文件设置一样；
 
-添加完成后
-
 ##### 添加控制器
-在左侧点击 Controller，可以查看所有的控制器；如果在 Thread Group 中点击 Controller，可以查看该线程组下的所有控制器。<br>
-添加完成后，可以在控制器列表中看到：<br>
+在左侧点击 Controller，可以查看所有的控制器；如果在 Thread Group 中点击 Controller，可以查看该线程组下的所有控制器。控制器列表如下：<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/controller_home.JPG)
 Action列具有的一些操作：
 - Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
 - Copy：复制，快速复制一个控制器；
-- HTTPSample：往控制器中添加取样器；
+- HTTPSample：查看控制器中的所有取样器；
 
 ##### 添加取样器
-在左侧点击 HTTP Sample，可以查看所有的取样器；如果在 Controller 中点击 HttpSample，可以查看该控制器下的所有取样器。
+在左侧点击 HTTP Sample，可以查看所有的取样器；如果在 Controller 中点击 HttpSample，可以查看该控制器下的所有取样器。取样器列表如下：<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/sample_home.JPG)
 
 点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）
@@ -312,14 +309,12 @@ Action列具有的一些操作：
 - Path：url 路径；
 - Method：http请求方法；
 - Arguments：http请求参数，可选请求参数格式为json或form表单，对应JMeter中的取样器的参数设置；
-- HTTP Header：下拉选择对应的请求头，请求头配置在HTTP Header中；
+- HTTP Header：下拉选择对应的请求头，请求头配置在HTTP Header中；如果没有请求头，需要提前设置好；
 - Assertion：断言，可选类型为Contain(包含)、Equal(相等)或Match(匹配)，对应JMeter中的响应断言；
 - Post Extractor：后置处理器，用于提取响应值中的数据，仅支持JSON提取器和正则表达式提取器；
 - contentEncoding：内容编码格式，可选None或UTF-8，对应JMeter中的取样器中的“内容编码”；
 
 以上设置和在JMeter中的取样器中设置一样，也可以引用变量，后置处理器也可以设置变量。
-
-添加完成后，可以在取样器列表中查看。
 
 ##### 添加请求头
 在左侧点击 HTTP Header，可以查看所有的请求头；
@@ -335,7 +330,7 @@ Action列具有的一些操作：
 1、压缩包上传后，首先使用zip命令解压，故只支持zip格式压缩；<br>
 2、解压后，直接在解压的文件夹中寻找jmx格式的JMeter脚本，压缩包里必须有且仅有一个jmx格式的文件；由于是直接在解压的文件中寻找jmx文件，故压缩文件时，选择需要压缩的文件，然后压缩，而不是选择文件夹进行压缩；<br>
 3、经过一系列检验后，压缩包会被上传到文件系统；<br>
-4、生成一条记录，然后可以在页面修改压测参数，和 Test Plan 一样；<br>
+4、生成一条记录，然后可以在页面修改压测参数，和 Test Plan 一样，如下：<br>
 
 当需要压测的时候，会对JMeter文件进行修改，如下：<br>
 1、从文件系统中下载文件，并解压；<br>
@@ -373,7 +368,7 @@ Action列具有的一些操作：
 
 ### 怎么判断是否需要增加集群节点数？
 对于该平台的集群：在远程连接Linux时，如果由于非网络原因和服务器卡顿的原因导致命令的响应速度经常跟不上你的手速，那么应该增加平台的集群节点数；<br>
-对于collector-agent：因为服务器资源监控是秒级，且近似实时，在查看服务器资源监控图时，如果刷新页面后展示的时间比当前时间晚5~10秒，那么就需要增加 collector-agent 集群节点数。
+对于collector-agent：因为服务器资源监控是秒级，且近似实时，在查看服务器资源监控图时，如果刷新页面后展示的时间比当前时间晚5~10秒，那么就需要增加 collector-agent 集群节点数。<br>
 以上纯属个人建议，请根据实际情况合理增加集群节点数。
 
 ### 单台施压机支持的QPS多少？

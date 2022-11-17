@@ -421,7 +421,7 @@ def set_message(request):
                     tasks.status = 2
                     tasks.end_time = strfTime()
                     durations = time.time() - toTimeStamp(str(tasks.start_time))
-                    datas = get_data_from_influx('1', task_id, host='all', start_time=tasks.start_time, end_time=tasks.end_time)
+                    datas = get_data_from_influx('1', task_id, host='all', start_time=str(tasks.start_time), end_time=str(tasks.end_time))
                     logger.info(f"Task {task_id} stop success ~")
                     if datas['code'] == 0:
                         total_samples = sum(datas['data']['samples'])
