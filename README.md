@@ -2,12 +2,12 @@
 [中文文档](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/course_zh.md)
 
 ## Introduction
-It is a platform mainly used for performance test, here are same simple features: <br>
-1. Server Management, can view server's basic information uniformly;<br>
-2. Shell Remote Connection, support for files upload and download between local and server;<br>
-3. Server resource usage monitoring;<br>
-4. Nginx's access.log traffic collection;<br>
-5. Performance Test tool, support for automated and distributed performance test;<br>
+It is a platform mainly used for performance test, here are some simple features brief: <br>
+1. Server Management, can view server's basic information uniformly<br>
+2. Shell Remote Connection, support for files upload and download between local and server<br>
+3. Server resource usage monitoring<br>
+4. Nginx's access.log traffic collection<br>
+5. Performance Test tool, support for automated and distributed performance test<br>
 
 ## Directory
 - MyPlatform - project files
@@ -20,7 +20,7 @@ It is a platform mainly used for performance test, here are same simple features
 - monitor - monitor tool
 - performance - performance test tool
 
-## Third Middleware
+## Middleware
 - Relational Database: SQLite3 or MySQL - used to store platform data
 - Time-Series Database: InfluxDB - used to store monitoring data
 - Key-value Database: Redis - used to cluster/distributed data synchronization
@@ -35,7 +35,7 @@ If you need to satisfy more users, please deploy cluster; if you need high avail
 **collector-agent**<br>
 Data Collector. All agents' data will be sent to collector-agent, and then collector-agent writes data to InfluxDB/redis.<br>
 It can be avoid a problem: If each agent connects to the database separately, it may cause the database connection to run out or exceed the number of connections allowed by the server. <br>
-But if too many agents cause the collector-agent to not be able to write database in time, increasing the thread pool size of the collector-agent is needed; if not, increasing the number of collector-agent cluster nodes is needed.
+But if too many agents cause the collector-agent to not be able to write database in time, increasing the thread pool size of the collector-agent is needed; if still not, increasing the number of collector-agent cluster nodes is needed.
 
 **monitor-agent**<br>
 Server resource monitor. Execute Linux commands to collect the server's CPU, Memory, Disk, Network, TCP, and other data in real time.
@@ -44,13 +44,13 @@ Server resource monitor. Execute Linux commands to collect the server's CPU, Mem
 Nginx traffic collector. Process Nginx's access log (access.log) in real time, the access information (access time, client IP, interface name, request method, protocol, status code, response body size, response time) is stored in database.
 
 **jmeter-agent**<br>
-Performance test tool. Call JMeter to execute performance test, and supports distributed performance test and fill-link performance test.
+Performance test tool. Call JMeter to execute performance test, and supports distributed performance test and full-link performance test.
 
-## Third Package
+## Third-party Package
 Local dev environment:
 - python 3.9.10
 
-Third-packages version：
+Third-party packages version:
 - aiohttp==3.7.4.post0
 - aiohttp-jinja2==1.5
 - channels==3.0.4
