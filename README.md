@@ -1,100 +1,160 @@
 # MyPlatform
-这是一个集成了一些工具的平台，先简单介绍一下这个平台具有的功能：<br>
-1、服务器管理，可以统一查看服务器的基本信息；<br>
-2、Shell 远程连接，支持本地和服务器之间的文件上传和下载；<br>
-3、服务器资源监控；<br>
-4、性能测试工具，提供自动化压测和分布式压测的能力；<br>
+[中文文档](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/course_zh.md)
 
-## 目录
-- MyPlatform - 项目文件
-- staticfiles - 静态文件
-- templates - 模板文件
-- templateFilter - 模板自定义过滤器
-- common - 通用的函数
-- user - 用户相关
-- shell - shell 工具
-- monitor - 监控工具
-- performance - 性能测试平台
+## Introduction
+It is a platform mainly used for performance test, here are same simple features: <br>
+1. Server Management, can view server's basic information uniformly;<br>
+2. Shell Remote Connection, support for files upload and download between local and server;<br>
+3. Server resource usage monitoring;<br>
+4. Nginx's access.log traffic collection;<br>
+5. Performance Test tool, support for automated and distributed performance test;<br>
 
+## Directory
+- MyPlatform - project files
+- staticfiles - static files
+- templates - html templates files
+- templateFilter - custom filter
+- common - generic functions
+- user - user related
+- shell - shell tool
+- monitor - monitor tool
+- performance - performance test tool
 
-## 其他组件
-- 关系型数据库：SQLite3 or MySQL - 用于存储平台数据
-- 时序数据库：InfluxDB - 用于存储监控数据
-- 键值数据库：Redis - 用于集群/分布式数据同步
-- 文件服务器：MinIO - 用于存储文件
-- 性能测试工具：JMeter - 用于执行 JMeter 脚本
+## Third Middleware
+- Relational Database: SQLite3 or MySQL - used to store platform data
+- Time-Series Database: InfluxDB - used to store monitoring data
+- Key-value Database: Redis - used to cluster/distributed data synchronization
+- File Server: MinIO - used to store files
+- Performance Test tool: JMeter - used to execute JMeter file
 
-## 介绍
-1、shell<br>
-在浏览器上打开 shell 页面，连接linux，可以输入 shell 命令，支持文件上传和下载；[详见README.md](https://github.com/leeyoshinari/MyPlatform/tree/main/shell)
+## Architecture
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
+If you need to satisfy more users, please deploy cluster; if you need high availability, please deploy keepalive.
 
-2、monitor<br>
-监控服务器资源(CPU、内存、磁盘、网络等)使用情况；[详见README.md](https://github.com/leeyoshinari/MyPlatform/tree/main/monitor)
+#### Explain
+**collector-agent**<br>
+Data Collector. All agents' data will be sent to collector-agent, and then collector-agent writes data to InfluxDB/redis.<br>
+It can be avoid a problem: If each agent connects to the database separately, it may cause the database connection to run out or exceed the number of connections allowed by the server. <br>
+But if too many agents cause the collector-agent to not be able to write database in time, increasing the thread pool size of the collector-agent is needed; if not, increasing the number of collector-agent cluster nodes is needed.
 
-3、performance
-性能测试工具，底层是JMeter；[详见README.md](https://github.com/leeyoshinari/MyPlatform/tree/main/performance)
+**monitor-agent**<br>
+Server resource monitor. Execute Linux commands to collect the server's CPU, Memory, Disk, Network, TCP, and other data in real time.
 
+**nginx-agent**<br>
+Nginx traffic collector. Process Nginx's access log (access.log) in real time, the access information (access time, client IP, interface name, request method, protocol, status code, response body size, response time) is stored in database.
 
-## 部署
-1、克隆 `git clone https://github.com/leeyoshinari/MyPlatform.git` ；
+**jmeter-agent**<br>
+Performance test tool. Call JMeter to execute performance test, and supports distributed performance test and fill-link performance test.
 
-2、进入目录 `cd MyPlatform`，修改配置文件`config.conf`；
+## Third Package
+Local dev environment:
+- python 3.9.10
 
-3、数据库初始化，依次执行下面命令；<br>
-```shell script
-python3 manage.py migrate
-python3 manage.py makemigrations shell performance
-python3 manage.py migrate
-```
+Third-packages version：
+- aiohttp==3.7.4.post0
+- aiohttp-jinja2==1.5
+- channels==3.0.4
+- daphne==3.0.2
+- Django==4.0.1
+- influxdb==2.6.0
+- Jinja2==3.0.3
+- minio==7.1.3
+- paramiko==2.10.3
+- PyMySQL==1.0.2
+- redis==4.1.1
+- requests==2.27.1
+- sqlparse==0.4.2
 
-4、创建超级管理员账号；
-```shell script
-python3 manage.py createsuperuser
-```
+## Deploy
+1. Clone Repository
+    ```shell script
+    git clone https://github.com/leeyoshinari/MyPlatform.git
+    ``` 
 
-5、数据初始化，不初始化会导致上传jmeter文件报错；
-```shell script
-python3 manage.py loaddata initdata.json
-```
+2. Install MySQL(SQLite3 can be used directly, doesn't need to be installed), InfluxDB, Redis, MinIO(Optional installation); (ps：InfluxDB2.x is not supported, [ influxdb-1.8.3](https://dl.influxdata.com/influxdb/releases/influxdb-1.8.3.x86_64.rpm ) is recommended.)
 
-6、处理所有静态文件；
-```shell script
-python3 manage.py collectstatic
-```
+3. Install third-packages
+    ```shell script
+    pip3 install -r requirements.txt
+    ```
 
-7、修改`startup.sh`中的端口号；
+4. Modify `config.conf`；
 
-8、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
-（1）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径
-```shell script
-location /platform/static {
-    alias /home/MyPlatform/static;
-}
-```
-（2）动态http请求：
-```shell script
-location /platform {
-     proxy_pass  http://127.0.0.1:15200;
-     proxy_set_header Host $proxy_host;
-     proxy_set_header X-Real-IP $remote_addr;
-     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-}
-```
-（3）websocket协议通信：
-```shell script
-location /shell {  # 必须是shell
-    proxy_pass http://127.0.0.1:15200;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-}
-```
+5. Initialize database, and execute commands
+    ```shell script
+    python3 manage.py migrate
+    python3 manage.py makemigrations shell performance
+    python3 manage.py migrate
+    ```
 
-9、启动
-```
-sh startup.sh
-```
+6. Create super administrator
+    ```shell script
+    python3 manage.py createsuperuser
+    ```
 
-10、访问页面，url是 `http://ip:port/上下文`
+7. Initialize data
+    ```shell script
+    python3 manage.py loaddata initdata.json
+    ```
 
-11、访问权限控制页面，url是 `http://ip:port/上下文/admin`
+8. Deal all static files
+    ```shell script
+    python3 manage.py collectstatic
+    ```
+
+9. Modify Port in `startup.sh`
+
+10. Deploy `nginx`, the location configuration is as follows: (ps: The `platform` in the configuration is the prefix, that is the URL prefix in the URL path, which can be modified according to your needs.)<br>
+    (1) upstream configuration:
+    ```shell script
+    upstream myplatform-server {
+        server 127.0.0.1:15200;
+        server 127.0.0.1:15201;
+    }
+    ```
+    (2) static request: Use Nginx to access static files directly
+    ```shell script
+    location /platform/static {
+        alias /home/MyPlatform/static;
+    }
+    ```
+    (3) dynamic request:
+    ```shell script
+    location /platform {
+         proxy_pass  http://myplatform-server;
+         proxy_set_header Host $proxy_host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    ```
+    (4) websocket protocol:
+    ```shell script
+    location /shell {  # must be shell, don't modify it
+        proxy_pass http://myplatform-server;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+    ```
+
+11. Startup
+    ```shell script
+    sh startup.sh
+    ```
+    Run `sh shutdown.sh` to stop.
+
+12. Access home page, url: `http://ip:port/prefix in config.conf`
+![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/home.JPG)
+
+13. Access permission management page, url: `http://ip:port/prefix in config.conf/admin`
+
+14. Deploy collector-agent, [click me](https://github.com/leeyoshinari/collector_agent)
+
+15. Deploy monitor-agent, [click me](https://github.com/leeyoshinari/monitor_agent)
+
+16. Deploy jmter-agent, [click me](https://github.com/leeyoshinari/jmeter_agent)
+
+17. Deploy nginx-agent, [click me](https://github.com/leeyoshinari/nginx_agent)
+
+# Note
+1. For more information, please deploy it and access course.
 
