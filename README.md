@@ -29,22 +29,22 @@ It is a platform mainly used for performance test, here are some simple features
 
 ## Architecture
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
-If you need to satisfy more users, please deploy cluster; if you need high availability, please deploy keepalive.
+&emsp;&emsp;If you need to satisfy more users, please deploy cluster; if you need high availability, please deploy keepalive.
 
 #### Explain
 **collector-agent**<br>
-Data Collector. All agents' data will be sent to collector-agent, and then collector-agent writes data to InfluxDB/redis.<br>
-It can be avoid a problem: If each agent connects to the database separately, it may cause the database connection to run out or exceed the number of connections allowed by the server. <br>
-But if too many agents cause the collector-agent to not be able to write database in time, increasing the thread pool size of the collector-agent is needed; if still not, increasing the number of collector-agent cluster nodes is needed.
+&emsp;&emsp;Data Collector. All agents' data will be sent to collector-agent, and then collector-agent writes data to InfluxDB/redis.<br>
+&emsp;&emsp;It can be avoid a problem: If each agent connects to the database separately, it may cause the database connection to run out or exceed the number of connections allowed by the server. <br>
+&emsp;&emsp;But if too many agents cause the collector-agent to not be able to write database in time, increasing the thread pool size of the collector-agent is needed; if still not, increasing the number of collector-agent cluster nodes is needed.
 
 **monitor-agent**<br>
-Server resource monitor. Execute Linux commands to collect the server's CPU, Memory, Disk, Network, TCP, and other data in real time.
+&emsp;&emsp;Server resource monitor. Execute Linux commands to collect the server's CPU, Memory, Disk, Network, TCP, and other data in real time.
 
 **nginx-agent**<br>
-Nginx traffic collector. Process Nginx's access log (access.log) in real time, the access information (access time, client IP, interface name, request method, protocol, status code, response body size, response time) is stored in database.
+&emsp;&emsp;Nginx traffic collector. Process Nginx's access log (access.log) in real time, the access information (access time, client IP, interface name, request method, protocol, status code, response body size, response time) is stored in database.
 
 **jmeter-agent**<br>
-Performance test tool. Call JMeter to execute performance test, and supports distributed performance test and full-link performance test.
+&emsp;&emsp;Performance test tool. Call JMeter to execute performance test, and supports distributed performance test and full-link performance test.
 
 ## Third-party Package
 Local dev environment:
