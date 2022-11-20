@@ -145,13 +145,13 @@ Third-party packages version:
 
 13. Access permission management page, url: `http://ip:port/prefix in config.conf/admin`
 
-14. Deploy collector-agent, [click me](https://github.com/leeyoshinari/collector_agent)
+14. Deploy collector-agent, [please click me](https://github.com/leeyoshinari/collector_agent)
 
-15. Deploy monitor-agent, [click me](https://github.com/leeyoshinari/monitor_agent)
+15. Deploy monitor-agent, [please click me](https://github.com/leeyoshinari/monitor_agent)
 
-16. Deploy jmter-agent, [click me](https://github.com/leeyoshinari/jmeter_agent)
+16. Deploy jmeter-agent, [please click me](https://github.com/leeyoshinari/jmeter_agent)
 
-17. Deploy nginx-agent, [click me](https://github.com/leeyoshinari/nginx_agent)
+17. Deploy nginx-agent, [please click me](https://github.com/leeyoshinari/nginx_agent)
 
 ## Shell 工具
 该工具可以查看管理服务器，并可以直接在浏览器上远程连接 Linux。

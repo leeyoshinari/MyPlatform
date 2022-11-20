@@ -99,9 +99,9 @@ def course(request):
     if request.method == 'GET':
         lang = request.GET.get('_lang')
         if lang == 'zh':
-            return render(request, 'course.html')
+            return render(request, 'course/course_zh.html')
         else:
-            return render(request, 'course_en.html')
+            return render(request, 'course/course_zh.html')
     else:
         return render(request, '404.html')
 

@@ -1,5 +1,5 @@
 # MyPlatform
-[中文文档](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/course_zh.md)
+[中文文档](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/README_zh.md)
 
 ## Introduction
 It is a platform mainly used for performance test, here are some simple features brief: <br>
@@ -45,25 +45,6 @@ Nginx traffic collector. Process Nginx's access log (access.log) in real time, t
 
 **jmeter-agent**<br>
 Performance test tool. Call JMeter to execute performance test, and supports distributed performance test and full-link performance test.
-
-## Third-party Package
-Local dev environment:
-- python 3.9.10
-
-Third-party packages version:
-- aiohttp==3.7.4.post0
-- aiohttp-jinja2==1.5
-- channels==3.0.4
-- daphne==3.0.2
-- Django==4.0.1
-- influxdb==2.6.0
-- Jinja2==3.0.3
-- minio==7.1.3
-- paramiko==2.10.3
-- PyMySQL==1.0.2
-- redis==4.1.1
-- requests==2.27.1
-- sqlparse==0.4.2
 
 ## Deploy
 1. Clone Repository
@@ -142,19 +123,37 @@ Third-party packages version:
     ```
     Run `sh shutdown.sh` to stop.
 
-12. Access home page, url: `http://ip:port/prefix in config.conf`
+12. Access home page, url: `http://ip:port/(prefix in config.conf)`
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/home.JPG)
 
-13. Access permission management page, url: `http://ip:port/prefix in config.conf/admin`
+13. Access permission management page, url: `http://ip:port/(prefix in config.conf)/admin`
 
-14. Deploy collector-agent, [click me](https://github.com/leeyoshinari/collector_agent)
+14. Deploy collector-agent, [please click me](https://github.com/leeyoshinari/collector_agent)
 
-15. Deploy monitor-agent, [click me](https://github.com/leeyoshinari/monitor_agent)
+15. Deploy monitor-agent, [please click me](https://github.com/leeyoshinari/monitor_agent)
 
-16. Deploy jmter-agent, [click me](https://github.com/leeyoshinari/jmeter_agent)
+16. Deploy jmeter-agent, [please click me](https://github.com/leeyoshinari/jmeter_agent)
 
-17. Deploy nginx-agent, [click me](https://github.com/leeyoshinari/nginx_agent)
+17. Deploy nginx-agent, [please click me](https://github.com/leeyoshinari/nginx_agent)
 
-# Note
-1. For more information, please deploy it and access course.
+## Note
+1. For more information, [please click me](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/course_en.md) or view course after deployment.
 
+## Requirements
+Local dev environment:
+- python 3.9.10
+
+Third-party packages version:
+- aiohttp==3.7.4.post0
+- aiohttp-jinja2==1.5
+- channels==3.0.4
+- daphne==3.0.2
+- Django==4.0.1
+- influxdb==2.6.0
+- Jinja2==3.0.3
+- minio==7.1.3
+- paramiko==2.10.3
+- PyMySQL==1.0.2
+- redis==4.1.1
+- requests==2.27.1
+- sqlparse==0.4.2

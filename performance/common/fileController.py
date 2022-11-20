@@ -16,6 +16,10 @@ def download_file_to_bytes(url):
     return res.content
 
 
+def download_file_to_response(url):
+    return requests.get(url)
+
+
 def delete_local_file(path):
     result = {'code': 0, 'msg': f'Path: {path} is deleted failure ~'}
     try:

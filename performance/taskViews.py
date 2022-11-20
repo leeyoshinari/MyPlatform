@@ -342,7 +342,7 @@ def download_log(request):
             task_id = request.GET.get('id')
             host = request.GET.get('host')
             url = f"http://{host}:{get_value_by_host('jmeterServer_'+host, 'port')}/download/{task_id}"
-            response = StreamingHttpResponse(download_file_to_bytes(url))
+            response = StreamingHttpResponse(download_file_to_response(url))
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = f'attachment;filename="{task_id}-log.zip"'
             logger.info(f'{task_id}-log.zip download successful, operator: {username}')

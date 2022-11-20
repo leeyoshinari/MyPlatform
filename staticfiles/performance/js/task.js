@@ -142,7 +142,8 @@ function get_used_server(task_id, url, url1) {
                     } else {
                         s += '<td></td><td>';
                     }
-                    s += '<a onclick="download_log(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a></td></tr>';
+                    s += '<a onclick="download_log(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
+                        '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
                     server_num += 1;
                 }
                 if (server_num > 0) {
