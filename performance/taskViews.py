@@ -285,6 +285,7 @@ def stop_task(request):
                 hosts = [host]
             for h in hosts:
                 res = http_request('get', h, get_value_by_host('jmeterServer_'+h, 'port'), 'stopTask/'+task_id)
+                time.sleep(0.5)
                 # response_data = json.loads(res.content.decode())
             logger.info(f'Task {task_id} is stopping, operator: {username}')
             return result(msg=f'Task {task_id} is stopping, please wait a minute ~')
