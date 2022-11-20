@@ -515,7 +515,9 @@ def get_idle_server(request):
                 host_dict = get_value_by_host('jmeterServer_' + server['host'])
                 host_dict = host_dict if host_dict else {}
                 if host_dict.get('status') == 0:
-                    host_dict.update(get_value_by_host('Server_' + server['host']))
+                    server_monitor_dict = get_value_by_host('Server_' + server['host'])
+                    if server_monitor_dict:
+                        host_dict.update(server_monitor_dict)
                     host_info.append(host_dict)
             logger.info(f'Query idle servers success, operator: {username}')
             return result(msg='Get idle servers success ~', data=host_info)

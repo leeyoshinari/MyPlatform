@@ -371,7 +371,7 @@ python3 manage.py migrate</code></pre>
 <p class="qaq-content">借用Redis实现分布式压测时各施压机之间的数据同步，各施压机的数据和所有施压机汇总数据的时间全部以InfluxDB的时间为准；这就突破了使用JMeter进行分布式压测时需要各施压机的系统时间、Java版本、JMeter版本必须一样的限制，可以更加方便进行分布式压测。</p>
 <p class="qaq-content" style="margin-top: 15px">施压机热挂载</p>
 <p class="qaq-content">同样也是借用Redis实现的。当在性能测试过程中，发现压力不够，需要增加施压机时，只需要在当前压测任务下（即查看压测详情页面）启动一个施压机即可，而不需要单独另开启一个压测任务（两个任务之间的数据是独立的）；当需要下掉一个施压机时，直接点击施压机的停止按钮即可立即下线；可以更加灵活地调整压力。</p>
-<h1>QAQ：</h1>
+<h1>QAQ</h1>
 <p class="qaq-title">1、为什么shell会经常提醒 Session is in closed status？</p>
 <p class="qaq-content">为了避免可能的无效连接占用服务器资源，对超过10分钟没有任何数据交互的连接进行关闭；同时由于客户端网络问题或其他各种异常，服务端也需要及时关闭无效连接。</p>
 <p class="qaq-title">2、为什么自动部署agent包时一直不成功？</p>

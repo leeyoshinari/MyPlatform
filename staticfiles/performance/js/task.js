@@ -91,7 +91,7 @@ function get_running_server(task_id, url, status, url1, url2, url3, url4, url5, 
                     if (status === 1 && all_host[i]['status'] === 0) {
                         s += '<a onclick="start_test(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Start</a>';
                     }
-                    s += '<a onclick="download_log(\'' + url3 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
+                    s += '<a href="' + url3 + '?id=' + task_id + '&host=' + all_host[i]['host'] + '">Download logs</a>' +
                          '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
                 }
                 if (server_num > 0) {
@@ -142,7 +142,7 @@ function get_used_server(task_id, url, url1) {
                     } else {
                         s += '<td></td><td>';
                     }
-                    s += '<a onclick="download_log(\'' + url1 + '\',' + task_id + ',\'' + all_host[i]['host'] + '\')">Download logs</a>' +
+                    s += '<a href="' + url1 + '?id=' + task_id + '&host=' + all_host[i]['host'] + '">Download logs</a>' +
                         '<a onclick="view_host_figure(\'' + all_host[i]['host'] + '\')">View</a></td></tr>';
                     server_num += 1;
                 }
