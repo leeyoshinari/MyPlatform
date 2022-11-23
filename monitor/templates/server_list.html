@@ -1,0 +1,88 @@
+{% extends "monitor_template.html" %}
+{% load static compress %}
+
+{% block addjs %}
+    {% compress js %}
+    <script src="{% static 'js/fenye.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header" style="margin-top: 1px;">
+    <div style="margin-bottom: 2%;">
+        <div style="float: left; width: 350px;">
+            <label>Group: </label>
+            <select id="group" style="width: 196px; height: 30px;">
+                {% for g in groups %}
+                    {% if g.id == group %}
+                        <option value="{{ g.id }}" selected>{{ g.name }}</option>
+                    {% else %}
+                        <option value="{{ g.id }}">{{ g.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div style="float: left; width: 350px;">
+            <label>Host: </label>
+            {% if key_word %}
+                <input id="host" placeholder="Please input server IP ~" style="width: 190px; height: 30px;" value="{{ key_word }}">
+            {% else %}
+                <input id="host" placeholder="Please input server IP ~" style="width: 190px; height: 30px;">
+            {% endif %}
+        </div>
+        <div><button style="width: 125px; height: 26px;" id="search">Search</button></div>
+    </div>
+    <table width="99%" border="1" cellspacing="0" cellpadding="6" align="center" id="monitor">
+        <tr style="align: center; margin: auto; background-color: #99CCFF">
+            <th width=13% style="text-align: center;">Server</th>
+            <th width=35% style="text-align: center;">System Version</th>
+            <th width=13% style="text-align: center;">CPU/Usage</th>
+            <th width=14% style="text-align: center;">Memory/Usage</th>
+            <th width=13% style="text-align: center;">Disk/Usage</th>
+            <th width=12% style="text-align: center;">Bandwidth</th>
+        </tr>
+        {% for data in datas %}
+            <tr align="center">
+                <td><a href="http://{{ data.host }}:{{ data.port }}">{{ data.host }}</a></td>
+                <td>{{ data.system }}</td>
+                {% if data.cpu_usage < 80 %}
+                    <td>{{ data.cpu }} cores/{{ data.cpu_usage|floatformat:2 }}%</td>
+                {% else %}
+                    <td><strong style="font-weight: bold; color: #ff3333">{{ data.cpu }} cores/{{ data.cpu_usage|floatformat:2 }}%</strong></td>
+                {% endif %}
+                {% if data.mem_usage < 80 %}
+                    <td>{{ data.mem }}G/{{ data.mem_usage|floatformat:2 }}%</td>
+                {% else %}
+                    <td><strong style="font-weight: bold; color: #ff3333">{{ data.mem }}G/{{ data.mem_usage|floatformat:2 }}%</strong></td>
+                {% endif %}
+                {% if data.disk_usage < 70 %}
+                    <td>{{ data.disk_size }}/{{ data.disk_usage|floatformat:2 }}%</td>
+                {% else %}
+                    <td><strong style="font-weight: bold; color: #ff3333">{{ data.disk_size }}/{{ data.disk_usage|floatformat:2 }}%</strong></td>
+                {% endif %}
+                {% if data.network_speed == 1 %}
+                    <td>None</td>
+                {% else %}
+                    <td>{{ data.network_speed }}Mb/s</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+<div class="fenye"><ul id="paging" class="pagination"></ul></div>
+{% endblock %}
+
+{% block myjs %}
+    <script type="text/javascript">
+        {% if key_word %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'monitor:home' %}?group={{ group }}&keyWord={{ key_word }}&page=');
+        {% else %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'monitor:home' %}?group={{ group }}&page=');
+        {% endif %}
+        document.getElementById('search').addEventListener('click', function () {
+            let group_id = document.getElementById('group').value;
+            let key_work = document.getElementById('host').value;
+            window.location.href = '{% url 'monitor:home' %}' + '?group=' + group_id + '&keyWord=' + key_work;
+        })
+    </script>
+{% endblock %}

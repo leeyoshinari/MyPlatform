@@ -1,0 +1,248 @@
+{% extends 'perf_home.html' %}
+{% load static compress %}
+
+{% block add_js %}
+    {% compress js %}
+    <script src="{% static 'performance/js/sample.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block navigate %}
+    {% if controller_id %}
+        <a href="{% url 'perf:sample_home' %}?id={{ controller_id }}">HTTP Sample</a>
+    {% else %}
+        <a href="{% url 'perf:sample_home' %}">HTTP Sample</a>
+    {% endif %}
+    <span>>></span>
+    <span>Add HTTP Sample</span>
+{% endblock %}
+
+{% block detail %}
+    <div class="list-body">
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Controller ID: </label>
+            </div>
+            <div class="value-div">
+                <select id="controllerid">
+                    {% for foo in controllers %}
+                        {% if foo.id == controller_id %}
+                            <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
+                        {% else %}
+                            <option value="{{ foo.id }}">{{ foo.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Name:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="name" placeholder="Please input name ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Protocol: </label>
+            </div>
+            <div class="value-div">
+                <select id="protocol">
+                    {% for k, v in protocols.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Server Name or IP.">?</span></div>
+                <label>Domain Name:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="domain" placeholder="Please input domain name ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Port Number.">?</span></div>
+                <label>Port:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="port" placeholder="Please input port ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="HTTP Request URL Path.">?</span></div>
+                <label>Path: </label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="path" placeholder="Please input url path ~">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Method: </label>
+            </div>
+            <div class="value-div">
+                <select id="method" onchange="get_header_by_method('{% url 'perf:get_header_by_method' %}');">
+                    {% for k, v in methods.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="HTTP Request Paramneters. If 'Content-Type' is 'application/json', please select 'Json Data'. If 'Content-Type' is 'application/x-www-form', please select 'Form Data'.">?</span></div>
+                <label>Arguments: </label>
+            </div>
+            <div class="value-div">
+                <label>Data Type:</label>
+                <select id="data_type" style="width: 8%; margin-right: 2%;" onchange="change_data_type();">
+                    {% for k, v in data_types.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
+                </select>
+                <button onclick="add_arguments();">Add Argument + </button>
+                <button onclick="delete_arguments();">Del Argument - </button>
+            </div>
+            <div id="add_arguments"></div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="HTTP Request Header. Please select corresponding header.">?</span></div>
+                <label>HTTP Header: </label>
+            </div>
+            <div class="value-div">
+                <select id="http_header">
+                    {% for header in http_headers %}
+                        <option value="{{ header.id }}">{{ header.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="HTTP Response Assertion. Optional Contain, Equal or Match.">?</span></div>
+                <label>Assertion:</label>
+            </div>
+            <div class="value-div">
+                <label>Type:</label>
+                <select id="assertion_type" style="width: 8%;">
+                    {% for k, v in assertion_types.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
+                </select>
+                <label style="margin-left: 2%;">String:</label>
+                <input type="text" id="assertion_string" placeholder="Please input assert string ~" style="width: 32%;">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="HTTP Response POST Extractor. Optional Json Extractor or Regex Extractor.">?</span></div>
+                <label>Post Extractor:</label>
+            </div>
+            <div class="value-div">
+                <button onclick="add_json_extractor();">Add Json Extractor + </button>
+                <button onclick="add_regex_extractor();">Add Regex Extractor + </button>
+                <button onclick="delete_extractor();">Del Extractor - </button>
+            </div>
+            <div id="add_extractors"></div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="HTTP Request Content Encoding. Usually, GET request contentEncoding is Blank(None), POST request contentEncoding is UTF-8.">?</span></div>
+                <label>contentEncoding:</label>
+            </div>
+            <div class="value-div">
+                <select id="contentEncoding">
+                    {% for k, v in contentEncodings.items %}
+                        <option value="{{ v }}">{{ k }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Comment:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="comment" placeholder="Please input thread group comment ~">
+            </div>
+        </div>
+    </div>
+    <div class="list-footer">
+        <div>
+            {% if controller_id %}
+                <a href="{% url 'perf:sample_home' %}?id={{ controller_id }}">Cancel</a>
+                <a href="#" onclick="save_sample('{% url 'perf:sample_add' %}', '{% url 'perf:sample_home' %}', {{ controller_id }})">Submit</a>
+            {% else %}
+                <a href="{% url 'perf:sample_home' %}">Cancel</a>
+                <a href="#" onclick="save_sample('{% url 'perf:sample_add' %}', '{% url 'perf:sample_home' %}', '')">Submit</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+        function add_arguments () {
+            let c = document.getElementById('add_arguments');
+            let datatype = document.getElementById('data_type').value;
+            if (datatype === 'json') {
+                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;"><label>Key:</label>' +
+                    '<input type="text" placeholder="Please input argument key ~" style="width: 35%;">\n' +
+                    '<label style="margin-left: 3%;">Value:</label><input type="text" placeholder=' +
+                    '"Please input argument value ~" style="width: 45%;"></div>';
+                c.appendChild(document.createRange().createContextualFragment(s));
+            } else {
+                let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 53%;"><label>Key:</label>' +
+                    '<input type="text" placeholder="Please input argument key ~" style="width: 25%;">\n' +
+                    '<label style="margin-left: 2%;">Value:</label><input type="text" placeholder=' +
+                    '"Please input argument value ~" style="width: 32%;"><label style="margin-left: 2%;">Is Enoding:</label>' +
+                    '<select id="is_Encoding" style="width: 12%;"><option value="false">False</option><option value="true">True</option></select></div>';
+                c.appendChild(document.createRange().createContextualFragment(s));
+            }
+        }
+        function delete_arguments () {
+            let c = document.getElementById('add_arguments');
+            let div = c.getElementsByTagName('div');
+            if(div.length > 0) {
+                c.removeChild(div[div.length - 1]);
+            }
+        }
+        function change_data_type() {
+            document.getElementById('add_arguments').innerHTML = '';
+        }
+        function add_json_extractor() {
+            let c = document.getElementById('add_extractors');
+            let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 69%;"><div class="helpstyle" ' +
+                'style="float: left;"><span data-tooltip="JSON Extractor, Name: Names of created variables. Expr: JSON Path expressions. Number: Match No.(0 for Random).">?</span></div>\n' +
+                '<label style="margin-left: 1%;">Type:</label><input type="text" style="width: 6%;" readonly value="Json">\n' +
+                '<label style="margin-left: 1%;">Name:</label><input type="text" style="width: 13%;"><label style="margin-left: 1%;">Number:</label>\n' +
+                '<input type="text" style="width: 10%;" value="1"><label style="margin-left: 1%;">Expr:</label>\n' +
+                '<input type="text" style="width: 28%;"></div>';
+            c.appendChild(document.createRange().createContextualFragment(s));
+        }
+        function add_regex_extractor() {
+            let c = document.getElementById('add_extractors');
+            let s = '<div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 69%;"><div class="helpstyle" ' +
+                'style="float: left;"><span data-tooltip="Regular Expression Extractor, Name: Names of created variables. Expr: Regular Expression. Number: Match No.(0 for Random). Template: Template ($i$ where i is capturing group number).">?</span></div>\n' +
+                '<label style="margin-left: 1%;">Type:</label><input type="text" style="width: 6%;" readonly value="Regex">\n' +
+                '<label style="margin-left: 1%;">Name:</label><input type="text" style="width: 9%;">\n' +
+                '<label style="margin-left: 1%;">Number:</label><input type="text" style="width: 3%;" value="1">\n' +
+                '<label style="margin-left: 1%;">Template:</label><input type="text" style="width: 6%;" value="$1$">\n' +
+                '<label style="margin-left: 1%;">Expr:</label><input type="text" style="width: 25%;"></div>';
+            c.appendChild(document.createRange().createContextualFragment(s));
+        }
+        function delete_extractor () {
+            let c = document.getElementById('add_extractors');
+            let div = c.getElementsByClassName('value-div');
+            if(div.length > 0) {
+                c.removeChild(div[div.length - 1]);
+            }
+        }
+    </script>
+{% endblock %}

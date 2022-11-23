@@ -1,0 +1,94 @@
+{% extends 'perf_home.html' %}
+{% load static compress %}
+
+{% block add_js %}
+    {% compress js %}
+    <script src="{% static 'performance/js/controller.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block navigate %}
+    {% if group_id %}
+        <a href="{% url 'perf:controller_home' %}?id={{ group_id }}">Controller</a>
+    {% else %}
+        <a href="{% url 'perf:controller_home' %}">Controller</a>
+    {% endif %}
+{% endblock %}
+
+{% block detail_action %}
+    {% if group_id %}
+        <a href="{% url 'perf:controller_add' %}?id={{ group_id }}">Add Controller</a>
+    {% else %}
+        <a href="{% url 'perf:controller_add' %}">Add Controller</a>
+    {% endif %}
+{% endblock %}
+{% block searchBlock %}
+    <div class="search">
+        {% if key_word %}
+            <input type="text" id="searching" placeholder="Please input key words ~" value="{{ key_word }}">
+        {% else %}
+            <input type="text" id="searching" placeholder="Please input key words ~">
+        {% endif %}
+        {% if group_id %}
+            <button onclick="search('{% url 'perf:controller_home' %}?id={{ group_id }}')">Search</button>
+        {% else %}
+            <button onclick="search('{% url 'perf:controller_home' %}')">Search</button>
+        {% endif %}
+    </div>
+{% endblock %}
+{% block table_head %}
+    <tr class="table_style">
+        <th width="12%">Thread Group Name</th>
+        <th width="10%">Name</th>
+        <th width="17%">Comment</th>
+        <th width="13%">Create Time</th>
+        <th width="13%">Update Time</th>
+        <th width="10%">Operator</th>
+        <th width="25%">Actions</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for ctl in controllers %}
+        {% if ctl.is_valid == 'false' %}
+            <tr style="background-color: white">
+        {% else %}
+            <tr>
+        {% endif %}
+            <td title="{{ ctl.thread_group.name }}"><a href="{% url 'perf:group_home' %}?id={{ ctl.thread_group.plan.id }}">{{ ctl.thread_group.name }}</a></td>
+            <td title="{{ ctl.name }}"><a href="{% url 'perf:controller_home' %}?id={{ ctl.thread_group.id }}">{{ ctl.name }}</a></td>
+            <td title="{{ ctl.comment }}">{{ ctl.comment }}</td>
+            <td style="text-align: center;">{{ ctl.create_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ ctl.update_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ ctl.operator }}</td>
+            <td>
+                {% if ctl.is_valid == 'true' %}
+                    <a href="{% url 'perf:controller_edit' %}?id={{ ctl.id }}">Edit</a>
+                    <a href="#" onclick="set_status('controller', '{{ ctl.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                    <a href="{% url 'perf:controller_copy' %}?id={{ ctl.id }}&group_id={{ ctl.thread_group.id }}">Copy</a>
+                    <a title="View HTTP Samples of the Controller" href="{% url 'perf:sample_home' %}?id={{ ctl.id }}">HttpSample</a>
+                {% else %}
+                    <a href="#" onclick="set_status('controller', '{{ ctl.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
+                {% endif %}
+                {% if group_id %}
+                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:controller_home' %}?id={{ group_id }}', 'controller', {{ ctl.id }})">Delete</a>
+                {% else %}
+                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:controller_home' %}', 'controller', {{ ctl.id }})">Delete</a>
+                {% endif %}
+
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+        let url = '{% url 'perf:controller_home' %}?';
+        {% if key_word %}
+            url += 'keyWord={{ key_word }}&';
+        {% endif %}
+        {% if group_id %}
+            url += 'id={{ group_id }}&';
+        {% endif %}
+        PagingManage($('#paging'), {{ total_page }}, {{ page }}, url + 'page=');
+    </script>
+{% endblock %}

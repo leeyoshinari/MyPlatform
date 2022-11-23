@@ -43,7 +43,7 @@ def home(request):
             if plans:
                 server_num_rooms = get_idle_server_num()
             logger.info(f'Get test plan success, operator: {username}')
-            return render(request, 'performance/plan/home.html', context={'plans': plans, 'page': page, 'page_size': page_size, 'server_num_rooms': server_num_rooms,
+            return render(request, 'plan/home.html', context={'plans': plans, 'page': page, 'page_size': page_size, 'server_num_rooms': server_num_rooms,
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -81,7 +81,7 @@ def add(request):
     else:
         groups = request.user.groups.all()
         server_rooms = ServerRoom.objects.filter(type=2).order_by('-create_time')
-        return render(request, 'performance/plan/add.html', context={'server_rooms': server_rooms, 'groups': groups})
+        return render(request, 'plan/add.html', context={'server_rooms': server_rooms, 'groups': groups})
 
 
 def edit(request):
@@ -118,7 +118,7 @@ def edit(request):
             groups = request.user.groups.all()
             plans = TestPlan.objects.get(id=plan_id)
             server_rooms = ServerRoom.objects.filter(type=2).order_by('-create_time')
-            return render(request, 'performance/plan/edit.html', context={'plan': plans, 'server_rooms': server_rooms,
+            return render(request, 'plan/edit.html', context={'plan': plans, 'server_rooms': server_rooms,
                                                                           'groups': groups, 'current_time': strfTime()})
         except:
             logger.error(traceback.format_exc())
@@ -145,7 +145,7 @@ def edit_variable(request):
             plan_id = request.GET.get('id')
             variables = TestPlan.objects.get(id=plan_id)
             logger.info(f'Get test plan variables success, operator: {username}')
-            return render(request, 'performance/plan/variable.html', context={'variables': variables})
+            return render(request, 'plan/variable.html', context={'variables': variables})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')

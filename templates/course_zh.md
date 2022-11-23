@@ -24,7 +24,7 @@
 - 文件服务器：MinIO - 用于存储文件
 - 性能测试工具：JMeter - 用于执行 JMeter 脚本
 
-# 部署架构图
+# 架构图
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
 如需满足较多用户使用，请部署集群；如需高可用，请自行部署keepalive。
 
@@ -52,6 +52,7 @@ nginx流量采集工具。通过实时处理nginx的访问日志(access.log)，�
 - channels==3.0.4
 - daphne==3.0.2
 - Django==4.0.1
+- django-compressor==4.1
 - influxdb==2.6.0
 - Jinja2==3.0.3
 - minio==7.1.3
@@ -95,12 +96,17 @@ python3 manage.py loaddata initdata.json
 
 8、处理所有静态文件；
 ```shell script
-python3 manage.py collectstatic
+python3 manage.py collectstatic --clear --noinput
 ```
 
-9、修改`startup.sh`中的端口号；
+9、压缩静态文件（css 和 js）；
+```shell script
+python3 manage.py compress --force
+```
 
-10、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
+10、修改`startup.sh`中的端口号；
+
+11、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
 （1）upstream 配置
 ```shell script
 upstream myplatform-server {
@@ -132,24 +138,24 @@ location /shell {  # 必须是shell，不能修改
 }
 ```
 
-11、启动
+12、启动
 ```shell script
 sh startup.sh
 ```
    停止请执行 `sh shutdown.sh`
 
-12、访问页面，url是 `http://ip:port/config.conf中的prefix`
+13、访问页面，url是 `http://ip:port/config.conf中的prefix`
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/home.JPG)
 
-13、访问权限控制页面，url是 `http://ip:port/config.conf中的prefix/admin`
+14、访问权限控制页面，url是 `http://ip:port/config.conf中的prefix/admin`
 
-14、部署数据收集工具，[快点我](https://github.com/leeyoshinari/collector_agent)
+15、部署数据收集工具，[快点我](https://github.com/leeyoshinari/collector_agent)
 
-15、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
+16、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
 
-16、部署性能测试执行工具，[快点我](https://github.com/leeyoshinari/jmeter_agent)
+17、部署性能测试执行工具，[快点我](https://github.com/leeyoshinari/jmeter_agent)
 
-17、部署Nginx流量采集工具，[快点我](https://github.com/leeyoshinari/nginx_agent)
+18、部署Nginx流量采集工具，[快点我](https://github.com/leeyoshinari/nginx_agent)
 
 # Shell 工具
 该工具可以查看管理服务器，并可以直接在浏览器上远程连接 Linux。
@@ -185,7 +191,7 @@ sh startup.sh
 点击 Deploy 会打开新的页面，这个页面可以上传部署包、自动部署和卸载。<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/shell_deploy.JPG)
 由于一些部署包区分Linux发行版本和CPU架构，故需要先准备好对应的部署包，然后上传到平台，通过该平台进行部署。如果部署包不区分Linux发行版本和CPU架构，上传部署包时可随意选择一种。
-该平台下面的所有agent都可以且只能通过该平台自动部署（当前只支持部署 [monitor-agent](https://github.com/leeyoshinari/monitor_agent) 、[jmeter-agent](https://github.com/leeyoshinari/jmeter_agent) 、[nginx-agent](https://github.com/leeyoshinari/nginx_agent) 、java、jmeter）。为了方便部署，所有的agent的配置文件已经简化到不能再简化了，一般情况下不需要修改任何配置，所有的配置都从平台自动获取。建议部署顺序：先部署Java(仅施压机部署且没有部署过)，再部署JMeter(仅施压机部署)，再部署collector-agent，剩下就部署其他需要部署的agent了。<br>
+该平台下面的所有agent都可以且只能通过该平台自动部署（当前只支持部署 java、jmeter、[collector-agent](https://github.com/leeyoshinari/collector_agent) 、[monitor-agent](https://github.com/leeyoshinari/monitor_agent) 、[jmeter-agent](https://github.com/leeyoshinari/jmeter_agent) 、[nginx-agent](https://github.com/leeyoshinari/nginx_agent) ）。为了方便部署，所有的agent的配置文件已经简化到不能再简化了，一般情况下不需要修改任何配置，所有的配置都从平台自动获取。建议部署顺序：先部署Java(仅施压机部署且没有部署过)，再部署JMeter(仅施压机部署)，再部署collector-agent，剩下就部署其他需要部署的agent了。<br>
 
 在点击部署/卸载前，请仔细核对当前服务器的Linux系统发行版本和CPU架构是否和部署包的Linux系统发行版本和CPU架构一致。<br>
 注：极少数情况下需要修改agent配置文件，例如：你的nginx部署方式和99%的人都不一样，无法自动获取nginx的日志路径，这时就需要修改配置文件。

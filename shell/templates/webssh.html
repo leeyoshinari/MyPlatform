@@ -1,0 +1,72 @@
+{% extends 'template.html' %}
+{% load static compress %}
+
+{% block title %}
+    <title>{{ host }}</title>
+{% endblock %}
+{% block addcss %}
+    {% compress css %}
+    <link rel="stylesheet" href="{% static 'shell/css/xterm.css' %}">
+    <link rel="stylesheet" href="{% static 'shell/xterm/xterm.css' %}"/>
+    {% endcompress %}
+{% endblock %}
+{% block addjs %}
+    {% compress js %}
+    <script src="{% static 'shell/xterm/xterm.js' %}"></script>
+    <script src="{% static 'shell/xterm/xterm-addon-fit.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+{% block addbody %}
+    {% csrf_token %}
+    <div class="container1">
+        <div class="float_left">
+            <img src="{% static 'img/favicon.ico' %}">
+        </div>
+        <h4>Server IP: {{ host }}</h4>
+        <div class="float_right">
+            <a onclick="float_path(0)">UploadFile</a>
+            <a onclick="float_path(1)">DownloadFile</a>
+            <a href="{% url 'user:logout' %}">Logout</a>
+            <input type="file" name="filename" id="fileUpload-input" multiple style="display: none">
+        </div>
+    </div>
+    <div style="height: 100%; width: 100%;">
+        <div id="terminal" style="margin-top: 30px;"></div>
+    </div>
+    <div class="modal_cover">
+        <div class="modal_gif"></div>
+        <progress id="progressBar" value="0" max="100"></progress>
+        <span id="percentage"></span>
+    </div>
+    <div id="failure_file">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2>上传失败的文件</h2>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <a class="cancel">取消</a>
+                <a class="submit">确定</a>
+            </div>
+        </div>
+    </div>
+    <div id="modal_input">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2 id="title-name">The Folder you want to upload to </h2>
+            </div>
+            <div class="input-body"></div>
+            <div class="modal-footer">
+                <a class="cancel">Cancel</a>
+                <a class="submit">Submit</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block backjs %}
+    {% compress js %}
+    <script type="text/javascript" src="{% static 'shell/js/webssh.js' %}"></script>
+    {% endcompress %}
+{% endblock %}

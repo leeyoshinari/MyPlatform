@@ -1,0 +1,228 @@
+{% extends 'perf_home.html' %}
+{% load static compress %}
+
+{% block add_js %}
+    {% compress js %}
+    <script src="{% static 'performance/js/echarts.common.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:jmeter_home' %}">Upload JMeter</a>
+    <span>>></span>
+    <span>Edit JMeter File</span>
+{% endblock %}
+
+{% block detail %}
+    <div class="list-body">
+        <div class="row-cols">
+            <div class="label-div">
+                <label>ID:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="ID" readonly value="{{ plan.id }}" disabled>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Name:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="name" placeholder="Please input test plan name ~" value="{{ plan.name }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Please select a group name.">?</span></div>
+                <label>GroupName: </label>
+            </div>
+            <div class="value-div">
+                <select id="group-name">
+                    {% for g in groups %}
+                        {% if g.id == plan.group.id %}
+                            <option value="{{ g.id }}" selected>{{ g.name }}</option>
+                        {% else %}
+                            <option value="{{ g.id }}">{{ g.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Run type. Special thread group or special TPS.">?</span></div>
+                <label>runType:</label>
+            </div>
+            <div class="value-div">
+                <select id="run_type">
+                    {% if plan.type == 0 %}
+                        <option value="0" selected>Thread</option>
+                        <option value="1">TPS</option>
+                    {% else %}
+                        <option value="0">Thread</option>
+                        <option value="1" selected>TPS</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="It is target number of the test. When 'runType' is 'Thread', it is target number of thread group. When 'runType' is 'TPS', it is target number of TPS.">?</span></div>
+                {% if plan.type == 0 %}
+                    <label>Thread Num:</label>
+                {% else %}
+                    <label>Target TPS:</label>
+                {% endif %}
+            </div>
+            <div class="value-div">
+                <input type="text" id="target_number" placeholder="Please input target number ~" value="{{ plan.target_num }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Duration (seconds). It specifies Thread lifetime.">?</span></div>
+                <label>Duration:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="duration" placeholder="Please input duration (seconds) ~" value="{{ plan.duration }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Task run type. Manual: manual running. Automatic: set time to auto-run.">?</span></div>
+                <label>Schedule:</label>
+            </div>
+            <div class="value-div">
+                <select id="schedule">
+                    {% if plan.schedule == 0 %}
+                        <option value="0" selected>Manual</option>
+                        <option value="1">Automatic</option>
+                    {% else %}
+                        <option value="0">Manual</option>
+                        <option value="1" selected>Automatic</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        {% if plan.schedule == 0 %}
+            <div class="row-cols" id="time-setting" style="display: none;">
+        {% else %}
+            <div class="row-cols" id="time-setting" style="display: block;">
+        {% endif %}
+            <div class="label-div">
+                <label>Time Setting:</label>
+            </div>
+            <div class="value-div">
+                <button onclick="add_timing();">Add Timing + </button>
+                <button onclick="del_timing();">Del Timing - </button>
+                <button onclick="preview_timing();"> Preview </button>
+            </div>
+            <div id="add-timing">
+                {% for timing in plan.time_setting %}
+                    <div class="value-div" style="margin-left: 32%; margin-top: 1%; width: 52%;">
+                        <label>Time:</label>
+                        <input type="datetime-local" step="1" min="{{ current_time}}" style="width: 26%;" value="{{ timing.timing }}">
+                        {% if plan.type == 1 %}
+                            <label style="margin-left: 3%;">TPS:</label>
+                            <input type="text" placeholder="Please input TPS ratio (%)" style="width: 26%;" value="{{ timing.value }}">
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Specify Pressure Server's room. When running, it will select server randomly from server room.">?</span></div>
+                <label>Server Room:</label>
+            </div>
+            <div class="value-div">
+                <select id="server_room">
+                    {% for s in server_rooms %}
+                        {% if plan.server_room_id == s.id %}
+                            <option value="{{ s.id }}" selected>{{ s.name }}</option>
+                        {% else %}
+                            <option value="{{ s.id }}">{{ s.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="It specifies the number of pressure servers.">?</span></div>
+                <label>Server Number:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="server-num" placeholder="Please input Server Number, default 1 ~" value="{{ plan.server_number }}">
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <div class="helpstyle"><span data-tooltip="Debug is only used to debug, if run performance test, Please set it to 'No Debug Mode'.">?</span></div>
+                <label>isDebug:</label>
+            </div>
+            <div class="value-div">
+                <select id="isDebug">
+                    {% if plan.is_debug == 0 %}
+                        <option value="0" selected>No Debug Mode</option>
+                        <option value="1">Debug Mode (Only used to debug)</option>
+                    {% else %}
+                        <option value="0">No Debug Mode</option>
+                        <option value="1" selected>Debug Mode (Only used to debug)</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row-cols">
+            <div class="label-div">
+                <label>Comment:</label>
+            </div>
+            <div class="value-div">
+                <input type="text" id="comment" placeholder="Please input test plan comment ~" value="{{ plan.comment }}">
+            </div>
+        </div>
+    </div>
+    <div class="list-footer">
+        <div>
+            <a href="{% url 'perf:jmeter_home' %}">Cancel</a>
+            <a href="#" onclick="edit_plan('{% url 'perf:jmeter_edit' %}', '{% url 'perf:jmeter_home' %}')">Submit</a>
+        </div>
+    </div>
+    <div class="myModal">
+        <div class="modal-content" style="width: 42%;">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="preview" style="width: 100%; height: 200px;"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block define_js %}
+    {% compress js %}
+    <script src="{% static 'performance/js/jmeter.js' %}"></script>
+    <script src="{% static 'performance/js/preview.js' %}"></script>
+    {% endcompress %}
+    <script type="text/javascript">
+        document.getElementById('run_type').onchange = function () {
+            let s = document.getElementById('run_type').value;
+            if (s === '0') {
+                document.getElementsByClassName('label-div')[3].getElementsByTagName('label')[0].innerText = 'Thread Num';
+                document.getElementById('add-timing').innerHTML = '';
+            } else {
+                document.getElementsByClassName('label-div')[3].getElementsByTagName('label')[0].innerText = 'Target TPS';
+                document.getElementById('add-timing').innerHTML = '';
+            }
+        }
+
+        document.getElementById('schedule').onchange = function () {
+            let s = document.getElementById('schedule').value;
+            if (s === '0') {
+                document.getElementById('time-setting').style.display = 'none';
+            } else {
+                document.getElementById('time-setting').style.display = '';
+            }
+        }
+    </script>
+{% endblock %}

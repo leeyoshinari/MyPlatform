@@ -35,7 +35,7 @@ def home(request):
                 headers = HTTPRequestHeader.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get controller success, operator: {username}')
-            return render(request, 'performance/header/home.html', context={'headers': headers, 'page': page, 'page_size': page_size,
+            return render(request, 'header/home.html', context={'headers': headers, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -61,7 +61,7 @@ def add_header(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Save failure ~')
     else:
-        return render(request, 'performance/header/add.html', context={'methods':methods})
+        return render(request, 'header/add.html', context={'methods':methods})
 
 def edit_header(request):
     if request.method == 'POST':
@@ -88,7 +88,7 @@ def edit_header(request):
     else:
         header_id = request.GET.get('id')
         headers = HTTPRequestHeader.objects.get(id=header_id)
-        return render(request, 'performance/header/edit.html', context={'methods':methods, 'headers': headers})
+        return render(request, 'header/edit.html', context={'methods':methods, 'headers': headers})
 
 
 def copy_header(request):

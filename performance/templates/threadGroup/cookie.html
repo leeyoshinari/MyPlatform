@@ -1,0 +1,93 @@
+{% extends 'perf_home.html' %}
+{% load static compress %}
+
+{% block add_js %}
+    {% compress js %}
+    <script src="{% static 'performance/js/group.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:group_home' %}?id={{ cookies.plan.id }}">Thread Group</a>
+    <span>>></span>
+    <span>Cookies</span>
+{% endblock %}
+
+{% block searchBlock %}
+{% endblock %}
+{% block detail %}
+    <div class="detail-action" style="margin-bottom: 3%;">
+        <a href="#" onclick="add_cookie();">Add Cookie</a>
+        <a href="#" onclick="delete_cookie();">Delete Cookie</a>
+    </div>
+    <div class="list-body" id="cookie-list">
+        {% if cookies.cookie %}
+            {% for foo in cookies.cookie %}
+                <div class="row-cookie">
+                    <label>Name:</label>
+                    <input type="text" id="cookie-name" placeholder="Please input cookie name ~" value="{{ foo.name }}">
+                    <label>Value:</label>
+                    <input type="text" id="cookie-value" placeholder="Please input cookie value ~" value="{{ foo.value }}">
+                    <label>Domain:</label>
+                    <input type="text" id="cookie-domain" placeholder="Please input cookie domain ~" value="{{ foo.domain }}">
+                    <label>Path:</label>
+                    <input type="text" id="cookie-path" placeholder="Please input cookie path ~" value="{{ foo.path }}">
+                    <label>Secure:</label>
+                    <select>
+                        {% if foo.secure == 'true' %}
+                            <option value="true" selected>True</option>
+                            <option value="false">False</option>
+                        {% else %}
+                            <option value="true">True</option>
+                            <option value="false" selected>False</option>
+                        {% endif %}
+
+                    </select>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="row-cookie">
+                <label>Name:</label>
+                <input type="text" id="cookie-name" placeholder="Please input cookie name ~">
+                <label>Value:</label>
+                <input type="text" id="cookie-value" placeholder="Please input cookie value ~">
+                <label>Domain:</label>
+                <input type="text" id="cookie-domain" placeholder="Please input cookie domain ~">
+                <label>Path:</label>
+                <input type="text" id="cookie-path" placeholder="Please input cookie path ~">
+                <label>Secure:</label>
+                <select>
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                </select>
+            </div>
+        {% endif %}
+    </div>
+    <div class="list-footer">
+        <div>
+            <a href="{% url 'perf:group_home' %}?id={{ cookies.plan.id }}">Cancel</a>
+            <a href="#" onclick="save_cookie('{% url 'perf:group_cookie' %}', '{% url 'perf:group_home' %}?id={{ cookies.plan.id }}', {{ cookies.id }})">Submit</a>
+        </div>
+    </div>
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+        function add_cookie () {
+            let c = document.getElementById('cookie-list');
+            let s = '<div class="row-cookie">' +
+                '<label>Name:</label> <input type="text" id="cookie-name" placeholder="Please input cookie name ~"> ' +
+                '<label>Value:</label> <input type="text" id="cookie-value" placeholder="Please input cookie value ~"> ' +
+                '<label>Domain:</label> <input type="text" id="cookie-domain" placeholder="Please input cookie domain ~"> ' +
+                '<label>Path:</label> <input type="text" id="cookie-path" placeholder="Please input cookie path ~"> ' +
+                '<label>Secure:</label> <select><option value="true">True</option><option value="false">False</option></select></div>';
+            c.appendChild(document.createRange().createContextualFragment(s));
+        }
+        function delete_cookie () {
+            let c = document.getElementById('cookie-list');
+            let div = c.getElementsByTagName('div');
+            if(div.length > 0) {
+                c.removeChild(div[div.length - 1]);
+            }
+        }
+    </script>
+{% endblock %}

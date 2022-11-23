@@ -1,13 +1,17 @@
 {% extends 'template.html' %}
-{% load static %}
+{% load static compress %}
 
 {% block addcss %}
+    {% compress css %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'user/css/home.css' %}">
+    {% endcompress %}
 {% endblock %}
 
 {% block addjs %}
+    {% compress js %}
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    {% endcompress %}
 {% endblock %}
 
 

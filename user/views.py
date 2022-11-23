@@ -35,7 +35,7 @@ def login(request):
         else:
             return result(code=1, msg='login failure ~ ')
     else:
-        return render(request, 'user/login.html')
+        return render(request, 'login.html')
 
 
 def logout(request):
@@ -70,7 +70,7 @@ def change_pwd(request):
             logger.error(traceback.format_exc())
             return  result(code=1, msg='Change password error ~')
     else:
-        return render(request, 'user/password.html')
+        return render(request, 'password.html')
 
 
 def parse_pwd(password: str, s: str):
@@ -99,9 +99,9 @@ def course(request):
     if request.method == 'GET':
         lang = request.GET.get('_lang')
         if lang == 'zh':
-            return render(request, 'course/course_zh.html')
+            return render(request, 'course_zh.html')
         else:
-            return render(request, 'course/course_zh.html')
+            return render(request, 'course_zh.html')
     else:
         return render(request, '404.html')
 

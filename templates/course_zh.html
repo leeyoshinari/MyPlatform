@@ -1,0 +1,371 @@
+{% load static compress %}
+<!doctype html>
+<html lang="en">
+  <head>
+	  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+      <title>MyPlatform</title>
+      <link rel="shutcut icon" type="image/png" sizes="96x96" href="{% static 'img/favicon.ico' %}">
+      {% compress css %}
+      <link href="{% static 'course/style/github-bf51422f4bb36427d391e4b75a1daa083c2d840e.css' %}" media="all" rel="stylesheet" type="text/css"/>
+      <link href="{% static 'course/style/github2-d731afd4f624c99a4b19ad69f3083cd6d02b81d5.css' %}" media="all" rel="stylesheet" type="text/css"/>
+      <link href="{% static 'course/css/zTreeStyle/zTreeStyle.css' %}" media="all" rel="stylesheet" type="text/css"/>
+      {% endcompress %}
+	  <style>
+		pre{counter-reset:line-numbering;border:solid 1px #d9d9d9;border-radius:0;background:#fff;padding:0;line-height:23px;margin-bottom:30px;white-space:pre;overflow-x:auto;word-break:inherit;word-wrap:inherit}
+        pre a::before{content:counter(line-numbering);counter-increment:line-numbering;padding-right:1em;width:25px;text-align:right;opacity:0.7;display:inline-block;color:#aaa;background:#eee;margin-right:16px;padding:2px 10px;font-size:13px;-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+        pre a:first-of-type::before{padding-top:10px}
+        pre a:last-of-type::before{padding-bottom:10px}
+        pre a:only-of-type::before{padding:10px}
+        .highlight{background-color:#ffffcc}
+		</style>
+  </head>
+  <body>
+  <div class="container1"><div class="home_list"><a href="{% url 'home' %}">Home</a><span>&gt;&gt;</span><a href="{% url 'course' %}">Course</a></div><a href="{% url 'user:logout' %}">Logout</a></div><div>
+<div style='width:25%;'><ul id="tree" class="ztree"></ul></div>
+<div id='readme' style='width:70%;margin-left:20%;'><article class='markdown-body'>
+<p class="qaq-title">欢迎使用，项目地址：<a href="https://github.com/leeyoshinari/MyPlatform">https://github.com/leeyoshinari/MyPlatform</a></p>
+<h1>介绍</h1>
+<p>这是一个主要用于性能测试的平台，先简单介绍一下这个平台具有的功能：</p>
+<p>1、服务器管理，可以统一查看服务器的基本信息；</p>
+<p>2、Shell 远程连接，支持本地和服务器之间的文件上传和下载；</p>
+<p>3、服务器资源监控；</p>
+<p>4、Nginx 访问日志流量收集；</p>
+<p>5、性能测试工具，提供自动化压测和分布式压测的能力；</p>
+<h1>项目目录</h1><ul>
+<li>MyPlatform - 项目文件</li>
+<li>staticfiles - 静态文件</li>
+<li>templates - 模板文件</li>
+<li>templateFilter - 模板自定义过滤器</li>
+<li>common - 通用的方法</li>
+<li>user - 用户相关</li>
+<li>shell - shell 工具</li>
+<li>monitor - 监控工具</li>
+<li>performance - 性能测试平台</li>
+</ul><h1>第三方组件</h1><ul>
+<li>关系型数据库：SQLite3 或 MySQL - 用于存储平台数据</li>
+<li>时序数据库：InfluxDB - 用于存储监控数据</li>
+<li>键值数据库：Redis - 用于集群/分布式数据同步</li>
+<li>文件服务器：MinIO - 用于存储文件</li>
+<li>性能测试工具：JMeter - 用于执行 JMeter 脚本</li>
+</ul><h1>部署架构图</h1>
+<img src="{% static 'img/myPlarform.png' %}" alt="">
+<p class="qaq-content">如需满足较多用户使用，请部署集群；如需高可用，请自行部署keepalive。</p>
+<p class="qaq-title" style="margin-top: 15px">说明</p>
+<p style="margin-top: 15px"><strong>collector-agent</strong></p>
+<p class="qaq-content">数据收集工具。所有agent的数据都会发给collector-agent，然后由collector-agent统一写InfluxDB/写redis。</p>
+<p class="qaq-content">这样可以避免：如果每个agent单独连接数据库，可能会导致数据库连接不够用或者超过服务器允许的连接数。但也会有一个问题：如果agent太多，导致collector-agent不能及时写库，那就增大collector-agent的线程池大小，如果还不行，那就集群部署，增加集群节点。</p>
+<p style="margin-top: 15px"><strong>monitor-agent</strong></p>
+<p class="qaq-content">服务器资源监控工具。通过执行Linux命令实时采集服务器的 CPU、内存、磁盘、网络、TCP 等数据。</p>
+<p style="margin-top: 15px"><strong>nginx-agent</strong></p>
+<p class="qaq-content">nginx流量采集工具。通过实时处理nginx的访问日志(access.log)，将接口的访问信息(访问时间、客户端IP、接口名称、请求方法、协议、状态码、响应体大小、响应时间)等存储到数据库。</p>
+<p style="margin-top: 15px"><strong>jmeter-agent</strong></p>
+<p class="qaq-content">性能测试执行工具。通过调用JMeter执行性能测试，支持分布式压测和全链路压测。</p>
+<h1>第三方包</h1>
+<p>本地开发环境：</p><ul>
+<li>python 3.9.10</li></ul>
+<p>第三方包的版本：</p><ul>
+<li>aiohttp==3.7.4.post0</li>
+<li>aiohttp-jinja2==1.5</li>
+<li>channels==3.0.4</li>
+<li>daphne==3.0.2</li>
+<li>Django==4.0.1</li>
+<li>influxdb==2.6.0</li>
+<li>Jinja2==3.0.3</li>
+<li>minio==7.1.3</li>
+<li>paramiko==2.10.3</li>
+<li>PyMySQL==1.0.2</li>
+<li>redis==4.1.1</li>
+<li>requests==2.27.1</li>
+<li>sqlparse==0.4.2</li>
+</ul><h1>部署</h1>
+<p style="margin-top: 15px">1、克隆 </p>
+<pre><code>git clone https://github.com/leeyoshinari/MyPlatform.git</code></pre>
+<p style="margin-top: 15px">2、安装 MySQL(SQLite3不用安装，可直接使用)、InfluxDB、Redis、MinIO(可选安装，不安装文件存本地)；（ps：暂不支持 InfluxDB2.x 版本，建议安装<a href="https://dl.influxdata.com/influxdb/releases/influxdb-1.8.3.x86_64.rpm">influxdb-1.8.3</a>）</p>
+<p style="margin-top: 15px">3、安装第三方依赖包</p>
+<pre><code>pip3 install -r requirements.txt</code></pre>
+<p style="margin-top: 15px">4、修改配置文件<code>config.conf</code>；</p>
+<p style="margin-top: 15px">5、数据库初始化，依次执行下面命令；</p>
+<pre><code>python3 manage.py migrate
+python3 manage.py makemigrations shell performance
+python3 manage.py migrate</code></pre>
+<p style="margin-top: 15px">6、创建超级管理员账号；</p>
+<pre><code>python3 manage.py createsuperuser</code></pre>
+<p style="margin-top: 15px">7、数据初始化；</p>
+<pre><code>python3 manage.py loaddata initdata.json</code></pre>
+<p style="margin-top: 15px">8、处理所有静态文件；</p>
+<pre><code>python3 manage.py collectstatic</code></pre>
+<p style="margin-top: 15px">9、修改<code>startup.sh</code>中的端口号；</p>
+<p style="margin-top: 15px">10、部署<code>nginx</code>，location相关配置如下：(ps: 下面列出的配置中的<code>platform</code>是url路径中的prefix，即url前缀，可根据自己需要修改)</p>
+<p>（1）upstream 配置</p>
+<pre><code>upstream myplatform-server {
+    server 127.0.0.1:15200;
+    server 127.0.0.1:15201;
+}</code></pre>
+<p>（2）静态请求：通过 nginx 直接访问静态文件，配置静态文件路径</p>
+<pre><code>location /platform/static {
+    alias /home/MyPlatform/static;
+}
+</code></pre>
+<p>（3）动态http请求：</p>
+<pre><code>location /platform {
+     proxy_pass http://myplatform-server;
+     proxy_set_header Host $proxy_host;
+     proxy_set_header X-Real-IP $remote_addr;
+     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}</code></pre>
+<p>（4）websocket协议通信：</p>
+<pre><code>location /shell {  # 必须是shell，不能修改
+    proxy_pass http://myplatform-server;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection &quot;upgrade&quot;;
+}</code></pre>
+<p style="margin-top: 15px">11、启动</p>
+<pre><code>sh startup.sh</code></pre>
+<p>停止请执行 <code>sh shutdown.sh</code></p>
+<p style="margin-top: 15px">12、访问页面，url是 <code>http://ip:port/config.conf中的prefix</code>
+<img src="{% static 'img/home.JPG' %}" alt=""></p>
+<p style="margin-top: 15px">13、访问权限控制页面，url是 <code>http://ip:port/config.conf中的prefix/admin</code></p>
+<p style="margin-top: 15px">14、部署数据收集工具，<a href="https://github.com/leeyoshinari/collector_agent">快点我</a></p>
+<p style="margin-top: 15px">15、部署服务器资源监控执行工具，<a href="https://github.com/leeyoshinari/monitor_agent">快点我</a></p>
+<p style="margin-top: 15px">16、部署性能测试执行工具，<a href="https://github.com/leeyoshinari/jmeter_agent">快点我</a></p>
+<p style="margin-top: 15px">17、部署Nginx流量采集工具，<a href="https://github.com/leeyoshinari/nginx_agent">快点我</a></p>
+<h1>Shell 工具</h1>
+<p class="qaq-content">该工具可以查看管理服务器，并可以直接在浏览器上远程连接 Linux。支持权限控制，将用户添加进项目组中，用户就只能看到项目组下的服务器，可以避免未授权的访问。</p>
+<img src="{% static 'img/shell_home.JPG' %}" alt="">
+<h2>设置项目组</h2>
+<p class="qaq-content">点击 Create Group 创建项目组，需要设置项目组和项目组应用的唯一标识符。唯一标识符一般在整个公司是唯一的，对于在服务器上，通过<code>ps -ef | grep 唯一标识符 | grep -v grep</code> 命令可以查找到唯一一个进程。</p>
+<p class="qaq-content" style="margin-top: 15px">该按钮仅管理员可见。</p>
+<h2>设置服务器所在机房</h2>
+<p class="qaq-content">点击 Create Server Room 创建机房，设置机房时主要有3个选项，分别是用于应用、用于中间件、用于压测。为什么有这3个呢？</p>
+<p class="qaq-content">例如一个机房有100台服务器，项目组A用了40台部署自己的服务，项目组B也用了40台部署自己的服务，还有10台服务器部署了中间件，剩余10台可以用于压测，这3个选项就用于区分这些类型。因为这个项目把服务器管理、服务器监控和压测整合在一起了，为了能够区分，所以才加了3个选项；不像大公司的平台都是不同的人开发的不同的应用，只是把前端页面挂在一起。</p>
+<p class="qaq-content" style="margin-top: 15px">一般性能测试需要施压机和被测服务所在服务器在同一个机房，如果你就想跨机房压测，可以把不是同一个机房的服务器设置成同一个机房，假装它们在一起。</p>
+<p class="qaq-content" style="margin-top: 15px">该按钮仅管理员可见</p>
+<h2>添加服务器</h2>
+<p class="qaq-content">点击 Add Server 创建服务器，这里需要设置服务器所属项目组、所在的机房、以及服务器IP、用户名和登录密码。</p>
+<h2>用户管理</h2>
+<p class="qaq-content">点击 Add User 将用户添加到某个项目组中 或 从某个项目组中移除。添加用户后，该用户就可以看到并访问这个项目组中的所有服务器。管理员默认可以查看所有服务器。</p>
+<p class="qaq-content" style="margin-top: 15px">该按钮仅管理员可见</p>
+<h2>服务器列表</h2>
+<p class="qaq-content">每个添加的服务器都会展示在列表中，可以概览服务器的基本信息（系统、CPU、内存、磁盘）。Action 列可以操作服务器，在这里可以打开 Shell 远程连接 Linux；其中的编辑和删除的功能仅创建人和管理员可见。</p>
+<h2>远程连接服务器</h2>
+<p class="qaq-content">点击 OpenShell 即可打开 Shell 远程连接 Linux，可以同时打开很多个页面，如下:</p>
+<img src="{% static 'img/shell_ternimal.JPG' %}" alt="">
+<p class="qaq-content">为了提供更好的使用体验，提供了 Ctrl+C（复制）和 Ctrl+V（粘贴）快捷键，不仅如此，还仍然保留了 Ctrl+C 快捷键在 shell 中的终止前台进程的功能，而绝大部分主流 shell 工具是不支持这种功能的，老板再也不担心你敲命令慢了。</p>
+<p class="qaq-content" style="margin-top: 15px">在打开的 Shell 中，可以上传文件到服务器，或者下载文件到本地。为了安全，上传和下载的入口也是可以关闭的。</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">在上传文件时，首先会弹出输入框，需要填入文件上传到哪个目录（绝对路径，不填默认 /home 目录），然后选择文件上传。</li>
+<li style="text-indent: 1em; list-style-position: inside">在下载文件时，也会弹出输入框，需要填入文件的完整路径（绝对路径），必须填文件路径，不能填目录路径，然后可通过浏览器下载到本地。</li>
+</ul>
+<h2>自动部署Agent</h2>
+<p class="qaq-content">点击 Deploy 会打开新的页面，这个页面可以上传部署包、自动部署和卸载。</p>
+<img src="{% static 'img/shell_deploy.JPG' %}" alt="">
+<p class="qaq-content">由于一些部署包区分Linux发行版本和CPU架构，故需要先准备好对应的部署包，然后上传到平台，通过该平台进行部署。如果部署包不区分Linux发行版本和CPU架构，上传部署包时可随意选择一种。</p>
+<p class="qaq-content">该平台下面的所有agent都可以且只能通过该平台自动部署（当前只支持部署 <a href="https://github.com/leeyoshinari/monitor_agent">monitor-agent</a> 、<a href="https://github.com/leeyoshinari/jmeter_agent">jmeter-agent</a> 、<a href="https://github.com/leeyoshinari/nginx_agent">nginx-agent</a> 、java、jmeter）。为了方便部署，所有的agent的配置文件已经简化到不能再简化了，一般情况下不需要修改任何配置，所有的配置都从平台自动获取。建议部署顺序：先部署Java(仅施压机部署且没有部署过)，再部署JMeter(仅施压机部署)，再部署collector-agent，剩下就部署其他需要部署的agent了。</p>
+<p class="qaq-content" style="margin-top: 15px">在点击部署/卸载前，请仔细核对当前服务器的Linux系统发行版本和CPU架构是否和部署包的Linux系统发行版本和CPU架构一致。</p>
+<p class="qaq-content" style="margin-top: 15px">注：极少数情况下需要修改agent配置文件，例如：你的nginx部署方式和99%的人都不一样，无法自动获取nginx的日志路径，这时就需要修改配置文件。</p>
+<h3>打包 collector-agent</h3>
+<h3>打包 monitor-agent</h3>
+<h3>打包 nginx-agent</h3>
+<h3>打包 jmeter-agent</h3>
+<h1>服务器资源监控</h1>
+<p class="qaq-content">该工具（<a href="https://github.com/leeyoshinari/monitor_agent">快点我部署</a>）主要用于监控服务器资源使用情况，主要有一下功能：</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">监控整个服务器的CPU使用率、io wait、内存使用、磁盘IO、网络带宽和TCP连接数</li>
+<li style="text-indent: 1em; list-style-position: inside">监控端口的 TCP 状态</li>
+<li style="text-indent: 1em; list-style-position: inside">针对java应用，可以监控jvm大小和垃圾回收情况；当Full GC频率过高时，可发送邮件提醒</li>
+<li style="text-indent: 1em; list-style-position: inside">系统CPU使用率过高，或者剩余内存过低时，可发送邮件提醒；可设置自动清理缓存</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">相较于之前的服务器资源监控工具（<a href="https://github.com/leeyoshinari/performance_monitor">快点我查看</a>），此次进行了大刀阔斧地改进，首先不再是单独的工具，而是集成进平台中，和平台中的其他工具可以无缝对接；其次是使用了全新的交互和监控方案，并引入了项目组和机房，更加适用于大规模集群部署的应用。</p>
+<h2>首页</h2>
+<p class="qaq-content">首页展示了所有已经部署监控的服务器，这里可以概览服务器资源的当前使用情况。这个入口仅管理员可以看到，可分项目组查询。
+<img src="{% static 'img/monitor_home.JPG' %}" alt=""></p>
+<h2>可视化</h2>
+<p class="qaq-content">监控结果可视化，分项目组和机房查看，可选择任意时间段（监控数据保留时长在配置中设置）。</p>
+<img src="{% static 'img/monitor_figure.JPG' %}" alt="">
+<p class="qaq-content">主要监控下面数据：</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">CPU：CPU 总使用率、iowait 使用率</li>
+<li style="text-indent: 1em; list-style-position: inside">内存：剩余内存、可用内存、JVM内存（仅Java）</li>
+<li style="text-indent: 1em; list-style-position: inside">磁盘：磁盘读写速度、磁盘IO</li>
+<li style="text-indent: 1em; list-style-position: inside">网络：网络上行和下行速度、网络使用率</li>
+<li style="text-indent: 1em; list-style-position: inside">TCP：系统的TCP连接总数、TCP重传数，端口的TCP数量、time-wait数量、close-wait数量</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">查看监控结果时，默认展示指定项目组和机房下的所有服务器资源的平均值，左侧展示的是服务器列表，排列顺序按照CPU、IO、网络使用率权重（5:3:2）排序，颜色也按照这个权重计算展示。点击某个服务器，即可查看该服务器的资源监控数据。页面所有数据每隔10s刷新一次。</p>
+<h1>Nginx流量采集工具</h1>
+<p class="qaq-content">该工具（<a href="https://github.com/leeyoshinari/nginx_agent">快点我部署</a>）主要用于解析Nginx的access.log，从日志中提取出接口访问数据。</p>
+<p class="qaq-content" style="margin-top: 15px">首页页面展示的信息是根据接口聚合后的结果（过滤掉静态文件的请求），默认按照QPS排序，可选按响应时间、响应体大小、响应错误数量排序；可分别查看压测流量和正常流量。</p>
+<img src="{% static 'img/nginx_summary.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">点击每个接口，可查看该接口的每秒数据变化图</p>
+<img src="{% static 'img/nginx_detail.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">注意：<strong>为了采集到上述数据，需要修改nginx日志格式，详见<a href="https://github.com/leeyoshinari/nginx_agent">nginx-agent部署</a>。</strong></p>
+<h1>性能测试工具</h1>
+<p class="qaq-content" style="margin-top: 15px">现在开源的、最好用的性能测试工具是JMeter，很多公司的性能测试平台的底层都用的是JMeter，所以本工具底层也是用JMeter实现的，而且原滋原味的保留了JMeter的所有功能，让您像在本地使用JMeter一样的丝般顺滑，使用体验远超某电商的全链路压测平台。</p>
+<p class="qaq-content" style="margin-top: 15px">该工具（<a href="https://github.com/leeyoshinari/jmeter_agent">快点我部署</a>）具有以下功能：</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">在页面可以编辑JMeter脚本，也可以导入已有JMeter脚本；</li>
+<li style="text-indent: 1em; list-style-position: inside">支持根据压测情况随时调整TPS，可调整总的TPS，也可以调整每个施压机的TPS；</li>
+<li style="text-indent: 1em; list-style-position: inside">支持分布式压测，可以动态增加/减少施压机，实现施压机热挂载；</li>
+<li style="text-indent: 1em; list-style-position: inside">支持自动执行压测；</li>
+<li style="text-indent: 1em; list-style-position: inside">强大的赋能能力，该工具具有的功能几乎可以用于所有的JMeter脚本；</li>
+<li style="text-indent: 1em; list-style-position: inside">原滋原味的保留了JMeter的所有功能，只要本地能运行的脚本，用该工具都可以运行，因此也支持JMeter所有的扩展插件；</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">先说一下使用JMeter做HTTP接口性能测试的基本流程：</p>
+<p class="qaq-content">1、创建jmx文件，编写压测脚本。压测脚本的结构是：<code>测试计划(Test Plan)—&gt;线程组(Thread Group)—&gt;控制器(Controller)—&gt;取样器(HTTP Sample)</code>。
+另外还有一些辅助的组件例如：CSV数据文件设置、吞吐量控制器、Http Cookie管理器等。</p>
+<p class="qaq-content">2、确定并发数，设置压测执行时间；</p>
+<p class="qaq-content">3、执行压测；</p>
+<p class="qaq-content">4、查看压测结果；</p>
+<p class="qaq-content" style="margin-top: 15px">以上，所以该工具的作用就是把上述步骤流程化、便捷化、自动化。</p>
+<h2>在页面新增JMeter脚本</h2>
+<h3>添加 Test Plan</h3>
+<p class="qaq-content">在左侧点击 Test Plan，可以查看测试计划，测试计划列表如下：</p>
+<img src="{% static 'img/plan_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Server Room 列可以查看该机房里空闲的施压机数量；</p>
+<p class="qaq-content" style="margin-top: 15px">Action列具有的一些操作：</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；</li>
+<li style="text-indent: 1em; list-style-position: inside">Copy：复制，快速复制一个测试计划；</li>
+<li style="text-indent: 1em; list-style-position: inside">Variables：设置全局变量，对应JMeter中的测试计划中的“用户自定义的变量”；</li>
+<li style="text-indent: 1em; list-style-position: inside">ThreadGroup：查看测试计划中的所有线程组；</li>
+<li style="text-indent: 1em; list-style-position: inside">StartTest：开始执行性能测试。如果是手动执行，则会立即开始压测；如果是自动执行，也会生成一个压测任务，等待压测时间开始执行；</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">点击 Variables，可以设置全局变量，如下：</p>
+<img src="{% static 'img/plan_variable.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）</p>
+<img src="{% static 'img/plan_add.JPG' %}" alt="">
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">tearDown：对应JMeter中的 Test Plan 中的设置“主线程结束后运行tearDown线程组”；</li>
+<li style="text-indent: 1em; list-style-position: inside">Serialize：对应JMeter中的 Test Plan 中的设置“独立运行每个线程组（例如在一个组运行结束后启动下一个）”；</li>
+<li style="text-indent: 1em; list-style-position: inside">runType：指定压测脚本运行类型，可选指定线程数运行和指定TPS运行；</li>
+<li style="text-indent: 1em; list-style-position: inside">Target TPS/Thread Num：当运行类型为指定TPS运行时，这里就是目标TPS；当运行类型为指定线程数运行时，这里就是线程数；</li>
+<li style="text-indent: 1em; list-style-position: inside">Duration：压测执行时间，单位：秒；对应JMeter中的 Thread Group 中的设置“持续时间（秒）”；</li>
+<li style="text-indent: 1em; list-style-position: inside">Schedule：压测执行方式，可选手动执行或自动执行。当选择自动执行时，需要设置自动执行的时间；</li>
+<li style="text-indent: 1em; list-style-position: inside">Time Setting：用于设置自动执行时间，仅当Schedule设置为自动执行时生效。设置时间后，可以点击Preview预览压力变化曲线；</li>
+<li style="text-indent: 1em; list-style-position: inside">Server Room：机房，指的是施压机所在的机房，压测脚本会在设置的机房的施压机上运行 (一般性能测试尽可能避免跨机房，减少网络对性能测试的影响)。压测时，该机房必须有可用的(空闲的)施压机；</li>
+<li style="text-indent: 1em; list-style-position: inside">Server Number：施压机数，执行压测时，设置的机房里必须有足够数量的空闲的施压机；</li>
+<li style="text-indent: 1em; list-style-position: inside">isDebug：如果设置Debug模式，则脚本在执行时候会生成jtl文件，该文件包含每一个请求的结果，正式测试时，建议设置非Debug模式，以免影响施压机性能；</li>
+</ul>
+<h3>添加 Thread Group</h3>
+<p class="qaq-content">在左侧点击 Thread Group，可以查看所有的线程组；如果在 Test Plan 中点击 ThreadGroup，可以查看该测试计划下的所有线程组。线程组列表如下：</p>
+<img src="{% static 'img/group_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Action列具有的一些操作：</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；</li>
+<li style="text-indent: 1em; list-style-position: inside">Copy：复制，快速复制一个线程组；</li>
+<li style="text-indent: 1em; list-style-position: inside">Cookies：如果压测需要cookies，可以在这里设置；对应的是JMeter中的Http Cookie管理器；</li>
+<li style="text-indent: 1em; list-style-position: inside">Controller：查看线程组中的所有控制器；</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">Cookies 设置页面如下：</p>
+<img src="{% static 'img/group_cookie.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）</p>
+<img src="{% static 'img/group_add.JPG' %}" alt="">
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Plan ID：将该线程组绑定到指定的测试计划；</li>
+<li style="text-indent: 1em; list-style-position: inside">Ramp Time：在这个时间内启动所有的线程，对应JMeter线程组中的“Ramp-Up时间（秒）”；</li>
+<li style="text-indent: 1em; list-style-position: inside">CSVDataSet：上传压测需要的文件，需要设置变量名称（英文逗号分割）、分隔符、遇到文件结束符是否继续、线程共享模式，这里的设置和JMeter中的CSV数据文件设置一样；</li>
+</ul>
+<h3>添加控制器</h3>
+<p class="qaq-content">在左侧点击 Controller，可以查看所有的控制器；如果在 Thread Group 中点击 Controller，可以查看该线程组下的所有控制器。控制器列表如下：</p>
+<img src="{% static 'img/controller_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Action列具有的一些操作：</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；</li>
+<li style="text-indent: 1em; list-style-position: inside">Copy：复制，快速复制一个控制器；</li>
+<li style="text-indent: 1em; list-style-position: inside">HTTPSample：查看控制器中的所有取样器；</li>
+</ul>
+<h3>添加取样器</h3>
+<p class="qaq-content">在左侧点击 HTTP Sample，可以查看所有的取样器；如果在 Controller 中点击 HttpSample，可以查看该控制器下的所有取样器。取样器列表如下：</p>
+<img src="{% static 'img/sample_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）</p>
+<img src="{% static 'img/sample_add.JPG' %}" alt="">
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Controller ID：把该取样器绑定到指定的控制器；</li>
+<li style="text-indent: 1em; list-style-position: inside">Protocol：协议，可选HTTP或HTTPs；</li>
+<li style="text-indent: 1em; list-style-position: inside">Domain Name：域名或ip；</li>
+<li style="text-indent: 1em; list-style-position: inside">Port：端口号；</li>
+<li style="text-indent: 1em; list-style-position: inside">Path：url 路径；</li>
+<li style="text-indent: 1em; list-style-position: inside">Method：http请求方法；</li>
+<li style="text-indent: 1em; list-style-position: inside">Arguments：http请求参数，可选请求参数格式为json或form表单，对应JMeter中的取样器的参数设置；</li>
+<li style="text-indent: 1em; list-style-position: inside">HTTP Header：下拉选择对应的请求头，请求头配置在HTTP Header中；如果没有请求头，需要提前设置好；</li>
+<li style="text-indent: 1em; list-style-position: inside">Assertion：断言，可选类型为Contain(包含)、Equal(相等)或Match(匹配)，对应JMeter中的响应断言；</li>
+<li style="text-indent: 1em; list-style-position: inside">Post Extractor：后置处理器，用于提取响应值中的数据，仅支持JSON提取器和正则表达式提取器；</li>
+<li style="text-indent: 1em; list-style-position: inside">contentEncoding：内容编码格式，可选None或UTF-8，对应JMeter中的取样器中的“内容编码”；</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">以上设置和在JMeter中的取样器中的设置一样，也可以引用变量，后置处理器也可以设置变量。</p>
+<h3>添加请求头</h3>
+<p class="qaq-content">在左侧点击 HTTP Header，可以查看所有的请求头；</p>
+<img src="{% static 'img/header_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">在设置请求头时，只需要把字段和值填入即可，这里也可以引用变量，引用格式和JMeter一样。</p>
+<img src="{% static 'img/header_add.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">以上，就完成了在这个工具上手动编写压测脚本。如果已有本地的已经调试好的JMeter脚本，且是按照上面说的结构，可以在 Test Plan 页面直接点击 Import Plan 按钮导入进系统中。导入后会对文件进行解析，可能会有少许修改，可以在页面手动核对和修改。</p>
+<h2>Upload JMeter</h2>
+<p class="qaq-content">考虑到有些性能测试场景的压测脚本很复杂，例如有BeanShell脚本、for/if等控制语句，但仍想使用压测工具赋予的压测能力，可以把本地调试通过的JMeter脚本，连同需要使用的外部文件，打包成zip压缩包，然后在 Upload JMeter 页面上传该压缩包，上传成功后就可以使用工具赋予的压测能力了。</p>
+<p class="qaq-content" style="margin-top: 15px">这里说一下这个工具对上传的压缩包是怎么处理的：</p>
+<p class="qaq-content">1、压缩包上传后，首先使用zip命令解压，故只支持zip格式压缩；</p>
+<p class="qaq-content">2、解压后，直接在解压的文件夹中寻找jmx格式的JMeter脚本，压缩包里必须有且仅有一个jmx格式的文件；由于是直接在解压的文件中寻找jmx文件，故压缩文件时，选择需要压缩的文件，然后压缩，而不是选择文件夹进行压缩；</p>
+<p class="qaq-content">3、经过一系列校验后，压缩包会被上传到文件系统；</p>
+<p class="qaq-content">4、生成一条记录，然后可以在页面修改压测参数，和 Test Plan 一样，如下：</p>
+<img src="{% static 'img/upload_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">当需要压测的时候，会对JMeter文件进行修改，如下：
+<p class="qaq-content">1、从文件系统中下载文件，并解压；</p>
+<p class="qaq-content">2、如果运行类型设置为指定TPS运行，则会往JMeter脚本中添加一个吞吐量控制器；如果运行类型设置为指定线程数运行，则会修改JMeter脚本中的 Thread Group 的参数；</p>
+<p class="qaq-content">3、把修改后的jmx文件和其他依赖的文件一起打包，然后开始压测；</p>
+<h2 id="test-task">Test Task</h2>
+<p class="qaq-content">在左侧点击 Test Task 可以查看所有的测试任务，所有待执行、执行中、已停止的测试记录都会显示在这里，只有测试完成后，才会显示Sample、TPS、RT、Error等数据。</p>
+<img src="{% static 'img/task_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">在Actions列，可以下载每个任务执行的JMeter文件，如果压测出现问题，可以下载文件看看是哪里出现问题了。</p>
+<h3>查看压测详情</h3>
+<p class="qaq-content">在压测执行时或压测结束后，可以查看压测详情。
+当开始执行压测后，首先会生成压测所需要的文件，然后传给施压机，施压机会执行压测文件。此时页面会自动跳转到查看压测详情页面，由于压测初始化和产生压测结果需要时间，故需要等待一会儿才会在页面看到数据。</p>
+<img src="{% static 'img/task_detail.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">在压测详情页面可以的操作（页面右上角）：</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Stop：会立即停止压测；</li>
+<li style="text-indent: 1em; list-style-position: inside">Change TPS：统一调整所有施压机的TPS；</li>
+<li style="text-indent: 1em; list-style-position: inside">Download File：下载该任务执行的JMeter文件；</li>
+</ul><p class="qaq-content" style="margin-top: 15px">每个施压机可以的操作：</p><ul>
+<li style="text-indent: 1em; list-style-position: inside">View：查看单个施压机的压测数据；</li>
+<li style="text-indent: 1em; list-style-position: inside">Start：启动该施压机开始压测，施压机启动需要一点时间，当启动后，就可以调整该施压机的TPS；</li>
+<li style="text-indent: 1em; list-style-position: inside">Stop：停止该施压机的压测，其他施压机不停；</li>
+<li style="text-indent: 1em; list-style-position: inside">Download logs：下载该施压机的JMeter执行的日志；</li>
+<li style="text-indent: 1em; list-style-position: inside">Change TPS：调整单个施压机的TPS；</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">分布式压测</p>
+<p class="qaq-content">借用Redis实现分布式压测时各施压机之间的数据同步，各施压机的数据和所有施压机汇总数据的时间全部以InfluxDB的时间为准；这就突破了使用JMeter进行分布式压测时需要各施压机的系统时间、Java版本、JMeter版本必须一样的限制，可以更加方便进行分布式压测。</p>
+<p class="qaq-content" style="margin-top: 15px">施压机热挂载</p>
+<p class="qaq-content">同样也是借用Redis实现的。当在性能测试过程中，发现压力不够，需要增加施压机时，只需要在当前压测任务下（即查看压测详情页面）启动一个施压机即可，而不需要单独另开启一个压测任务（两个任务之间的数据是独立的）；当需要下掉一个施压机时，直接点击施压机的停止按钮即可立即下线；可以更加灵活地调整压力。</p>
+<h1>QAQ</h1>
+<p class="qaq-title">1、为什么shell会经常提醒 Session is in closed status？</p>
+<p class="qaq-content">为了避免可能的无效连接占用服务器资源，对超过10分钟没有任何数据交互的连接进行关闭；同时由于客户端网络问题或其他各种异常，服务端也需要及时关闭无效连接。</p>
+<p class="qaq-title">2、为什么自动部署agent包时一直不成功？</p>
+<p class="qaq-content">首先核对Linux系统发行版本和CPU架构是否和部署包一致，然后查看部署日志。部署路径是配置文件<code>config.conf</code>中的<code>deployPath</code>。</p>
+<p class="qaq-title">3、怎么判断是否需要增加集群节点数？</p>
+<p class="qaq-content">对于该平台的集群：在远程连接Linux时，如果由于非网络原因和服务器卡顿的原因导致命令的响应速度经常跟不上你的手速，那么应该增加平台的集群节点数；</p>
+<p class="qaq-content">对于collector-agent：因为服务器资源监控是秒级，且近似实时，在查看服务器资源监控图时，如果刷新页面后展示的时间比当前时间晚5~10秒，那么就需要增加 collector-agent 集群节点数。</p>
+<p class="qaq-content">以上纯属个人建议，请根据实际情况合理增加集群节点数。</p>
+<p class="qaq-title">4、单台施压机支持的QPS多少？</p>
+<p class="qaq-content">建议每台施压机的QPS不要超过1000/s。如果发现压力上不来，请先排除施压机和被测系统问题后，再增加一台施压机。</p>
+<p class="qaq-title">5、性能测试怎么区分压测流量和正常流量？</p>
+<p class="qaq-content">如果你是在页面上手动编写的脚本，那么当脚本执行时，会自动把请求头中的 <code>User-Agent</code> 的值设置成 <code>PerformanceTest</code>，故可根据 <code>User-Agent</code> 区分压测流量。</p>
+<p class="qaq-content">如果你是在<code>Upload JMeter</code>页面手动上传本地调试好的脚本，那么脚本中的请求头必须包含 <code>User-Agent</code> 字段，当执行脚本时，会自动把请求头中的 <code>User-Agent</code> 的值替换成 <code>PerformanceTest</code>。所以你的本地脚本中的请求头必须包含 <code>User-Agent</code> 字段。</p>
+<p class="qaq-title">6、性能测试的某个接口的请求怎么mock，或者写入影子表/影子库？</p>
+<p class="qaq-content">本工具只提供通用的压测能力，可根据请求头的 <code>User-Agent</code> 区分是否是压测流量。由于服务端的部署架构、语言和业务的不同，因此没法提供各语言的探针，可自己结合实际情况编写探针，来实现mock功能，或将数据写入影子表/影子库，或走影子链路。</p>
+<p class="qaq-title">7、服务器资源监控一直在运行，但为什么查询监控结果会有错误提示？</p>
+<p class="qaq-content">一般出现这种情况是因为服务器资源监控运行后，该服务器所属的项目组和机房被修改过，修改后的信息没有同步到资源监控工具，导致数据不一致。因此需要重启服务器资源监控工具，或者重新部署。</p>
+</article>
+</div></div>
+{% compress js %}
+<script type="text/javascript" src="{% static 'course/js/jquery-1.4.4.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'course/js/jquery.ztree.all-3.5.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'course/js/ztree_toc.js' %}"></script>
+<script type="text/javascript" src="{% static 'course/js/toc_conf.js' %}"></script>
+{% endcompress %}
+<SCRIPT type="text/javascript" >
+$(document).ready(function(){
+    var css_conf = eval(markdown_panel_style);
+    $('#readme').css(css_conf)
+    var conf = eval(jquery_ztree_toc_opts);
+		$('#tree').ztree_toc(conf);
+});
+</SCRIPT>
+</body></html>
