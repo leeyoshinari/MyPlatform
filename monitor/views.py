@@ -50,7 +50,7 @@ def home(request):
             agents = monitor_server.get_all_keys()
             datas = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in agents]
             logger.info(f'Get monitor servers list, operator: {username}')
-            return render(request, 'monitor/home.html', context={'datas': datas, 'groups': groups, 'group': group_id, 'key_word': key_word,
+            return render(request, 'server_list.html', context={'datas': datas, 'groups': groups, 'group': group_id, 'key_word': key_word,
                                                                  'page': page, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -142,21 +142,13 @@ def visualize(request):
             #     logger.error(f'You have no servers to view, please check permission ~')
             #     return render(request, '404.html')
             # logger.info(f'Access visualization page, operaotr: {username}')
-            return render(request, 'monitor/visualize.html', context={'ip': hosts, 'groups': groups,'rooms': rooms, 'starttime': starttime, 'is_staff': request.user.is_staff,
+            return render(request, 'visualize.html', context={'ip': hosts, 'groups': groups,'rooms': rooms, 'starttime': starttime, 'is_staff': request.user.is_staff,
                 'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec_host': spec_host, 'spec_group': spec_group, 'spec_room': spec_room})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
     else:
         return render(request, '404.html')
-
-
-def course_zh_CN(request):
-    return render(request, 'monitor/course_zh_CN.html', context={})
-
-
-def course_en(request):
-    return render(request, 'monitor/course_en.html', context={})
 
 
 def get_room_group_by_host(request):
@@ -357,10 +349,10 @@ def nginx_home(request):
             group_key_dict = {}
             for keys in group_key:
                 group_key_dict.update({str(keys['group_id']): keys['key']})
-            return render(request, 'monitor/nginx.html', context={'groups': groups, 'groupKey': group_key_dict})
+            return render(request, 'nginx.html', context={'groups': groups, 'groupKey': group_key_dict})
         except:
             logger.error(traceback.format_exc())
-            return render(request, '404,html')
+            return render(request, '404.html')
 
 
 def query_nginx_summary(request):

@@ -46,7 +46,7 @@ def home(request):
                 groups = ThreadGroup.objects.filter(group__in=my_groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get thread group success, operator: {username}')
-            return render(request, 'performance/threadGroup/home.html', context={'groups': groups, 'page': page, 'page_size': page_size,
+            return render(request, 'threadGroup/home.html', context={'groups': groups, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'plan_id': plan_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -90,7 +90,7 @@ def add_group(request):
             else:
                 groups = request.user.groups.all()
                 plans = TestPlan.objects.filter(group__in=groups, is_file=0).order_by('-create_time')
-            return render(request, 'performance/threadGroup/add.html', context={'plan_id': plan_id, 'plans': plans, 'share_mode': share_mode})
+            return render(request, 'threadGroup/add.html', context={'plan_id': plan_id, 'plans': plans, 'share_mode': share_mode})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -135,7 +135,7 @@ def edit_group(request):
             group_id = request.GET.get('id')
             groups = ThreadGroup.objects.get(id=group_id)
             plans = TestPlan.objects.filter(group_id=groups.plan.group_id, is_file=0).order_by('-create_time')
-            return render(request, 'performance/threadGroup/edit.html', context={'groups': groups, 'plans': plans, 'share_mode': share_mode})
+            return render(request, 'threadGroup/edit.html', context={'groups': groups, 'plans': plans, 'share_mode': share_mode})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -204,7 +204,7 @@ def edit_cookie(request):
             group_id = request.GET.get('id')
             cookies = ThreadGroup.objects.get(id=group_id)
             logger.info(f'Get thread group cookies success, operator: {username}')
-            return render(request, 'performance/threadGroup/cookie.html', context={'cookies': cookies})
+            return render(request, 'threadGroup/cookie.html', context={'cookies': cookies})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')

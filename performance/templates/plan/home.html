@@ -1,0 +1,79 @@
+{% extends 'perf_home.html' %}
+{% load static compress %}
+{% load myFilter %}
+
+{% block add_js %}
+    {% compress js %}
+    <script src="{% static 'performance/js/plan.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block navigate %}
+    <a href="{% url 'perf:plan_home' %}">Test Plan</a>
+{% endblock %}
+
+{% block detail_action %}
+    <a href="{% url 'perf:plan_add' %}">Add Plan</a>
+    <a href="#" onclick="upload_file('{% url 'perf:plan_upload_file' %}');">Import Plan</a>
+    <input type="file" id="fileUpload-input" accept=".jmx" style="display: none">
+{% endblock %}
+{% block searchBlock %}
+    <div class="search">
+        {% if key_word %}
+            <input type="text" id="searching" placeholder="Please input key words ~" value="{{ key_word }}">
+        {% else %}
+            <input type="text" id="searching" placeholder="Please input key words ~">
+        {% endif %}
+        <button onclick="search('{% url 'perf:plan_home' %}')">Search</button>
+    </div>
+{% endblock %}
+{% block table_head %}
+    <tr class="table_style">
+        <th width="10%">Name</th>
+        <th width="7%"><div class="helpstyle"><span data-tooltip="Run type. Specify thread group or Specify TPS.">?</span></div>runType</th>
+        <th width="7%"><div class="helpstyle"><span data-tooltip="Task run type. Manual: manual running. Automatic: set time to auto-run.">?</span></div>Schedule</th>
+        <th width="12%"><div class="helpstyle"><span data-tooltip="Specify Pressure Server Room. When running, it will select server randomly.">?</span></div>Server Room</th>
+        <th width="8%"><div class="helpstyle"><span data-tooltip="Target Number per server. it is target number of the test. When 'runType' is 'Thread', it is target number of thread group. When 'runType' is 'TPS', it is target number of TPS.">?</span></div>Target Number</th>
+        <th width="7%">Duration</th>
+        <th width="40%">Actions</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for plan in plans %}
+        {% if plan.is_valid == 'false' %}
+            <tr style="background-color: white">
+        {% else %}
+            <tr>
+        {% endif %}
+            <td title="{{ plan.comment }}"><a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">{{ plan.name }}</a></td>
+            <td style="text-align: center;">{{ plan.type | get_value_from_list:'plan_type' }}</td>
+            <td style="text-align: center;">{{ plan.schedule | get_value_from_list:'plan_schedule' }}</td>
+            <td style="text-align: center;">{{ plan.server_room.name }} ({{ server_num_rooms | get_list:plan.server_room.id }} idle)</td>
+            <td style="text-align: center;">{{ plan.target_num }}</td>
+            <td style="text-align: center;">{{ plan.duration }}</td>
+            <td>
+                {% if plan.is_valid == 'true' %}
+                    <a href="{% url 'perf:plan_edit' %}?id={{ plan.id }}">Edit</a>
+                    <a href="#" onclick="set_status('plan','{{ plan.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                    <a href="{% url 'perf:plan_copy' %}?id={{ plan.id }}">Copy</a>
+                    <a title="Set Global Variables of the Test Plan" href="{% url 'perf:plan_variable' %}?id={{ plan.id }}">Variables</a>
+                    <a title="View ThreadGroup of the Test Plan" href="{% url 'perf:group_home' %}?id={{ plan.id }}">ThreadGroup</a>
+                    <a title="Add Test Plan to Test Task, pending run." href="#" onclick="add_task('{% url 'perf:task_add' %}', '{% url 'perf:task_start' %}', '{% url 'perf:task_detail' %}', {{ plan.id }})">StartTest</a>
+                {% else %}
+                    <a href="#" onclick="set_status('plan', '{{ plan.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
+                {% endif %}
+                <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:plan_home' %}', 'plan', {{ plan.id }})">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+        {% if key_word %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'perf:plan_home' %}?keyWord={{ key_word }}&page=');
+        {% else %}
+            PagingManage($('#paging'), {{ total_page }}, {{ page }}, '{% url 'perf:plan_home' %}?page=');
+        {% endif %}
+    </script>
+{% endblock %}

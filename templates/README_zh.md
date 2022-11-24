@@ -27,7 +27,7 @@
 - 文件服务器：MinIO - 用于存储文件
 - 性能测试工具：JMeter - 用于执行 JMeter 脚本
 
-## 部署架构图
+## 架构图
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
 如需满足较多用户使用，请部署集群；如需高可用，请自行部署keepalive。
 
@@ -79,12 +79,17 @@ python3 manage.py loaddata initdata.json
 
 8、处理所有静态文件；
 ```shell script
-python3 manage.py collectstatic
+python3 manage.py collectstatic --clear --noinput
 ```
 
-9、修改`startup.sh`中的端口号；
+9、压缩静态文件（css 和 js）；
+```shell script
+python3 manage.py compress --force
+```
 
-10、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
+10、修改`startup.sh`中的端口号；
+
+11、部署`nginx`，location相关配置如下：(ps: 下面列出的配置中的`platform`是url路径中的prefix，即url前缀，可根据自己需要修改)<br>
 （1）upstream 配置
 ```shell script
 upstream myplatform-server {
@@ -116,27 +121,29 @@ location /shell {  # 必须是shell，不能修改
 }
 ```
 
-11、启动
+12、启动
 ```shell script
 sh startup.sh
 ```
    停止请执行 `sh shutdown.sh`
 
-12、访问页面，url是 `http://ip:port/config.conf中的prefix`
+13、访问页面，url是 `http://ip:port/config.conf中的prefix`
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/home.JPG)
 
-13、访问权限控制页面，url是 `http://ip:port/config.conf中的prefix/admin`
+14、访问权限控制页面，url是 `http://ip:port/config.conf中的prefix/admin`
 
-14、部署数据收集工具，[快点我](https://github.com/leeyoshinari/collector_agent)
+15、部署数据收集工具，[快点我](https://github.com/leeyoshinari/collector_agent)
 
-15、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
+16、部署服务器资源监控执行工具，[快点我](https://github.com/leeyoshinari/monitor_agent)
 
-16、部署性能测试执行工具，[快点我](https://github.com/leeyoshinari/jmeter_agent)
+17、部署性能测试执行工具，[快点我](https://github.com/leeyoshinari/jmeter_agent)
 
-17、部署Nginx流量采集工具，[快点我](https://github.com/leeyoshinari/nginx_agent)
+18、部署Nginx流量采集工具，[快点我](https://github.com/leeyoshinari/nginx_agent)
 
 ## 注意
 1、如需了解更多消息，[请点我](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/course_zh.md) ，或者部署后查看教程。
+
+2、由于本人只有一台云服务器，故未进行大规模集群验证和大规模分布式、全链路压测验证，仅验证集群功能和分布式压测功能。如您在使用中发现问题，欢迎反馈。
 
 ## Requirements
 本地开发环境：
@@ -148,6 +155,7 @@ sh startup.sh
 - channels==3.0.4
 - daphne==3.0.2
 - Django==4.0.1
+- django-compressor==4.1
 - influxdb==2.6.0
 - Jinja2==3.0.3
 - minio==7.1.3

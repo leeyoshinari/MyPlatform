@@ -45,7 +45,7 @@ def home(request):
             if plans:
                 server_num_rooms = get_idle_server_num()
             logger.info(f'Get test plan success, operator: {username}')
-            return render(request, 'performance/jmeter/home.html', context={'plans': plans, 'page': page, 'page_size': page_size, 'server_num_rooms': server_num_rooms,
+            return render(request, 'jmeter/home.html', context={'plans': plans, 'page': page, 'page_size': page_size, 'server_num_rooms': server_num_rooms,
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -85,7 +85,7 @@ def edit(request):
             groups = request.user.groups.all()
             plans = TestPlan.objects.get(id=plan_id)
             server_rooms = ServerRoom.objects.filter(type=2).order_by('-create_time')
-            return render(request, 'performance/jmeter/edit.html', context={'plan': plans, 'server_rooms': server_rooms,
+            return render(request, 'jmeter/edit.html', context={'plan': plans, 'server_rooms': server_rooms,
                                                                             'groups': groups, 'current_time': strfTime()})
         except:
             logger.error(traceback.format_exc())

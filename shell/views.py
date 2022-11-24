@@ -47,7 +47,7 @@ def index(request):
             total_num = Servers.objects.filter(group__in=groups).count()
             servers = Servers.objects.filter(group__in=groups).order_by('-id')[(page - 1) * page_size: page * page_size]
             logger.info(f'access shell index.html. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': page,
+            return render(request, 'index.html', context={'servers': servers, 'groups': groups, 'page': page,
                                                                 'page_size': page_size, 'total_page': (total_num - 1) // page_size + 1,
                                                                 'rooms': rooms, 'is_staff': is_staff, 'operator': username})
         except:
@@ -280,7 +280,7 @@ def search_server(request):
             is_staff = request.user.is_staff
             rooms = ServerRoom.objects.all().order_by('-create_time')
             logger.info(f'search server success. operator: {username}')
-            return render(request, 'shell/index.html', context={'servers': servers, 'groups': groups, 'page': 0, 'rooms': rooms,
+            return render(request, 'index.html', context={'servers': servers, 'groups': groups, 'page': 0, 'rooms': rooms,
                                                                 'is_staff': is_staff, 'page_size': 200, 'total_page': 0})
         except:
             logger.error(traceback.format_exc())
@@ -296,7 +296,7 @@ def openssh(request):
         host = request.GET.get('ip')
         if Servers.objects.filter(Q(host=host), Q(group__in=groups)).exists():
             logger.info(f'Open shell. ip: {host}, operator: {username}')
-            return render(request,'shell/webssh.html', context={'host': host})
+            return render(request, 'webssh.html', context={'host': host})
         else:
             return render(request, '404.html')
     else:
@@ -481,11 +481,11 @@ def package_home(request):
                 servers = Servers.objects.get(host=host, group__in=groups)
                 packages = Packages.objects.all().order_by('-create_time')
                 logger.info(f'Query package list success, operator: {username}')
-                return render(request, 'shell/packages.html', context={'servers': servers, 'packages': packages})
+                return render(request, 'packages.html', context={'servers': servers, 'packages': packages})
             else:
                 packages = Packages.objects.all().order_by('-create_time')
                 logger.info(f'Query package list success, operator: {username}')
-                return render(request, 'shell/packages.html', context={'packages': packages})
+                return render(request, 'packages.html', context={'packages': packages})
         except Servers.DoesNotExist:
             logger.error(f'You have no permission to access {host}, operator: {username}')
             return render(request, '404.html', context={'msg': f'You have no permission to access {host} ~'})

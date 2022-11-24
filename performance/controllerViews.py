@@ -42,7 +42,7 @@ def home(request):
                 controllers = TransactionController.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get controller success, operator: {username}')
-            return render(request, 'performance/controller/home.html', context={'controllers': controllers, 'page': page, 'page_size': page_size,
+            return render(request, 'controller/home.html', context={'controllers': controllers, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'group_id': group_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -75,7 +75,7 @@ def add_group(request):
             else:
                 my_groups = request.user.groups.all().values('id')
                 groups = ThreadGroup.objects.filter(group__in=my_groups).order_by('-create_time')
-            return render(request, 'performance/controller/add.html', context={'group_id': group_id, 'groups': groups})
+            return render(request, 'controller/add.html', context={'group_id': group_id, 'groups': groups})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')
@@ -106,7 +106,7 @@ def edit_group(request):
             group_id = request.GET.get('id')
             controllers = TransactionController.objects.get(id=group_id)
             groups = ThreadGroup.objects.filter(group=controllers.thread_group.group).order_by('-create_time')
-            return render(request, 'performance/controller/edit.html', context={'controllers': controllers, 'groups': groups})
+            return render(request, 'controller/edit.html', context={'controllers': controllers, 'groups': groups})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')

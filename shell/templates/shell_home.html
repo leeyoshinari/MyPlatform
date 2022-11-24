@@ -1,0 +1,32 @@
+{% extends 'template.html' %}
+{% load static compress %}
+{% block addcss %}
+    {% compress css %}
+    <link rel="stylesheet" href="{% static 'shell/css/home.css' %}">
+    {% endcompress %}
+{% endblock %}
+
+{% block addbody %}
+    {% csrf_token %}
+    <div class="container1">
+        <div class="home_list">
+            <a href="{% url 'home' %}">Home</a>
+            <span>>></span>
+            <a href="{% url 'shell:index' %}">Shell</a>
+        </div>
+        <a href="{% url 'user:logout' %}">Logout</a>
+    </div>
+    <div class="container2">
+        <div class="detail">
+            {% block container2 %}{% endblock %}
+        </div>
+    </div>
+{% block fenye %}
+    <div class="fenye"><ul id="paging" class="pagination"></ul></div>
+{% endblock %}
+{% endblock %}
+{% block backjs %}
+    {% compress js %}
+    <script src="{% static 'js/fenye.js' %}"></script>
+    {% endcompress %}
+{% endblock %}

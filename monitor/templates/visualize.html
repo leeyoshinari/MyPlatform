@@ -1,0 +1,268 @@
+{% extends "monitor_template.html" %}
+{% load static compress %}
+
+{% block addcss %}
+    {% compress css %}
+    <link href="{% static 'monitor/css/visualize.css' %}" rel="stylesheet">
+    {% endcompress %}
+{% endblock %}
+{% block addjs %}
+    {% compress js %}
+    <script src="{% static 'monitor/js/echarts.common.js' %}"></script>
+    <script src="{% static 'monitor/js/plot_system.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block content %}
+<div style="width: 96%; margin-left: 3%;">
+    Group: <select id="group" style="width: 8%; height: 26px; margin-right: 20px;" onchange="change_group();">
+            {% for foo in groups %}
+                {% if foo.id == spec_group %}
+                    <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
+                {% else %}
+                    <option value="{{ foo.id }}">{{ foo.name }}</option>
+                {% endif %}
+            {% endfor %}
+    </select>
+    ServerRoom: <select id="room" style="width: 8%; height: 26px; margin-right: 20px;" onchange="change_room();">
+            {% for foo in rooms %}
+                {% if foo.id == spec_room %}
+                    <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
+                {% else %}
+                    <option value="{{ foo.id }}">{{ foo.name }}</option>
+                {% endif %}
+            {% endfor %}
+    </select>
+    Time Period: <select id="time-period" style="width: 8%; height: 26px; margin-right: 20px;" onchange="change_period();">
+            <option value="600">Last 10 min</option>
+            <option value="1800">Last 30 min</option>
+            <option value="3600">Last 1 hour</option>
+            <option value="7200">Last 2 hour</option>
+            <option value="21600">Last 6 hour</option>
+            <option value="0">Other time</option>
+    </select>
+    <input type="text" name="starttime" id="starttime" style="width: 147px; display: none;" value="{{ starttime }}"> <span id="h-line" style="display: none;"> - </span>
+    <input type="text" name="endtime" id="endtime" style="margin-right: 20px; width: 147px; display: none;" value="{{ endtime }}">
+    <button type="button" id="MonitorList" style="width: 6%;">&nbsp;Visualize&nbsp;</button>
+</div>
+<div id="left-container" style="height: 1525px;">
+    {% for h in ip %}
+        <div class="host-card">
+            <div style="margin: 5px;">
+                <span class="host-ip">{{ h.host }}</span>
+            </div>
+            <div>
+                <div>
+                    <span class="host-label">CPU: <span class="host-value">{{ h.cpu_usage|floatformat:2 }}%</span></span>
+                    <span class="host-label">Mem: <span class="host-value">{{ h.mem_usage|floatformat:2 }}%</span></span>
+                </div>
+                <div>
+                    <span class="host-label">&nbsp;&nbsp;&nbsp;IO: <span class="host-value">{{ h.io_usage|floatformat:2 }}%</span></span>
+                    <span class="host-label">Net: <span class="host-value">{{ h.net_usage|floatformat:2 }}%</span></span>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<div class="figure-region">
+    <div id="figure" style="width: 99%; height:1525px; margin: 0 auto;"></div>
+    <input id="start-time" type="text" value="" style="display: none;">
+</div>
+<br>
+<div class="modal_cover"><div class="modal_gif"></div></div>
+{% endblock %}
+
+{% block myjs %}
+<script type="text/javascript">
+    let specific_host = '{{ spec_host }}';
+    let colors = ['fcf8e3', 'f7ecb5', 'f7e1b5', 'f0c948', 'f0ad4e', 'ec971f', 'd58512', 'ff3333', 'ff0000', 'c9302c', 'c9302c'];
+
+    $('#figure').removeAttr("_echarts_instance_").empty();
+    let figure = document.getElementById('figure');
+    let myChart = echarts.init(figure);
+    let plot_timer = setInterval(function () {
+        plot_delta();
+    }, 10000);
+    plot_init(specific_host);
+    change_room(0);
+
+    function refresh_server_list(data) {
+        let total_cpu = 0;
+        let total_mem = 0;
+        let total_io = 0;
+        let total_net = 0;
+        let s = ''
+        for (let i=0; i<data.length; i++) {
+            total_cpu += data[i]['cpu_usage'];
+            total_mem += data[i]['mem_usage'];
+            total_io += data[i]['io_usage'];
+            total_net += data[i]['net_usage'];
+            s += '<div class="host-card" style="background-color: #' + get_color(data[i]['cpu_usage'], data[i]['io_usage'], data[i]['net_usage']) + ';"><div style="margin: 5px;"><span class="host-ip">' + data[i]['host'] + '</span></div><div><div><span class="host-label">CPU: ' +
+                '<span class="host-value">' + data[i]['cpu_usage'].toFixed(2) + '%</span></span><span class="host-label">Mem: <span class="host-value">' + data[i]['mem_usage'].toFixed(2) + '%</span></span></div><div><span class="host-label">&nbsp;&nbsp;&nbsp;IO: ' +
+                '<span class="host-value">' + data[i]['io_usage'].toFixed(2) + '%</span></span><span class="host-label">Net: <span class="host-value">' + data[i]['net_usage'].toFixed(2) + '%</span></span></div></div></div>';
+        }
+        s = '<div class="host-card" style="background-color: #' + get_color(total_cpu / data.length, total_io / data.length, total_net / data.length) + ';"><div style="margin: 5px;"><span class="host-ip">All Servers Average</span></div><div><div><span class="host-label">CPU: ' +
+            '<span class="host-value">' + (total_cpu / data.length).toFixed(2) + '%</span></span><span class="host-label">Mem: <span class="host-value">' + (total_mem / data.length).toFixed(2) + '%</span></span></div><div><span class="host-label">&nbsp;&nbsp;&nbsp;IO: ' +
+            '<span class="host-value">' + (total_io / data.length).toFixed(2) + '%</span></span><span class="host-label">Net: <span class="host-value">' + (total_net / data.length).toFixed(2) + '%</span></span></div></div></div>' + s;
+        document.getElementById('left-container').innerHTML = s;
+        let host_card = document.getElementsByClassName('host-card');
+        for (let i=0; i<host_card.length; i++) {
+            host_card[i].onclick = function () {
+                if (i === 0) {
+                    plot_init('all');
+                } else {
+                    plot_init(host_card[i].getElementsByClassName('host-ip')[0].innerText);
+                }
+            }
+        }
+    }
+
+    function plot_init(host) {
+        $('.modal_cover').css("display", "block");
+        $('.modal_gif').css("display", "block");
+        let starttime = document.getElementById('starttime').value;
+        let endtime = document.getElementById('endtime').value;
+        let group = document.getElementById('group').value;
+        let room = document.getElementById('room').value;
+
+        let post_data = {
+            host: host,
+            group: group,
+            room: room,
+            startTime: starttime,
+            endTime: endtime,
+        };
+        $(function visualize() {
+            $.ajax({
+                type: 'post',
+                url: '{% url 'monitor:plot_monitor' %}',
+                data: post_data,
+                dataType: "json",
+                success: function (data) {
+                    if (data['code'] === 0) {
+                        $.Toast(data['msg'], 'success');
+                        specific_host = host;
+                        plot(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
+                            data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['jvm'], data['post_data']['disk'],
+                            data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['disk_d'], data['post_data']['rec'],
+                            data['post_data']['trans'], data['post_data']['net'], data['post_data']['tcp'], data['post_data']['retrans'],
+                            data['post_data']['port_tcp'], data['post_data']['close_wait'], data['post_data']['time_wait'], data['flag']);
+                        document.getElementById('start-time').value = data['post_data']['time'];
+                        document.getElementById('endtime').value = date_to_date(data['post_data']['time'], 0);
+                    } else {
+                        $.Toast(data['msg'], 'error');
+                        clearInterval(plot_timer);
+                    }
+                    $('.modal_cover').css("display", "none");
+                    $('.modal_gif').css("display", "none");
+                }
+            });
+        })
+    }
+    function plot_delta() {
+        if (document.getElementsByClassName('host-card').length < 2) {
+            $.Toast('There is no servers, please check permission or switch to other server room ~', 'warning');
+            clearInterval(plot_timer);
+            return;
+        }
+        if (document.getElementById('time-period').value === '0') {
+            return;
+        }
+        let starttime = document.getElementById('start-time').value;
+        let group = document.getElementById('group').value;
+        let room = document.getElementById('room').value;
+
+        let post_data = {
+            host: specific_host,
+            group: group,
+            room: room,
+            startTime: starttime,
+        };
+        $(function visualize() {
+            $.ajax({
+                type: 'post',
+                url: '{% url 'monitor:plot_monitor' %}',
+                data: post_data,
+                dataType: "json",
+                success: function (data) {
+                    if (data['code'] === 0) {
+                        if (data['post_data']['cpu_time'].length > 0) {
+                            plot_change(myChart, data['post_data']['cpu_time'], data['post_data']['cpu'], data['post_data']['iowait'], data['post_data']['usr_cpu'],
+                                data['post_data']['mem'], data['post_data']['mem_available'], data['post_data']['jvm'], data['post_data']['disk'],
+                                data['post_data']['disk_r'], data['post_data']['disk_w'], data['post_data']['disk_d'], data['post_data']['rec'],
+                                data['post_data']['trans'], data['post_data']['net'], data['post_data']['tcp'], data['post_data']['retrans'],
+                                data['post_data']['port_tcp'], data['post_data']['close_wait'], data['post_data']['time_wait'], data['flag']);
+                            document.getElementById('start-time').value = data['post_data']['time'];
+                        }
+                    } else {
+                        $.Toast(data['msg'], 'error');
+                    }
+                }
+            });
+        })
+    }
+
+    function get_color(v1, v2, v3) {
+        return colors[parseInt((v1 * 0.5 + v2 * 0.3 + v3 * 0.2) / 10)];
+    }
+
+    $("#MonitorList").click(function () {
+        plot_init('all');
+    });
+    function change_group() {
+        let group_id = document.getElementById('group').value;
+        let roomObj = document.getElementById('room');
+        $('.modal_cover').css("display", "block");
+        $('.modal_gif').css("display", "block");
+        $.ajax({
+            type: 'get',
+            url: '{% url 'monitor:change_group' %}?group=' + group_id,
+            success: function (data) {
+                if (data['code'] === 0) {
+                    roomObj.options.length = 0;
+                    for (let i=0; i<data['data']['rooms'].length; i++) {
+                        roomObj.options.add(new Option(data['data']['rooms'][i]['name'], data['data']['rooms'][i]['id']));
+                    }
+                    refresh_server_list(data['data']['hosts']);
+                    plot_init('all');
+                    $.Toast(data['msg'], 'success');
+                } else {
+                    $.Toast(data['msg'], 'error');
+                }
+                $('.modal_cover').css("display", "none");
+                $('.modal_gif').css("display", "none");
+            }
+        })
+    }
+
+    function change_room(is_modal=1) {
+        let group_id = document.getElementById('group').value;
+        let room_id = document.getElementById('room').value;
+        if (is_modal === 1) {
+            $('.modal_cover').css("display", "block");
+            $('.modal_gif').css("display", "block");
+        }
+        $.ajax({
+            type: 'get',
+            url: '{% url 'monitor:change_room' %}?group=' + group_id + '&room=' + room_id,
+            success: function (data) {
+                if (data['code'] === 0) {
+                    refresh_server_list(data['data']['hosts']);
+                    if (is_modal === 1) {plot_init('all');}
+                } else {
+                    $.Toast(data['msg'], 'error');
+                    clearInterval(server_timer);
+                }
+                if (is_modal === 1) {
+                    $('.modal_cover').css("display", "none");
+                    $('.modal_gif').css("display", "none");
+                }
+            }
+        })
+    }
+
+    let server_timer = setInterval(function () {
+        change_room(0);
+    }, 10000);
+</script>
+{% endblock %}

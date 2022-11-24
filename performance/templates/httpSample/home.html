@@ -1,0 +1,89 @@
+{% extends 'perf_home.html' %}
+{% load static compress %}
+
+{% block add_js %}
+    {% compress js %}
+    <script src="{% static 'performance/js/group.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
+
+{% block navigate %}
+    {% if controller_id %}
+        <a href="{% url 'perf:sample_home' %}?id={{ controller_id }}">HTTP Sample</a>
+    {% else %}
+        <a href="{% url 'perf:sample_home' %}">HTTP Sample</a>
+    {% endif %}
+{% endblock %}
+
+{% block detail_action %}
+    {% if controller_id %}
+        <a href="{% url 'perf:sample_add' %}?id={{ controller_id }}">Add HTTP Sample</a>
+    {% else %}
+        <a href="{% url 'perf:sample_add' %}">Add HTTP Sample</a>
+    {% endif %}
+{% endblock %}
+{% block searchBlock %}
+    <div class="search">
+        {% if key_word %}
+            <input type="text" id="searching" placeholder="Please input key words ~" value="{{ key_word }}">
+        {% else %}
+            <input type="text" id="searching" placeholder="Please input key words ~">
+        {% endif %}
+        {% if controller_id %}
+            <button onclick="search('{% url 'perf:sample_home' %}?id={{ controller_id }}')">Search</button>
+        {% else %}
+            <button onclick="search('{% url 'perf:sample_home' %}')">Search</button>
+        {% endif %}
+    </div>
+{% endblock %}
+{% block table_head %}
+    <tr class="table_style">
+        <th width="14%">Controller Name</th>
+        <th width="19%">Name</th>
+        <th width="19%">Path</th>
+        <th width="13%">Create Time</th>
+        <th width="13%">Update Time</th>
+        <th width="10%">Operator</th>
+        <th width="22%">Actions</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for sample in samples %}
+            <tr>
+            <td title="{{ sample.controller.name }}"><a href="{% url 'perf:controller_home' %}?id={{ sample.controller.thread_group.id }}">{{ sample.controller.name }}</a></td>
+            <td title="{{ sample.name }} -> {{ sample.comment }}"><a href="{% url 'perf:sample_home' %}?id={{ sample.controller.id }}">{{ sample.name }}</a></td>
+            <td title="{{ sample.path }}">{{ sample.path }}</td>
+            <td style="text-align: center;">{{ sample.create_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ sample.update_time | date:"Y-m-d H:i:s" }}</td>
+            <td style="text-align: center;">{{ sample.operator }}</td>
+            <td>
+                {% if sample.is_valid == 'true' %}
+                    <a href="{% url 'perf:sample_edit' %}?id={{ sample.id }}">Edit</a>
+                    <a href="#" onclick="set_status('sample', '{{ sample.id }}', 'false', '{% url 'perf:set_status' %}')">Disabled</a>
+                    <a href="{% url 'perf:sample_copy' %}?id={{ sample.id }}&controller_id={{ sample.controller.id }}">Copy</a>
+                {% else %}
+                    <a href="#" onclick="set_status('sample', '{{ sample.id }}', 'true', '{% url 'perf:set_status' %}')">Enabled</a>
+                {% endif %}
+                {% if controller_id %}
+                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:sample_home' %}?id={{ controller_id }}', 'sample', {{ sample.id }})">Delete</a>
+                {% else %}
+                    <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:sample_home' %}', 'sample', {{ sample.id }})">Delete</a>
+                {% endif %}
+
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+{% block define_js %}
+    <script type="text/javascript">
+        let url = '{% url 'perf:sample_home' %}?';
+        {% if key_word %}
+            url += 'keyWord={{ key_word }}&';
+        {% endif %}
+        {% if controller_id %}
+            url += 'id={{ controller_id }}&';
+        {% endif %}
+        PagingManage($('#paging'), {{ total_page }}, {{ page }}, url + 'page=');
+    </script>
+{% endblock %}

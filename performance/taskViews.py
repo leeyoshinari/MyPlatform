@@ -43,7 +43,7 @@ def home(request):
                 total_page = PerformanceTestTask.objects.filter(group__in=groups).count()
                 tasks = PerformanceTestTask.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
             logger.info(f'Get task success, operator: {username}')
-            return render(request, 'performance/task/home.html', context={'tasks': tasks, 'page': page, 'page_size': page_size,
+            return render(request, 'task/home.html', context={'tasks': tasks, 'page': page, 'page_size': page_size,
                           'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -451,9 +451,9 @@ def view_task_detail(request):
             tasks = PerformanceTestTask.objects.get(id=task_id)
             if tasks.start_time:
                 logger.info(f'query task {task_id} detail page success, operator: {username}')
-                return render(request, 'performance/task/detail.html', context={'tasks': tasks})
+                return render(request, 'task/detail.html', context={'tasks': tasks})
             else:
-                return render(request, 'performance/task/detail.html', context={'tasks': None})
+                return render(request, 'task/detail.html', context={'tasks': None})
         except:
             logger.error(traceback.format_exc())
             return render(request, '404.html')

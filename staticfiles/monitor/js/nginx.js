@@ -85,6 +85,7 @@ function get_summary() {
                     $.Toast(data['msg'], 'success');
                 }
             } else {
+                    document.getElementsByClassName('figure-region')[0].innerHTML = '';
                     $.Toast(data['msg'], 'error');
                 }
             $('.modal_cover').css("display", "none");

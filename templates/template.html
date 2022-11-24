@@ -1,4 +1,4 @@
-{% load static %}
+{% load static compress %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,12 +7,13 @@
     {% endblock %}
     <meta charset="utf-8">
     <link rel="shutcut icon" type="image/png" sizes="96x96" href="{% static 'img/favicon.ico' %}">
+    {% compress js %}
     <script src="{% static 'js/jquery.js' %}"></script>
-
-    {% block toast %}
-        <link rel="stylesheet" type="text/css" href="{% static 'css/toast.style.css' %}">
-        <script src="{% static 'js/toast.script.js' %}"></script>
-    {% endblock %}
+    <script src="{% static 'js/toast.script.js' %}"></script>
+    {% endcompress %}
+    {% compress css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/toast.style.css' %}">
+    {% endcompress %}
 
     {% block addcss %}{% endblock %}
     {% block addjs %}{% endblock %}

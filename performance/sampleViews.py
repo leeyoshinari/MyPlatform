@@ -47,7 +47,7 @@ def home(request):
                 samples = HTTPSampleProxy.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get http samples success, operator: {username}')
-            return render(request, 'performance/httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
+            return render(request, 'httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'controller_id': ctl_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -82,7 +82,7 @@ def get_from_header(request):
                 samples = HTTPSampleProxy.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
             logger.info(f'Get http samples success, operator: {username}')
-            return render(request, 'performance/httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
+            return render(request, 'httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'header_id': header_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
             logger.error(traceback.format_exc())
@@ -130,7 +130,7 @@ def add_sample(request):
                 groups = request.user.groups.all().values('id')
                 controllers = TransactionController.objects.filter(group__in=groups).order_by('-create_time')
             http_headers = HTTPRequestHeader.objects.filter(method='GET').order_by('-create_time')
-            return render(request, 'performance/httpSample/add.html', context={
+            return render(request, 'httpSample/add.html', context={
                 'controller_id': ctl_id, 'controllers': controllers, 'protocols': protocols, 'http_headers': http_headers,
                 'methods': methods, 'assertion_types': assertion_types, 'contentEncodings': contentEncodings, 'data_types': data_types
             })
@@ -188,7 +188,7 @@ def edit_sample(request):
             samples = HTTPSampleProxy.objects.get(id=sample_id)
             controllers = TransactionController.objects.filter(group=samples.controller.group).order_by('-create_time')
             http_headers = HTTPRequestHeader.objects.filter(method=samples.method).order_by('-create_time')
-            return render(request, 'performance/httpSample/edit.html', context={
+            return render(request, 'httpSample/edit.html', context={
                 'controllers': controllers, 'samples': samples, 'protocols': protocols, 'methods': methods, 'http_headers': http_headers,
                 'assertion_types': assertion_types, 'contentEncodings': contentEncodings, 'data_types': data_types})
         except:

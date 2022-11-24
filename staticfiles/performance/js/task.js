@@ -121,7 +121,7 @@ function get_used_server(task_id, url, url1) {
                     trs[0].remove();
                 }
                 for(let i=0; i<all_host.length; i++) {
-                    s += '<tr class="running"><td style="text-align: center;">' + all_host[i]['host'] + '</td><td style="text-align: center;">' + all_host[i]['tps'] + '</td>';
+                    s += '<tr class="used"><td style="text-align: center;">' + all_host[i]['host'] + '</td><td style="text-align: center;">' + all_host[i]['tps'] + '</td>';
                     if (all_host[i]['cpu']) {
                         s += '<td style="text-align: center;">' + all_host[i]['cpu'] + ' Core(s) / ' + all_host[i]['cpu_usage'].toFixed(2) + '%</td>';
                     } else {
@@ -209,6 +209,12 @@ function start_test(url, task_id, host) {
         dataType: 'json',
         success: function (data) {
             if(data['code'] === 0) {
+                let trs = document.getElementById('tbody').getElementsByClassName('idling');
+                let trs_length = trs.length;
+                for(let i=0; i<trs_length; i++) {
+                    trs[0].remove();
+                }
+                document.getElementById('show-server').innerText = "Show More";
                 $.Toast(data['msg'], 'success');
             } else {
                 $.Toast(data['msg'], 'error');

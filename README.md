@@ -54,7 +54,7 @@ It is a platform mainly used for performance test, here are some simple features
 
 2. Install MySQL(SQLite3 can be used directly, doesn't need to be installed), InfluxDB, Redis, MinIO(Optional installation); (ps：InfluxDB2.x is not supported, [ influxdb-1.8.3](https://dl.influxdata.com/influxdb/releases/influxdb-1.8.3.x86_64.rpm ) is recommended.)
 
-3. Install third-packages
+3. Install third-party packages
     ```shell script
     pip3 install -r requirements.txt
     ```
@@ -78,14 +78,19 @@ It is a platform mainly used for performance test, here are some simple features
     python3 manage.py loaddata initdata.json
     ```
 
-8. Deal all static files
+8. Collect all static files
     ```shell script
-    python3 manage.py collectstatic
+    python3 manage.py collectstatic --clear --noinput
     ```
 
-9. Modify Port in `startup.sh`
+9. Compress static files (css and js)
+    ```shell script
+    python3 manage.py compress --force
+    ```
 
-10. Deploy `nginx`, the location configuration is as follows: (ps: The `platform` in the configuration is the prefix, that is the URL prefix in the URL path, which can be modified according to your needs.)<br>
+10. Modify Port in `startup.sh`
+
+11. Deploy `nginx`, the location configuration is as follows: (ps: The `platform` in the configuration is the prefix, that is the URL prefix in the URL path, which can be modified according to your needs.)<br>
     (1) upstream configuration:
     ```shell script
     upstream myplatform-server {
@@ -117,24 +122,24 @@ It is a platform mainly used for performance test, here are some simple features
     }
     ```
 
-11. Startup
+12. Startup
     ```shell script
     sh startup.sh
     ```
     Run `sh shutdown.sh` to stop.
 
-12. Access home page, url: `http://ip:port/(prefix in config.conf)`
+13. Access home page, url: `http://ip:port/(prefix in config.conf)`
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/home.JPG)
 
-13. Access permission management page, url: `http://ip:port/(prefix in config.conf)/admin`
+14. Access permission management page, url: `http://ip:port/(prefix in config.conf)/admin`
 
-14. Deploy collector-agent, [please click me](https://github.com/leeyoshinari/collector_agent)
+15. Deploy collector-agent, [please click me](https://github.com/leeyoshinari/collector_agent)
 
-15. Deploy monitor-agent, [please click me](https://github.com/leeyoshinari/monitor_agent)
+16. Deploy monitor-agent, [please click me](https://github.com/leeyoshinari/monitor_agent)
 
-16. Deploy jmeter-agent, [please click me](https://github.com/leeyoshinari/jmeter_agent)
+17. Deploy jmeter-agent, [please click me](https://github.com/leeyoshinari/jmeter_agent)
 
-17. Deploy nginx-agent, [please click me](https://github.com/leeyoshinari/nginx_agent)
+18. Deploy nginx-agent, [please click me](https://github.com/leeyoshinari/nginx_agent)
 
 ## Note
 1. For more information, [please click me](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/course_en.md) or view course after deployment.
@@ -149,6 +154,7 @@ Third-party packages version:
 - channels==3.0.4
 - daphne==3.0.2
 - Django==4.0.1
+- django-compressor==4.1
 - influxdb==2.6.0
 - Jinja2==3.0.3
 - minio==7.1.3
