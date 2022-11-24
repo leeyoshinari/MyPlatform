@@ -185,7 +185,7 @@
             let query_server_timer = setInterval(function () {
                 get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
                 '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}', {{ tasks.plan.type }})
-            }, 15000);
+            }, 10000);
 
             document.getElementById('show-server').addEventListener('click', function () {
                 let title = document.getElementById('show-server').innerText;
