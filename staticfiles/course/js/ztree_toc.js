@@ -171,7 +171,11 @@ function factor(opts ,count,current) {
 			render_with_ztree(opts);
 			// 根据滚动确定当前位置，并更新ztree
 		    bind_scroll_event_and_update_postion(opts);
-		    document.getElementById('tree_1_span').innerText = '目录';
+		    if (window.location.href.indexOf('zh') > 1) {
+				document.getElementById('tree_1_span').innerText = '目录';
+			} else {
+		    	document.getElementById('tree_1_span').innerText = 'Catalog';
+			}
 		});
 	}
 	

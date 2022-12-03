@@ -132,3 +132,4 @@ migrations/
 temp/
 logs/
 files/
+static/CACHE

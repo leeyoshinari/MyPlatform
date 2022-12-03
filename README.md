@@ -2,12 +2,12 @@
 [中文文档](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/README_zh.md)
 
 ## Introduction
-It is a platform mainly used for performance test, here are some simple features brief: <br>
+It is a platform mainly used for performance testing, here are some simple features brief: <br>
 1. Server Management, can view server's basic information uniformly<br>
 2. Shell Remote Connection, support for files upload and download between local and server<br>
 3. Server resource usage monitoring<br>
 4. Nginx's access.log traffic collection<br>
-5. Performance Test tool, support for automated and distributed performance test<br>
+5. Performance Testing tool, support for automated and distributed performance testing<br>
 
 ## Directory
 - MyPlatform - project files
@@ -25,7 +25,7 @@ It is a platform mainly used for performance test, here are some simple features
 - Time-Series Database: InfluxDB - used to store monitoring data
 - Key-value Database: Redis - used to cluster/distributed data synchronization
 - File Server: MinIO - used to store files
-- Performance Test tool: JMeter - used to execute JMeter file
+- Performance Testing tool: JMeter - used to execute JMeter file
 
 ## Architecture
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
@@ -44,7 +44,7 @@ It is a platform mainly used for performance test, here are some simple features
 &emsp;&emsp;Nginx traffic collector. Process Nginx's access log (access.log) in real time, the access information (access time, client IP, interface name, request method, protocol, status code, response body size, response time) is stored in database.
 
 **jmeter-agent**<br>
-&emsp;&emsp;Performance test tool. Call JMeter to execute performance test, and supports distributed performance test and full-link performance test.
+&emsp;&emsp;Performance testing tool. Call JMeter to execute performance testing, and supports distributed performance testing and full-link performance testing.
 
 ## Deploy
 1. Clone Repository
@@ -90,7 +90,7 @@ It is a platform mainly used for performance test, here are some simple features
 
 10. Modify Port in `startup.sh`
 
-11. Deploy `nginx`, the location configuration is as follows: (ps: The `platform` in the configuration is the prefix, that is the URL prefix in the URL path, which can be modified according to your needs.)<br>
+11. Deploy `nginx`, the `location` configuration is as follows: (ps: The `platform` in the configuration is the prefix, that is the URL prefix in the URL path, which can be modified according to your needs.)<br>
     (1) upstream configuration:
     ```shell script
     upstream myplatform-server {

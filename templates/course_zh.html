@@ -23,6 +23,7 @@
   <div class="container1"><div class="home_list"><a href="{% url 'home' %}">Home</a><span>&gt;&gt;</span><a href="{% url 'course' %}">Course</a></div><a href="{% url 'user:logout' %}">Logout</a></div><div>
 <div style='width:25%;'><ul id="tree" class="ztree"></ul></div>
 <div id='readme' style='width:70%;margin-left:20%;'><article class='markdown-body'>
+<p class="qaq-title" style="float: right; padding-top: 12px;"><a href="{% url 'course' %}?_lang=en">English Doc</a></p>
 <p class="qaq-title">欢迎使用，项目地址：<a href="https://github.com/leeyoshinari/MyPlatform">https://github.com/leeyoshinari/MyPlatform</a></p>
 <h1>介绍</h1>
 <p>这是一个主要用于性能测试的平台，先简单介绍一下这个平台具有的功能：</p>
@@ -93,9 +94,11 @@ python3 manage.py migrate</code></pre>
 <p style="margin-top: 15px">7、数据初始化；</p>
 <pre><code>python3 manage.py loaddata initdata.json</code></pre>
 <p style="margin-top: 15px">8、处理所有静态文件；</p>
-<pre><code>python3 manage.py collectstatic</code></pre>
-<p style="margin-top: 15px">9、修改<code>startup.sh</code>中的端口号；</p>
-<p style="margin-top: 15px">10、部署<code>nginx</code>，location相关配置如下：(ps: 下面列出的配置中的<code>platform</code>是url路径中的prefix，即url前缀，可根据自己需要修改)</p>
+<pre><code>python3 manage.py collectstatic --clear --noinput</code></pre>
+<p style="margin-top: 15px">9、压缩静态文件（css 和 js）；</p>
+<pre><code>python3 manage.py compress --force</code></pre>
+<p style="margin-top: 15px">10、修改<code>startup.sh</code>中的端口号；</p>
+<p style="margin-top: 15px">11、部署<code>nginx</code>，location相关配置如下：(ps: 下面列出的配置中的<code>platform</code>是url路径中的prefix，即url前缀，可根据自己需要修改)</p>
 <p>（1）upstream 配置</p>
 <pre><code>upstream myplatform-server {
     server 127.0.0.1:15200;
@@ -119,16 +122,16 @@ python3 manage.py migrate</code></pre>
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection &quot;upgrade&quot;;
 }</code></pre>
-<p style="margin-top: 15px">11、启动</p>
+<p style="margin-top: 15px">12、启动</p>
 <pre><code>sh startup.sh</code></pre>
 <p>停止请执行 <code>sh shutdown.sh</code></p>
-<p style="margin-top: 15px">12、访问页面，url是 <code>http://ip:port/config.conf中的prefix</code>
+<p style="margin-top: 15px">13、访问页面，url是 <code>http://ip:port/config.conf中的prefix</code>
 <img src="{% static 'img/home.JPG' %}" alt=""></p>
-<p style="margin-top: 15px">13、访问权限控制页面，url是 <code>http://ip:port/config.conf中的prefix/admin</code></p>
-<p style="margin-top: 15px">14、部署数据收集工具，<a href="https://github.com/leeyoshinari/collector_agent">快点我</a></p>
-<p style="margin-top: 15px">15、部署服务器资源监控执行工具，<a href="https://github.com/leeyoshinari/monitor_agent">快点我</a></p>
-<p style="margin-top: 15px">16、部署性能测试执行工具，<a href="https://github.com/leeyoshinari/jmeter_agent">快点我</a></p>
-<p style="margin-top: 15px">17、部署Nginx流量采集工具，<a href="https://github.com/leeyoshinari/nginx_agent">快点我</a></p>
+<p style="margin-top: 15px">14、访问权限控制页面，url是 <code>http://ip:port/config.conf中的prefix/admin</code></p>
+<p style="margin-top: 15px">15、部署数据收集工具，<a href="https://github.com/leeyoshinari/collector_agent">快点我</a></p>
+<p style="margin-top: 15px">16、部署服务器资源监控执行工具，<a href="https://github.com/leeyoshinari/monitor_agent">快点我</a></p>
+<p style="margin-top: 15px">17、部署性能测试执行工具，<a href="https://github.com/leeyoshinari/jmeter_agent">快点我</a></p>
+<p style="margin-top: 15px">18、部署Nginx流量采集工具，<a href="https://github.com/leeyoshinari/nginx_agent">快点我</a></p>
 <h1>Shell 工具</h1>
 <p class="qaq-content">该工具可以查看管理服务器，并可以直接在浏览器上远程连接 Linux。支持权限控制，将用户添加进项目组中，用户就只能看到项目组下的服务器，可以避免未授权的访问。</p>
 <img src="{% static 'img/shell_home.JPG' %}" alt="">
@@ -330,9 +333,9 @@ python3 manage.py migrate</code></pre>
 <li style="text-indent: 1em; list-style-position: inside">Download logs：下载该施压机的JMeter执行的日志；</li>
 <li style="text-indent: 1em; list-style-position: inside">Change TPS：调整单个施压机的TPS；</li>
 </ul>
-<p class="qaq-content" style="margin-top: 15px">分布式压测</p>
+<h3>分布式压测</h3>
 <p class="qaq-content">借用Redis实现分布式压测时各施压机之间的数据同步，各施压机的数据和所有施压机汇总数据的时间全部以InfluxDB的时间为准；这就突破了使用JMeter进行分布式压测时需要各施压机的系统时间、Java版本、JMeter版本必须一样的限制，可以更加方便进行分布式压测。</p>
-<p class="qaq-content" style="margin-top: 15px">施压机热挂载</p>
+<h3>施压机热挂载</h3>
 <p class="qaq-content">同样也是借用Redis实现的。当在性能测试过程中，发现压力不够，需要增加施压机时，只需要在当前压测任务下（即查看压测详情页面）启动一个施压机即可，而不需要单独另开启一个压测任务（两个任务之间的数据是独立的）；当需要下掉一个施压机时，直接点击施压机的停止按钮即可立即下线；可以更加灵活地调整压力。</p>
 <h1>QAQ</h1>
 <p class="qaq-title">1、为什么shell会经常提醒 Session is in closed status？</p>
@@ -344,7 +347,7 @@ python3 manage.py migrate</code></pre>
 <p class="qaq-content">对于collector-agent：因为服务器资源监控是秒级，且近似实时，在查看服务器资源监控图时，如果刷新页面后展示的时间比当前时间晚5~10秒，那么就需要增加 collector-agent 集群节点数。</p>
 <p class="qaq-content">以上纯属个人建议，请根据实际情况合理增加集群节点数。</p>
 <p class="qaq-title">4、单台施压机支持的QPS多少？</p>
-<p class="qaq-content">建议每台施压机的QPS不要超过1000/s。如果发现压力上不来，请先排除施压机和被测系统问题后，再增加一台施压机。</p>
+<p class="qaq-content">建议每台施压机的QPS不要超过3000/s（需要结合实际情况）。如果发现压力上不来，请先排除施压机和被测系统问题后，再增加一台施压机。</p>
 <p class="qaq-title">5、性能测试怎么区分压测流量和正常流量？</p>
 <p class="qaq-content">如果你是在页面上手动编写的脚本，那么当脚本执行时，会自动把请求头中的 <code>User-Agent</code> 的值设置成 <code>PerformanceTest</code>，故可根据 <code>User-Agent</code> 区分压测流量。</p>
 <p class="qaq-content">如果你是在<code>Upload JMeter</code>页面手动上传本地调试好的脚本，那么脚本中的请求头必须包含 <code>User-Agent</code> 字段，当执行脚本时，会自动把请求头中的 <code>User-Agent</code> 的值替换成 <code>PerformanceTest</code>。所以你的本地脚本中的请求头必须包含 <code>User-Agent</code> 字段。</p>

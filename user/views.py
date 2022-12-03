@@ -101,7 +101,7 @@ def course(request):
         if lang == 'zh':
             return render(request, 'course_zh.html')
         else:
-            return render(request, 'course_zh.html')
+            return render(request, 'course_en.html')
     else:
         return render(request, '404.html')
 

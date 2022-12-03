@@ -1,11 +1,11 @@
 # MyPlatform
 ## Introduction
-It is a platform mainly used for performance test, here are some simple features brief: <br>
+It is a platform mainly used for performance testing, here are some simple features brief: <br>
 1. Server Management, can view server's basic information uniformly<br>
 2. Shell Remote Connection, support for files upload and download between local and server<br>
 3. Server resource usage monitoring<br>
 4. Nginx's access.log traffic collection<br>
-5. Performance Test tool, support for automated and distributed performance test<br>
+5. Performance Testing tool, support for automated and distributed performance testing<br>
 
 ## Directory
 - MyPlatform - project files
@@ -16,14 +16,14 @@ It is a platform mainly used for performance test, here are some simple features
 - user - user related
 - shell - shell tool
 - monitor - monitor tool
-- performance - performance test tool
+- performance - performance testing tool
 
 ## Middleware
 - Relational Database: SQLite3 or MySQL - used to store platform data
 - Time-Series Database: InfluxDB - used to store monitoring data
 - Key-value Database: Redis - used to cluster/distributed data synchronization
 - File Server: MinIO - used to store files
-- Performance Test tool: JMeter - used to execute JMeter file
+- Performance Testing tool: JMeter - used to execute JMeter file
 
 ## Architecture
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
@@ -32,8 +32,7 @@ If you need to satisfy more users, please deploy cluster; if you need high avail
 #### Explain
 **collector-agent**<br>
 Data Collector. All agents' data will be sent to collector-agent, and then collector-agent writes data to InfluxDB/redis.<br>
-It can be avoid a problem: If each agent connects to the database separately, it may cause the database connection to run out or exceed the number of connections allowed by the server. <br>
-But if too many agents cause the collector-agent to not be able to write database in time, increasing the thread pool size of the collector-agent is needed; if still not, increasing the number of collector-agent cluster nodes is needed.
+It can be avoid a problem: If each agent connects to the database separately, it may cause the database connection to run out or exceed the number of connections allowed by the server. But if too many agents cause the collector-agent to not be able to write database in time, increasing the thread pool size of the collector-agent is needed; if still not, increasing the number of collector-agent cluster nodes is needed.
 
 **monitor-agent**<br>
 Server resource monitor. Execute Linux commands to collect the server's CPU, Memory, Disk, Network, TCP, and other data in real time.
@@ -42,7 +41,7 @@ Server resource monitor. Execute Linux commands to collect the server's CPU, Mem
 Nginx traffic collector. Process Nginx's access log (access.log) in real time, the access information (access time, client IP, interface name, request method, protocol, status code, response body size, response time) is stored in database.
 
 **jmeter-agent**<br>
-Performance test tool. Call JMeter to execute performance test, and supports distributed performance test and full-link performance test.
+Performance testing tool. Call JMeter to execute performance testing, and supports distributed performance testing and full-link performance testing.
 
 ## Third-party Package
 Local dev environment:
@@ -108,7 +107,7 @@ Third-party packages version:
 
 10. Modify Port in `startup.sh`
 
-11. Deploy `nginx`, the location configuration is as follows: (ps: The `platform` in the configuration is the prefix, that is the URL prefix in the URL path, which can be modified according to your needs.)<br>
+11. Deploy `nginx`, the `location` configuration is as follows: (ps: The `platform` in the configuration is the prefix, that is the URL prefix in the URL path, which can be modified according to your needs.)<br>
     (1) upstream configuration:
     ```shell script
     upstream myplatform-server {
@@ -159,237 +158,249 @@ Third-party packages version:
 
 18. Deploy nginx-agent, [please click me](https://github.com/leeyoshinari/nginx_agent)
 
-## Shell 工具
-该工具可以查看管理服务器，并可以直接在浏览器上远程连接 Linux。
-支持权限控制，将用户添加进项目组中，用户就只能看到项目组下的服务器，可以避免未授权的访问。
+## Shell Tool
+In Shell Tool, you can view and manage servers, and remote connect Linux on browser directly.
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/shell_home.JPG)
-### 具体使用
-#### 设置项目组
-点击 Create Group 创建项目组，需要设置项目组和项目组应用的唯一标识符。唯一标识符一般在整个公司是唯一的，对于在服务器上，通过`ps -ef | grep 唯一标识符 | grep -v grep` 命令可以查找到唯一一个进程。<br>
-该按钮仅管理员可见。
-#### 设置服务器所在机房
-点击 Create Server Room 创建机房，设置机房时主要有3个选项，分别是用于应用、用于中间件、用于压测。为什么有这3个呢？<br>
-例如一个机房有100台服务器，项目组A用了40台部署自己的服务，项目组B也用了40台部署自己的服务，还有10台服务器部署了中间件，剩余10台可以用于压测，这3个选项就用于区分这些类型。因为这个项目把服务器管理、服务器监控和压测整合在一起了，为了能够区分，所以才加了3个选项；不像大公司的平台都是不同的人开发的不同的应用，只是把前端页面挂在一起。<br>
 
-一般性能测试需要施压机和被测服务所在服务器在同一个机房，如果你就想跨机房压测，可以把不是同一个机房的服务器设置成同一个机房，假装它们在一起。<br>
-该按钮仅管理员可见
-#### 添加服务器
-点击 Add Server 创建服务器，这里需要设置服务器所属项目组、所在的机房、以及服务器IP、用户名和登录密码。
-#### 用户管理
-点击 Add User 将用户添加到某个项目组中 或 从某个项目组中移除。添加用户后，该用户就可以看到并访问这个项目组中的所有服务器。管理员默认可以查看所有服务器。<br>
-该按钮仅管理员可见
-#### 服务器列表
-每个添加的服务器都会展示在列表中，可以概览服务器的基本信息（系统、CPU、内存、磁盘）。Action 列可以操作服务器，在这里可以打开 Shell 远程连接 Linux；其中的编辑和删除的功能仅创建人和管理员可见。
-#### 远程连接服务器
-点击 OpenShell 即可打开 Shell 远程连接 Linux，可以同时打开很多个页面，如下:
+### Usage
+#### Setting Project Group
+Click `Create Group` to create project, the project name and unique identifier for application of project are needed. Unique identifier is unique throughout the company, for linux server,  use `ps -ef | grep Unique Identifier | grep -v grep` to find a unique process.<br>
+The button is visible only to the administrator.
+#### Setting the Server Room
+Click `Create Server Room` to create server room, there are three options for setting the server room: application, middleware, and pressure test. Why are there three?<br>
+For example, there are 100 servers in a server room, and Project group A uses 40 servers to deploy its own services, Project group B uses 40 servers to deploy its own services, and 10 servers to deploy middleware, and remaining 10 servers used to performance testing. Because of this Repository integrates Server Management, Server Monitor and Performance Test together, the three options are added in order to distinguish them. It's not like company's platform that different people develop different services and just hanging the front page together.<br>
+The button is visible only to the administrator.
+#### Add Servers
+Click `Add Server` to create server, you need to set the project to which the server belongs, the server room where the server is, and the server IP address, user name, and login password.
+#### User Management
+Click `Add User` to add a user to a project or remove a user from a project. After user is added, that user can view and access all servers in the project. Administrator can view all servers by default.<br>
+The button is visible only to the administrator.
+#### Server's List
+Each added server is displayed in the list, giving you an overview of the basic information about the server (system, CPU, memory, disk). The Action column allows you to operate the server, where you can open the Shell to remotely connect to Linux; The edit and delete buttons are visible only to the creator and administrator.
+#### Remote Connection to the Server
+Click `OpenShell` to open Shell remote connection to Linux, and you can open many pages at the same time, as follows:
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/shell_ternimal.JPG)
 
-为了提供更好的使用体验，提供了 Ctrl+C（复制）和 Ctrl+V（粘贴）快捷键，不仅如此，还仍然保留了 Ctrl+C 快捷键在 shell 中的终止前台进程的功能，而绝大部分主流 shell 工具是不支持这种功能的，老板再也不担心你敲命令慢了。<br>
+To provide a better experience, the Ctrl+C(copy) and Ctrl+V(paste) shortcuts are provided. Not only that, but the Ctrl+C shortcut is still able to terminate foreground processes in the linux shell, which is not supported by most popular shell tools.<br>
 
-在打开的 Shell 中，可以上传文件到服务器，或者下载文件到本地。为了安全，上传和下载的入口也是可以关闭的。<br>
-- 在上传文件时，首先会弹出输入框，需要填入文件上传到哪个目录（绝对路径，不填默认 /home 目录），然后选择文件上传。<br>
-- 在下载文件时，也会弹出输入框，需要填入文件的完整路径（绝对路径），必须填文件路径，不能填目录路径，然后可通过浏览器下载到本地。<br>
-#### 自动部署Agent
-点击 Deploy 会打开新的页面，这个页面可以上传部署包、自动部署和卸载。<br>
+In the open Shell, you can upload files to the server or download files from server to local. The entry for uploading and downloading can also be closed for security.<br>
+- When uploading file, the input box will pop up firstly, and then need to enter the directory which the folder is uploaded to (absolute path, default `/home`), and then Upload.<br>
+- When downloading file, the input box will also pop up, and then need to enter the complete path (absolute path) of the file, and then download to local. You must enter the file path, not the folder path.<br>
+#### Deploy Agent
+Click `Deploy` to open a new page, in this page, you can upload deployment packages, auto-deploy and uninstall.<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/shell_deploy.JPG)
-由于一些部署包区分Linux发行版本和CPU架构，故需要先准备好对应的部署包，然后上传到平台，通过该平台进行部署。如果部署包不区分Linux发行版本和CPU架构，上传部署包时可随意选择一种。
-该平台下面的所有agent都可以且只能通过该平台自动部署（当前只支持部署 [monitor-agent](https://github.com/leeyoshinari/monitor_agent) 、[jmeter-agent](https://github.com/leeyoshinari/jmeter_agent) 、[nginx-agent](https://github.com/leeyoshinari/nginx_agent) 、java、jmeter）。为了方便部署，所有的agent的配置文件已经简化到不能再简化了，一般情况下不需要修改任何配置，所有的配置都从平台自动获取。建议部署顺序：先部署Java(仅施压机部署且没有部署过)，再部署JMeter(仅施压机部署)，再部署collector-agent，剩下就部署其他需要部署的agent了。<br>
 
-在点击部署/卸载前，请仔细核对当前服务器的Linux系统发行版本和CPU架构是否和部署包的Linux系统发行版本和CPU架构一致。<br>
-注：极少数情况下需要修改agent配置文件，例如：你的nginx部署方式和99%的人都不一样，无法自动获取nginx的日志路径，这时就需要修改配置文件。
+Owing to deployment packages differ from Linux distribution and CPU architecture. Therefore, you need to prepare the deployment packages and upload them to the platform for deployment. If the deployment package doesn't differentiate between Linux distribution and CPU architecture, you can choose one of them randomly when uploading the deployment package.<br>
+All agents can be automatically deployed on this platform (Currently, only [monitor-agent](https://github.com/leeyoshinari/monitor_agent ), [jmeter-agent](https://github.com/leeyoshinari/jmeter_agent ), [nginx-agent](https://github.com/leeyoshinari/nginx_agent ), java, jmeter can be deployed). For the convenience of deployment, all agent configuration files have been simplified. Generally, there is no need to modify any configuration, and all configurations are automatically obtained from the platform. Suggested deployment sequence: first deploy Java (only the pressure machine is deployed and has not been deployed), then deploy JMeter (only the pressure machine is deployed), then deploy the collector-agent, and deploy other agents that need to be deployed.
 
-## 服务器资源监控
-该工具（[快点我部署](https://github.com/leeyoshinari/monitor_agent) ）主要用于监控服务器资源使用情况，主要有一下功能：
-- 监控整个服务器的CPU使用率、io wait、内存使用、磁盘IO、网络带宽和TCP连接数<br>
-- 监控端口的 TCP 状态<br>
-- 针对java应用，可以监控jvm大小和垃圾回收情况；当Full GC频率过高时，可发送邮件提醒<br>
-- 系统CPU使用率过高，或者剩余内存过低时，可发送邮件提醒；可设置自动清理缓存<br>
+Before clicking Deploy/Uninstall, please carefully check whether the Linux system release version and CPU architecture of the current server are consistent with the Linux system release version and CPU architecture of the deployment package.<br>
+Note: In rare cases, you need to modify the agent configuration file. For example, your nginx deployment method is different from 99% of people. It cannot automatically obtain the nginx log path. In this case, you need to modify the configuration file.
 
-相较于之前的服务器资源监控工具（[快点我查看](https://github.com/leeyoshinari/performance_monitor) ），此次进行了大刀阔斧地改进，首先不再是单独的工具，而是集成进平台中，和平台中的其他工具可以无缝对接；其次是使用了全新的交互和监控方案，并引入了项目组和机房，更加适用于大规模集群部署的应用。
-### 首页
-首页展示了所有已经部署监控的服务器，这里可以概览服务器资源的当前使用情况。这个入口仅管理员可以看到，可分项目组查询。
+## Server Monitoring
+This tool ([click me](https://github.com/leeyoshinari/monitor_agent)) is mainly used to monitor server resource usage, and the functions are:
+- Monitor the CPU usage, io wait, memory usage, disk IO, network  and TCP connections of the entire server<br>
+- Monitor the TCP state of the port<br>
+- For java applications, you can monitor the jvm  and GC; when the frequency of Full GC is too high, an email reminders can be sent<br>
+- When the CPU usage of the system is too high, or the remaining memory is too low, an email reminder can be sent; the cache can be automatically cleared<br>
+
+Compared with the previous server resource monitoring tool ([click me](https://github.com/leeyoshinari/performance_monitor)), it has been greatly improved now. First of all, it is no longer a separate tool, but integrated into the platform, which can be seamlessly connected with other tools in the platform; secondly It uses a new interaction and monitoring solution, and introduces project groups and server rooms, which are more suitable for large-scale cluster deployment applications.
+
+### Home Page
+The home page shows all the servers that have been monitored, where you can get an overview of the current usage of server resources. This entry can only be seen by the administrator, and can be queried by project group.
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/monitor_home.JPG)
-### 可视化
-监控结果可视化，分项目组和机房查看，可选择任意时间段（监控数据保留时长在配置中设置）。<br>
+
+### Visualization
+Data visualization, view by project group and server room, you can choose any time period (the monitoring data retention period is set in the configuration).<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/monitor_figure.JPG)
-主要监控下面数据：<br>
-- CPU：CPU 总使用率、iowait 使用率
-- 内存：剩余内存、可用内存、JVM内存（仅Java）
-- 磁盘：磁盘读写速度、磁盘IO
-- 网络：网络上行和下行速度、网络使用率
-- TCP：系统的TCP连接总数、TCP重传数，端口的TCP数量、time-wait数量、close-wait数量
 
-查看监控结果时，默认展示指定项目组和机房下的所有服务器资源的平均值，左侧展示的是服务器列表，排列顺序按照CPU、IO、网络使用率权重（5:3:2）排序，颜色也按照这个权重计算展示。点击某个服务器，即可查看该服务器的资源监控数据。页面所有数据每隔10s刷新一次。<br>
+Mainly monitor the following data:<br>
+- CPU: total CPU usage, iowait usage
+- Memory: remaining memory, available memory, JVM memory (only for Java)
+- Disk: disk read and write speed, disk IO
+- Network: network uplink and downlink speed, network usage
+- TCP: the total number of TCP connections in the system, the number of TCP retransmissions, the number of TCP ports, the number of time-wait, and the number of close-wait
 
-## Nginx流量采集工具
-该工具（[快点我部署](https://github.com/leeyoshinari/nginx_agent) ）主要用于解析Nginx的access.log，从日志中提取出接口访问数据。<br>
-首页页面展示的信息是根据接口聚合后的结果（过滤掉静态文件的请求），默认按照QPS排序，可选按响应时间、响应体大小、响应错误数量排序；可分别查看压测流量和正常流量。
+When viewing the monitoring datas, the average value of all server resources under the specified project group and server room is displayed by default. The server list is displayed on the left, sorted according to the weight of CPU, IO, and network usage (5:3:2), and the color is also calculated and displayed according to this weight. Click on a server to view the monitoring data of the server. All data on the page is refreshed every 10s.
+
+## Nginx Flow Collect
+This tool ([click me](https://github.com/leeyoshinari/nginx_agent)) is mainly used to parse the access.log of Nginx and extract interface access data from the log.<br>
+The information displayed on the home page is based on the aggregated results of interfaces (requests for static files are filtered out), sorted by QPS by default, and optionally sorted by response time, response body size, and number of response errors; you can view performance testing traffic and normal traffic separately.<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/nginx_summary.JPG)
 
-点击每个接口，可查看该接口的每秒数据变化图
+Click on each interface to view the data change graph of the interface per second.
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/nginx_detail.JPG)
-注意：**为了采集到上述数据，需要修改nginx日志格式，详见[nginx-agent部署](https://github.com/leeyoshinari/nginx_agent )**
 
-## 性能测试工具
-现在开源的、最好用的性能测试工具是JMeter，很多公司的性能测试平台的底层都用的是JMeter，所以本工具底层也是用JMeter实现的，而且原滋原味的保留了JMeter的所有功能，让您像在本地使用JMeter一样的丝般顺滑，使用体验远超某电商的全链路压测平台。
+Note: **In order to collect the above data, the nginx log format needs to be modified, see [nginx-agent](https://github.com/leeyoshinari/nginx_agent) for details**.
 
-该工具（[快点我部署](https://github.com/leeyoshinari/jmeter_agent) ）具有以下功能：<br>
-- 在页面可以编辑JMeter脚本，也可以导入已有JMeter脚本；
-- 支持根据压测情况随时调整TPS，可调整总的TPS，也可以调整每个施压机的TPS；
-- 支持分布式压测，可以动态增加/减少施压机，实现施压机热挂载；
-- 支持自动执行压测；
-- 强大的赋能能力，该工具具有的功能几乎可以用于所有的JMeter脚本；
-- 原滋原味的保留了JMeter的所有功能，只要本地能运行的脚本，用该工具都可以运行，因此也支持JMeter所有的扩展插件；
+## Performance Testing
+Now the open-source and best-used performance testing tool is JMeter. Many companies' performance testing platforms are based on JMeter, so this platform is also based on JMeter, and it retains all the original functions of JMeter, let you use JMeter as silky and smooth as you use locally.
 
-先说一下使用JMeter做HTTP接口性能测试的基本流程：<br>
-1、创建jmx文件，编写压测脚本。压测脚本的结构是：`测试计划(Test Plan)—>线程组(Thread Group)—>控制器(Controller)—>取样器(HTTP Sample)`。<br>
-另外还有一些辅助的组件例如：CSV数据文件设置、吞吐量控制器、Http Cookie管理器等。<br>
-2、确定并发数，设置压测执行时间；<br>
-3、执行压测；<br>
-4、查看压测结果；<br>
-以上，所以该工具的作用就是把上述步骤流程化、便捷化、自动化。<br>
+The tool([click me](https://github.com/leeyoshinari/jmeter_agent)) has the following functions:<br>
+- JMeter scripts can be edited on the page, or also import existing JMeter scripts;
+- Support to adjust TPS at any time according to the performance testing situation, the total TPS can be adjusted, and the TPS of each pressure machine can also be adjusted;
+- Support distributed performance testing, can dynamically increase/decrease the pressure machines;
+- Support automatic performance testing;
+- Powerful enabling ability, the functions of this platform can be used in almost all JMeter scripts;
+- The original taste retains all the functions of JMeter. As long as the script can be run locally, it can be run with this tool, so it also supports all extensions of JMeter;
 
-### 具体使用
-#### 在页面新增JMeter脚本
-##### 添加 Test Plan
-在左侧点击 Test Plan，可以查看测试计划，测试计划列表如下：<br>
+Let's see the basic process of using JMeter to do HTTP interface performance testing:<br>
+1. Create a jmx file and write a stress test script. The structure of the stress test script is: `Test Plan—>Thread Group—>Controller—>HTTP Sample`;<br>
+In addition, there are some auxiliary components such as: `CSV Data Set Config`, `Constant Throughput Timer`, `HTTP Cookie Manager`, etc.<br>
+2. Determine the number of concurrency, and set duration;<br>
+3. Execute performance testing;<br>
+4. View the performance testing results;<br>
+Above, so the function of this platform is to streamline, facilitate and automate the above steps.<br>
+
+### Specific Usage
+#### Add JMeter scripts on the page
+##### Add Test Plan
+Click `Test Plan` on the left to view the test plans. The list of test plans is as follows:<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/plan_home.JPG)
-Server Room 列可以查看该机房里空闲的施压机数量；<br>
-Action列具有的一些操作：
-- Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
-- Copy：复制，快速复制一个测试计划；
-- Variables：设置全局变量，对应JMeter中的测试计划中的“用户自定义的变量”；
-- ThreadGroup：查看测试计划中的所有线程组；
-- StartTest：开始执行性能测试。如果是手动执行，则会立即开始压测；如果是自动执行，也会生成一个压测任务，等待压测时间开始执行；
 
-点击 Variables，可以设置全局变量，如下：
+In the `Server Room` column, you can view the number of idle pressure machines in the server room;<br>
+Some operations in the `Action` column:
+- Enabled/Disabled: corresponding to `Disable/Enable` in the right-click menu of JMeter;
+- Copy: quickly copy a test plan;
+- Variables: Set global variables, corresponding to the "user-defined variables" in the test plan in JMeter;
+- ThreadGroup: View all thread groups in the test plan;
+- StartTest: Start performance testing. If it is executed manually, the performance testing will start immediately; if it is executed automatically, a performance testing task will also be generated and wait for the time to start execution;
+
+Click `Variables` to set global variables, as follows:
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/plan_variable.JPG)
 
-点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）
+Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the `question mark` to view the prompt)
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/plan_add.JPG)
-- tearDown：对应JMeter中的 Test Plan 中的设置“主线程结束后运行tearDown线程组”；
-- Serialize：对应JMeter中的 Test Plan 中的设置“独立运行每个线程组（例如在一个组运行结束后启动下一个）”；
-- runType：指定压测脚本运行类型，可选指定线程数运行和指定TPS运行；
-- Target TPS/Thread Num：当运行类型为指定TPS运行时，这里就是目标TPS；当运行类型为指定线程数运行时，这里就是线程数；
-- Duration：压测执行时间，单位：秒；对应JMeter中的 Thread Group 中的设置“持续时间（秒）”；
-- Schedule：压测执行方式，可选手动执行或自动执行。当选择自动执行时，需要设置自动执行的时间；
-- Time Setting：用于设置自动执行时间，仅当Schedule设置为自动执行时生效。设置时间后，可以点击Preview预览压力变化曲线；
-- Server Room：机房，指的是施压机所在的机房，压测脚本会在设置的机房的施压机上运行 (一般性能测试尽可能避免跨机房，减少网络对性能测试的影响)。压测时，该机房必须有可用的(空闲的)施压机；
-- Server Number：施压机数，执行压测时，设置的机房里必须有足够数量的空闲的施压机；
-- isDebug：如果设置Debug模式，则脚本在执行时候会生成jtl文件，该文件包含每一个请求的结果，正式测试时，建议设置非Debug模式，以免影响施压机性能；
+- tearDown: Run tearDown Thread Groups after shutdown of main threads;
+- Serialize: Run Thread Groups consecutively (i.e. one at a time);
+- runType: Specify the running type of the test script, and can choose to run with a specified number of threads or a specified TPS;
+- Target TPS/Thread Num: When the running type is the specified TPS, this is the target TPS; when the running type is the specified number of threads, this is the number of threads;
+- Duration: The performance testing execution time, unit: seconds; corresponding to the setting "Duration (seconds)" in Thread Group in JMeter;
+- Schedule: Execution mode of performance testing, manual execution or automatic execution can be selected. When selecting automatic execution, you need to set the automatic execution time;
+- Time Setting: Used to set the automatic execution time, which only takes effect when the Schedule is set to automatic execution. After setting the time, you can click Preview to preview the pressure change curve;
+- Server Room: The test script will run on the pressure machines in the set server room (General, performance testing should avoid crossing computer rooms as much as possible to reduce the impact of the network). During the performance testing, the server room must have some available (idle) pressure machines;
+- Server Number: The number of pressure machines. During the performance testing, there must be a sufficient number of idle pressure machines in the server room;
+- isDebug: If it's Debug mode, the script will generate a `jtl` file during execution, which contains the results of each request. It is recommended to set a non-Debug mode during formal testing to avoid affecting the performance of the pressure machines;
 
-
-##### 添加 Thread Group
-在左侧点击 Thread Group，可以查看所有的线程组；如果在 Test Plan 中点击 ThreadGroup，可以查看该测试计划下的所有线程组。线程组列表如下：<br>
+##### Add Thread Group
+Click `Thread Group` on the left to view all thread groups; if you click `ThreadGroup` in `Test Plan`, you can view all thread groups under the test plan. The thread groups list is as follows:<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/group_home.JPG)
-Action列具有的一些操作：
-- Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
-- Copy：复制，快速复制一个线程组；
-- Cookies：如果压测需要cookies，可以在这里设置；对应的是JMeter中的Http Cookie管理器；
-- Controller：查看线程组中的所有控制器；
 
-Cookies 设置页面如下：
+Some operations in the `Action` column:
+- Enabled/Disabled: corresponding to `Disable/Enable` in the right-click menu of JMeter;
+- Copy: quickly copy a thread group;
+- Cookies: If the performance testing requires cookies, you can set them here; corresponding to the `HTTP Cookie Manager` in JMeter;
+- Controller: View all controllers in the thread group;
+
+The Cookies settings page is as follows:
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/group_cookie.JPG)
 
-点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）
+Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the `question mark` to view the prompt)
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/group_add.JPG)
-- Plan ID：将该线程组绑定到指定的测试计划；
-- Ramp Time：在这个时间内启动所有的线程，对应JMeter线程组中的“Ramp-Up时间（秒）”；
-- CSVDataSet：上传压测需要的文件，需要设置变量名称（英文逗号分割）、分隔符、遇到文件结束符是否继续、线程共享模式，这里的设置和JMeter中的CSV数据文件设置一样；
+- Plan ID: Bind the thread group to the specified test plan;
+- Ramp Time: Start all threads within this time, corresponding to the "Ramp-up period (seconds)" in the JMeter thread group;
+- CSVDataSet: Upload the files required for performance testing. It is the same as the `CSV Data Set Config` in JMeter;
 
-##### 添加控制器
-在左侧点击 Controller，可以查看所有的控制器；如果在 Thread Group 中点击 Controller，可以查看该线程组下的所有控制器。控制器列表如下：<br>
+##### Add Controller
+Click `Controller` on the left to view all controllers; if you click `Controller` in `Thread Group`, you can view all controllers under the thread group. The list of controllers is as follows:<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/controller_home.JPG)
-Action列具有的一些操作：
-- Enabled/Disabled：禁用/启用，对应JMeter右键菜单里的禁用/启用；
-- Copy：复制，快速复制一个控制器；
-- HTTPSample：查看控制器中的所有取样器；
 
-##### 添加取样器
-在左侧点击 HTTP Sample，可以查看所有的取样器；如果在 Controller 中点击 HttpSample，可以查看该控制器下的所有取样器。取样器列表如下：<br>
+Some operations in the `Action` column:
+- Enabled/Disabled: corresponding to `Disable/Enable` in the right-click menu of JMeter;
+- Copy: quickly copy a controller;
+- HTTPSample: View all samplers in the controller;
+
+##### Add HTTP Sample
+Click `HTTP Sample` on the left to view all samplers; if you click `HttpSample` in `Controller`, you can view all samplers under the controller. The list of samplers is as follows:<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/sample_home.JPG)
 
-点击添加或编辑，出现下面的页面：（如果不清楚每个字段的意思，可点击问号查看提示）
+Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the `question mark` to view the prompt)
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/sample_add.JPG)
-- Controller ID：把该取样器绑定到指定的控制器；
-- Protocol：协议，可选HTTP或HTTPs；
-- Domain Name：域名或ip；
-- Port：端口号；
-- Path：url 路径；
-- Method：http请求方法；
-- Arguments：http请求参数，可选请求参数格式为json或form表单，对应JMeter中的取样器的参数设置；
-- HTTP Header：下拉选择对应的请求头，请求头配置在HTTP Header中；如果没有请求头，需要提前设置好；
-- Assertion：断言，可选类型为Contain(包含)、Equal(相等)或Match(匹配)，对应JMeter中的响应断言；
-- Post Extractor：后置处理器，用于提取响应值中的数据，仅支持JSON提取器和正则表达式提取器；
-- contentEncoding：内容编码格式，可选None或UTF-8，对应JMeter中的取样器中的“内容编码”；
+- Controller ID: Bind the sampler to the specified controller;
+- Protocol: optional HTTP or HTTPs;
+- Domain Name: domain name or ip;
+- Port: port number;
+- Path: url path;
+- Method: http request method;
+- Arguments: HTTP request parameters, the optional request parameter format is json or form, corresponding to the parameter settings of the sampler in JMeter;
+- HTTP Header: Select the request header, the request header is configured in the HTTP Header; if there is no request header, it needs to be set in advance;
+- Assertion: Optional type is Contain, Equal or Match, corresponding to the response assertion in JMeter;
+- Post Extractor: Used to extract the data in the response body, only JSON extractor and regular extractor are supported;
+- contentEncoding: Optional None or UTF-8, corresponding to the "Content encoding" in the sampler in JMeter;
 
-以上设置和在JMeter中的取样器中设置一样，也可以引用变量，后置处理器也可以设置变量。
+All the above settings are the same as the functions in JMeter.
 
-##### 添加请求头
-在左侧点击 HTTP Header，可以查看所有的请求头；
+##### Add HTTP Header
+Click `HTTP Header` on the left to view all request headers;
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/header_home.JPG)
 
-在设置请求头时，只需要把字段和值填入即可，这里也可以引用变量，引用格式和JMeter一样。
+When setting the request header, just fill in the fields and values. Variables can also be referenced, and the reference format is the same as JMeter.
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/header_add.JPG)
-以上，就完成了在这个工具上手动编写压测脚本。如果已有本地的已经调试好的JMeter脚本，且是按照上面说的结构，可以在 Test Plan 页面直接点击 Import Plan 按钮导入进系统中。导入后会对文件进行解析，可能会有少许修改，可以在页面手动核对和修改。
+Above, the manual editing of the performance testing script on this platform is completed. If you already have a local JMeter script that has been debugged and follows the structure mentioned above, you can directly click the `Import Plan` button on the `Test Plan` page to import it into the system. After importing, the file will be parsed, and there may be a little modification, which can be checked and modified manually on the page.
 
 #### Upload JMeter
-考虑到有些性能测试场景的压测脚本很复杂，例如有BeanShell脚本、for/if等控制语句，但仍想使用压测工具赋予的压测能力，可以把本地调试通过的JMeter脚本，连同需要使用的外部文件，打包成zip压缩包，然后在 Upload JMeter 页面上传该压缩包，上传成功后就可以使用工具赋予的压测能力了。<br>
-这里说一下这个工具对上传的压缩包是怎么处理的：<br>
-1、压缩包上传后，首先使用zip命令解压，故只支持zip格式压缩；<br>
-2、解压后，直接在解压的文件夹中寻找jmx格式的JMeter脚本，压缩包里必须有且仅有一个jmx格式的文件；由于是直接在解压的文件中寻找jmx文件，故压缩文件时，选择需要压缩的文件，然后压缩，而不是选择文件夹进行压缩；<br>
-3、经过一系列检验后，压缩包会被上传到文件系统；<br>
-4、生成一条记录，然后可以在页面修改压测参数，和 Test Plan 一样，如下：<br>
+Considering that the stress test scripts of some performance testing scenarios are very complicated, for example, there are BeanShell scripts, for/if, etc., but you still want to use the performance testing capabilities provided by the platform, you can package the JMeter script that has passed local debugging, together with the external files that need to be used, into a zip archive, and then upload the archive on the Upload JMeter page. After uploading successfully, you can use the performance testing capability provided by the platform.<br>
+Here is how this tool handles the uploaded zip packages:<br>
+1. After uploading, firstly use `zip` command to decompress the package. So, only the zip format is supported.<br>
+2. After decompressing, find JMeter scripts(jmx format) directly in the extracted folder, and there must be only one jmx file in the compressed package; When compressing, select files compression instead of selecting folders to compress;<br>
+3. After checking, the zip package is uploaded to the file system;<br>
+4. Generate a record, and then modify the performance testing parameters on the page, like the `Test Plan`. As follows:<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/upload_home.JPG)
 
-当需要压测的时候，会对JMeter文件进行修改，如下：<br>
-1、从文件系统中下载文件，并解压；<br>
-2、如果运行类型设置为指定TPS运行，也会往JMeter脚本中添加一个吞吐量控制器；如果运行类型设置为指定线程数运行，则会修改JMeter脚本中的 Thread Group 的参数；<br>
-3、把修改后的jmx文件和其他依赖的文件一起打包，然后开始压测；<br>
+When starting the performance testing, the JMeter file will be modified, as follows:<br>
+1. Download the package from the file system and decompress it;<br>
+2. If the running type is `Specify TPS`, a `Constant Throughput Timer` is added to the JMeter script. If the running type is `Specified number of threads`, the parameters of the `Thread Group` in the JMeter script will be modified;<br>
+3. Package the modified jmx file, and other dependent files, then start performance testing;<br>
 
 #### Test Task
-在左侧点击 Test Task 可以查看所有的测试任务，所有待执行、执行中、已停止的测试记录都会显示在这里，只有测试完成后，才会显示Sample、TPS、RT、Error等数据。<br>
+Click `Test Task` on the left to view all test tasks, all pending, executing, and stopped test tasks are displayed here, Only performance testing is completed, the Sample, TPS, RT, and Error will be displayed.<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/task_home.JPG)
-在Actions列，可以下载每个任务执行的JMeter文件，如果压测出现问题，可以下载文件看看是哪里出现问题了。
 
-##### 查看压测详情
-在压测执行时或压测结束后，可以查看压测详情。
-当开始执行压测后，首先会生成压测所需要的文件，然后传给施压机，施压机会执行压测文件。此时页面会自动跳转到查看压测详情页面，由于压测初始化和产生压测结果需要时间，故需要等待一会儿才会在页面看到数据。<br>
+In the `Actions` column, the JMeter files for each task execution can be downloaded. If something goes wrong with the performance testing, you can download the file to see what went wrong.
+
+##### View Detail
+You can view the performance testing details during or after the performance testing is executed.<br>
+When the performance testing is started, it automatically redirects to the Detail page of performance testing. Since it takes time to initialize the performance testing and generate the results, you will need to wait a while before you see the data on the page.<br>
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/task_detail.JPG)
-在压测详情页面可以的操作（页面右上角）：
-- Stop：会立即停止压测；
-- Change TPS：统一调整所有施压机的TPS；
-- Download File：下载该任务执行的JMeter文件；
 
-每个施压机可以的操作：
-- View：查看单个施压机的压测数据；
-- Start：启动该施压机开始压测，施压机启动需要一点时间，当启动后，就可以调整该施压机的TPS；
-- Stop：停止该施压机的压测，其他施压机不停；
-- Download logs：下载该施压机的JMeter执行的日志；
-- Change TPS：调整单个施压机的TPS；
+The operations on the performance testing details page are as follows (upper-right corner of the page):
+- Stop: Stop performance testing immediately;
+- Change TPS: Adjust TPS of all pressure machines uniformly;
+- Download File: Download JMeter script of the test task;
 
+The operations of every pressure machines are as follows:
+- View: View test result of a single pressure machine;
+- Start: Start performance testing. It takes a little time for starting performance testing, and when it starts, the TPS of the pressure machine can be adjusted;
+- Stop: Stop the pressure machine, and the other pressure machines do not stop;
+- Download logs: Download the JMeter log of the pressure machine;
+- Change TPS: Adjust the TPS of a single pressure machine;
+
+### Distributed performance testing
+Redis is used to synchronize the distributed performance testing of the data between the each pressure machine. Each pressure machine's data and all pressure machines' data are provided by InfluxDB. It breaks through the limitation that the system time, Java version, and JMeter version of each pressure machine must be the same when using JMeter for distributed performance testing, which can make distributed performance testing more convenient.
+
+### Hot mounting of the pressure machine
+Also implemented using Redis. When it is found that the pressure is not enough during the performance testing and the pressure machine needs to be added, you only need to start a pressure machine under the current performance testing task (that is, view the performance testing details page), instead of opening another performance testing task separately (the data between the two tasks is independent). When you need to drop a pressure machine, you can directly click the stop button of the pressure machine to immediately go offline, pressure can be adjusted more flexibly.
 
 ## QAQ：
-### 为什么shell会经常提醒 Session is in closed status？
-为了避免可能的无效连接占用服务器资源，对超过10分钟没有任何数据交互的连接进行关闭；同时由于客户端网络问题或其他各种异常，服务端也需要及时关闭无效连接。<br>
+### Why does the `shell` often remind `Session is in closed status`?
+To avoid possible invalid connections consuming server resources, close connections that have not any interaction for more than 10 minutes. At the same time, due to client network problems or other various exceptions, the server also needs to close invalid connections promptly.<br>
 
-### 为什么自动部署agent包时一直不成功？
-首先核对Linux系统发行版本和CPU架构是否和部署包一致，然后查看部署日志。部署路径是配置文件`config.conf`中的`deployPath`。<br>
+### Why does the automatic `agent` deployment fail?
+First, check whether the Linux system distribution version and CPU architecture are consistent with the deployment package, then review the deployment logs. The deployment path is `deployPath` in the `config.conf`.<br>
 
-### 怎么判断是否需要增加集群节点数？
-对于该平台的集群：在远程连接Linux时，如果由于非网络原因和服务器卡顿的原因导致命令的响应速度经常跟不上你的手速，那么应该增加平台的集群节点数；<br>
-对于collector-agent：因为服务器资源监控是秒级，且近似实时，在查看服务器资源监控图时，如果刷新页面后展示的时间比当前时间晚5~10秒，那么就需要增加 collector-agent 集群节点数。<br>
-以上纯属个人建议，请根据实际情况合理增加集群节点数。
+### How can I determine whether to increase the number of cluster nodes?
+For platform: When connecting to Linux remotely, if the response speed of commands often can't keep up with your hand speed due to non-network reasons and server stuttering, then you should increase the number of cluster nodes of the platform;<br>
+For collector-agent: Since server resource monitoring is second-level and near real-time, when viewing the monitoring result, if the display time is 5 to 10 seconds later than the current time after refreshing the page, then you need to increase the number of collector-agent cluster nodes.<br>
+Please increase the number of cluster nodes reasonably according to the actual situation.
 
-### 单台施压机支持的QPS多少？
-建议每台施压机的QPS不要超过1000/s。如果发现压力上不来，请先排除施压机和被测系统问题后，再增加一台施压机。<br>
+### How much QPS does a single pressure machine support?
+The QPS for each pressure machine is recommended not to exceed 3000/s. If the pressure doesn't come up, please eliminate the problem of the pressure machine and the system, and then add a pressure machine.
 
-### 性能测试怎么区分压测流量和正常流量？
-如果你是在页面上手动编写的脚本，那么当脚本执行时，会自动把请求头中的 `User-Agent` 的值设置成 `PerformanceTest`，故可根据 `User-Agent` 区分压测流量。<br>
-如果你是在`Upload JMeter`页面手动上传本地调试好的脚本，那么脚本中的请求头必须包含 `User-Agent` 字段，当执行脚本时，会自动把请求头中的 `User-Agent` 的值替换成 `PerformanceTest`。所以你的本地脚本中的请求头必须包含 `User-Agent` 字段。
+### How does the performance testing distinguish between pressure flow and normal flow?
+If you edit the script manually on the page, and when the script executes, the value of `User-Agent` in the request header will be automatically set to `PerformanceTest`, so the performance testing flow can be distinguished according to the `User-Agent`.<br>
+If you are manually uploading the local debugged script on the `Upload JMeter` page, then the request header in the script must contain the `User-Agent` field. When the script is executed, the value of `User-Agent` in the request header is automatically replaced with `PerformanceTest`. So the request header in local script must contain the `User-Agent` field.
 
-### 性能测试的某个接口的请求怎么mock，或者写入影子表/影子库？
-本工具只提供通用的压测能力，可根据请求头的 `User-Agent` 区分是否是压测流量。由于服务端的部署架构、语言和业务的不同，因此没法提供各语言的探针，可自己结合实际情况编写探针，来实现mock功能，或将数据写入影子表/影子库，或走影子链路。
+### How can an interface of performance testing be mock or written to shadow tables/shadow databases?
+The platform only provides general performance testing capabilities, which can distinguish whether it is a performance testing traffic according to the `User-Agent` of the request header. Due to the different deployment architecture, language, and business, it is impossible to provide probes in each language. You can write probes based on actual situations to implement mock functions, or write data to shadow tables/databases, or shadow links.
 
-### 服务器资源监控一直在运行，但为什么查询监控结果会有错误提示？
-一般出现这种情况是因为服务器资源监控运行后，该服务器所属的项目组和机房被修改过，修改后的信息没有同步到资源监控工具，导致数据不一致。因此需要重启服务器资源监控工具，或者重新部署。
+### Server resource monitoring has been running, but why do I get an error message when querying the monitoring results?
+Generally, this situation occurs because the project group and server room which the server belongs to have been modified after the monitor-agent is running. The modified information is not synchronized to the monitor-agent, resulting in inconsistent data. So, you need to restart the monitor-agent or redeploy it.
