@@ -159,7 +159,7 @@ python3 manage.py migrate</code></pre>
 <li style="text-indent: 1em; list-style-position: inside">When downloading file, the input box will also pop up, and then need to enter the complete path (absolute path) of the file, and then download to local. You must enter the file path, not the folder path.</li>
 </ul>
 <h2>Deploy Agent</h2>
-<p class="qaq-content">Click `Deploy` to open a new page, in this page, you can upload deployment packages, auto-deploy and uninstall.</p>
+<p class="qaq-content">Click <code>Deploy</code> to open a new page, in this page, you can upload deployment packages, auto-deploy and uninstall.</p>
 <img src="{% static 'img/shell_deploy.JPG' %}" alt="">
 <p class="qaq-content">Owing to deployment packages differ from Linux distribution and CPU architecture. Therefore, you need to prepare the deployment packages and upload them to the platform for deployment. If the deployment package doesn't differentiate between Linux distribution and CPU architecture, you can choose one of them randomly when uploading the deployment package.</p>
 <p class="qaq-content">All agents can be automatically deployed on this platform (Currently, only <a href="https://github.com/leeyoshinari/monitor_agent">monitor-agent</a>, <a href="https://github.com/leeyoshinari/jmeter_agent">jmeter-agent</a>, <a href="https://github.com/leeyoshinari/nginx_agent">nginx-agent</a>, java, jmeter can be deployed). For the convenience of deployment, all agent configuration files have been simplified. Generally, there is no need to modify any configuration, and all configurations are automatically obtained from the platform. Suggested deployment sequence: first deploy Java (only the pressure machine is deployed and has not been deployed), then deploy JMeter (only the pressure machine is deployed), then deploy the collector-agent, and deploy other agents that need to be deployed.</p>
@@ -213,27 +213,27 @@ python3 manage.py migrate</code></pre>
 </ul>
 <p class="qaq-content" style="margin-top: 15px">Let's see the basic process of using JMeter to do HTTP interface performance testing:</p>
 <p class="qaq-content">1. Create a jmx file and write a stress test script. The structure of the stress test script is: <code>Test Plan—>Thread Group—>Controller—>HTTP Sample</code>;
-In addition, there are some auxiliary components such as: `CSV Data Set Config`, `Constant Throughput Timer`, `HTTP Cookie Manager`, etc.</p>
+In addition, there are some auxiliary components such as: <code>CSV Data Set Config</code>, <code>Constant Throughput Timer</code>, <code>HTTP Cookie Manager</code>, etc.</p>
 <p class="qaq-content">2. Determine the number of concurrency, and set duration;</p>
 <p class="qaq-content">3. Execute performance testing;</p>
 <p class="qaq-content">4. View the performance testing results;</p>
 <p class="qaq-content" style="margin-top: 15px">Above, so the function of this platform is to streamline, facilitate and automate the above steps.</p>
 <h2>Add JMeter scripts on the page</h2>
 <h3>Add Test Plan</h3>
-<p class="qaq-content">Click `Test Plan` on the left to view the test plans. The list of test plans is as follows:</p>
+<p class="qaq-content">Click <code>Test Plan</code> on the left to view the test plans. The list of test plans is as follows:</p>
 <img src="{% static 'img/plan_home.JPG' %}" alt="">
-<p class="qaq-content" style="margin-top: 15px">In the `Server Room` column, you can view the number of idle pressure machines in the server room;</p>
-<p class="qaq-content" style="margin-top: 15px">Some operations in the `Action` column:</p>
+<p class="qaq-content" style="margin-top: 15px">In the <code>Server Room</code> column, you can view the number of idle pressure machines in the server room;</p>
+<p class="qaq-content" style="margin-top: 15px">Some operations in the <code>Action</code> column:</p>
 <ul>
-<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled: corresponding to `Disable/Enable` in the right-click menu of JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled: corresponding to <code>Disable/Enable</code> in the right-click menu of JMeter;</li>
 <li style="text-indent: 1em; list-style-position: inside">Copy: quickly copy a test plan;</li>
 <li style="text-indent: 1em; list-style-position: inside">Variables: Set global variables, corresponding to the "user-defined variables" in the test plan in JMeter;</li>
 <li style="text-indent: 1em; list-style-position: inside">ThreadGroup: View all thread groups in the test plan;</li>
 <li style="text-indent: 1em; list-style-position: inside">StartTest: Start performance testing. If it is executed manually, the performance testing will start immediately; if it is executed automatically, a performance testing task will also be generated and wait for the time to start execution;</li>
 </ul>
-<p class="qaq-content" style="margin-top: 15px">Click `Variables` to set global variables, as follows:</p>
+<p class="qaq-content" style="margin-top: 15px">Click <code>Variables</code> to set global variables, as follows:</p>
 <img src="{% static 'img/plan_variable.JPG' %}" alt="">
-<p class="qaq-content" style="margin-top: 15px">Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the `question mark` to view the prompt)</p>
+<p class="qaq-content" style="margin-top: 15px">Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the <code>question mark</code> to view the prompt)</p>
 <img src="{% static 'img/plan_add.JPG' %}" alt="">
 <ul>
 <li style="text-indent: 1em; list-style-position: inside">tearDown: Run tearDown Thread Groups after shutdown of main threads;</li>
@@ -245,40 +245,40 @@ In addition, there are some auxiliary components such as: `CSV Data Set Config`,
 <li style="text-indent: 1em; list-style-position: inside">Time Setting: Used to set the automatic execution time, which only takes effect when the Schedule is set to automatic execution. After setting the time, you can click Preview to preview the pressure change curve;</li>
 <li style="text-indent: 1em; list-style-position: inside">Server Room: The test script will run on the pressure machines in the set server room (General, performance testing should avoid crossing computer rooms as much as possible to reduce the impact of the network). During the performance testing, the server room must have some available (idle) pressure machines;</li>
 <li style="text-indent: 1em; list-style-position: inside">Server Number: The number of pressure machines. During the performance testing, there must be a sufficient number of idle pressure machines in the server room;</li>
-<li style="text-indent: 1em; list-style-position: inside">isDebug: If it's Debug mode, the script will generate a `jtl` file during execution, which contains the results of each request. It is recommended to set a non-Debug mode during formal testing to avoid affecting the performance of the pressure machines;</li>
+<li style="text-indent: 1em; list-style-position: inside">isDebug: If it's Debug mode, the script will generate a <code>jtl</code> file during execution, which contains the results of each request. It is recommended to set a non-Debug mode during formal testing to avoid affecting the performance of the pressure machines;</li>
 </ul>
 <h3>Add Thread Group</h3>
-<p class="qaq-content">Click `Thread Group` on the left to view all thread groups; if you click `ThreadGroup` in `Test Plan`, you can view all thread groups under the test plan. The thread groups list is as follows:</p>
+<p class="qaq-content">Click <code>Thread Group</code> on the left to view all thread groups; if you click <code>ThreadGroup</code> in <code>Test Plan</code>, you can view all thread groups under the test plan. The thread groups list is as follows:</p>
 <img src="{% static 'img/group_home.JPG' %}" alt="">
-<p class="qaq-content" style="margin-top: 15px">Some operations in the `Action` column:</p>
+<p class="qaq-content" style="margin-top: 15px">Some operations in the <code>Action</code> column:</p>
 <ul>
-<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled: corresponding to `Disable/Enable` in the right-click menu of JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled: corresponding to <code>Disable/Enable</code> in the right-click menu of JMeter;</li>
 <li style="text-indent: 1em; list-style-position: inside">Copy: quickly copy a thread group;</li>
-<li style="text-indent: 1em; list-style-position: inside">Cookies: If the performance testing requires cookies, you can set them here; corresponding to the `HTTP Cookie Manager` in JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Cookies: If the performance testing requires cookies, you can set them here; corresponding to the <code>HTTP Cookie Manager</code> in JMeter;</li>
 <li style="text-indent: 1em; list-style-position: inside">Controller: View all controllers in the thread group;</li>
 </ul>
 <p class="qaq-content" style="margin-top: 15px">The Cookies settings page is as follows:</p>
 <img src="{% static 'img/group_cookie.JPG' %}" alt="">
-<p class="qaq-content" style="margin-top: 15px">Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the `question mark` to view the prompt)</p>
+<p class="qaq-content" style="margin-top: 15px">Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the <code>question mark</code> to view the prompt)</p>
 <img src="{% static 'img/group_add.JPG' %}" alt="">
 <ul>
 <li style="text-indent: 1em; list-style-position: inside">Plan ID: Bind the thread group to the specified test plan;</li>
 <li style="text-indent: 1em; list-style-position: inside">Ramp Time: Start all threads within this time, corresponding to the "Ramp-up period (seconds)" in the JMeter thread group;</li>
-<li style="text-indent: 1em; list-style-position: inside">CSVDataSet: Upload the files required for performance testing. It is the same as the `CSV Data Set Config` in JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">CSVDataSet: Upload the files required for performance testing. It is the same as the <code>CSV Data Set Config</code> in JMeter;</li>
 </ul>
 <h3>Add Controller</h3>
-<p class="qaq-content">Click `Controller` on the left to view all controllers; if you click `Controller` in `Thread Group`, you can view all controllers under the thread group. The list of controllers is as follows:</p>
+<p class="qaq-content">Click <code>Controller</code> on the left to view all controllers; if you click <code>Controller</code> in <code>Thread Group</code>, you can view all controllers under the thread group. The list of controllers is as follows:</p>
 <img src="{% static 'img/controller_home.JPG' %}" alt="">
-<p class="qaq-content" style="margin-top: 15px">Some operations in the `Action` column:</p>
+<p class="qaq-content" style="margin-top: 15px">Some operations in the <code>Action</code> column:</p>
 <ul>
-<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled: corresponding to `Disable/Enable` in the right-click menu of JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled: corresponding to <code>Disable/Enable</code> in the right-click menu of JMeter;</li>
 <li style="text-indent: 1em; list-style-position: inside">Copy: quickly copy a controller;</li>
 <li style="text-indent: 1em; list-style-position: inside">HTTPSample: View all samplers in the controller;</li>
 </ul>
 <h3>Add HTTP Sample</h3>
-<p class="qaq-content">Click `HTTP Sample` on the left to view all samplers; if you click `HttpSample` in `Controller`, you can view all samplers under the controller. The list of samplers is as follows:</p>
+<p class="qaq-content">Click <code>HTTP Sample</code> on the left to view all samplers; if you click <code>HttpSample</code> in <code>Controller</code>, you can view all samplers under the controller. The list of samplers is as follows:</p>
 <img src="{% static 'img/sample_home.JPG' %}" alt="">
-<p class="qaq-content" style="margin-top: 15px">Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the `question mark` to view the prompt)</p>
+<p class="qaq-content" style="margin-top: 15px">Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the <code>question mark</code> to view the prompt)</p>
 <img src="{% static 'img/sample_add.JPG' %}" alt="">
 <ul>
 <li style="text-indent: 1em; list-style-position: inside">Controller ID: Bind the sampler to the specified controller;</li>
@@ -295,27 +295,27 @@ In addition, there are some auxiliary components such as: `CSV Data Set Config`,
 </ul>
 <p class="qaq-content" style="margin-top: 15px">All the above settings are the same as the functions in JMeter.</p>
 <h3>Add HTTP Header</h3>
-<p class="qaq-content">Click `HTTP Header` on the left to view all request headers;</p>
+<p class="qaq-content">Click <code>HTTP Header</code> on the left to view all request headers;</p>
 <img src="{% static 'img/header_home.JPG' %}" alt="">
 <p class="qaq-content" style="margin-top: 15px">When setting the request header, just fill in the fields and values. Variables can also be referenced, and the reference format is the same as JMeter.</p>
 <img src="{% static 'img/header_add.JPG' %}" alt="">
-<p class="qaq-content" style="margin-top: 15px">Above, the manual editing of the performance testing script on this platform is completed. If you already have a local JMeter script that has been debugged and follows the structure mentioned above, you can directly click the `Import Plan` button on the `Test Plan` page to import it into the system. After importing, the file will be parsed, and there may be a little modification, which can be checked and modified manually on the page.</p>
+<p class="qaq-content" style="margin-top: 15px">Above, the manual editing of the performance testing script on this platform is completed. If you already have a local JMeter script that has been debugged and follows the structure mentioned above, you can directly click the <code>Import Plan</code> button on the <code>Test Plan</code> page to import it into the system. After importing, the file will be parsed, and there may be a little modification, which can be checked and modified manually on the page.</p>
 <h2>Upload JMeter</h2>
 <p class="qaq-content">Considering that the stress test scripts of some performance testing scenarios are very complicated, for example, there are BeanShell scripts, for/if, etc., but you still want to use the performance testing capabilities provided by the platform, you can package the JMeter script that has passed local debugging, together with the external files that need to be used, into a zip archive, and then upload the archive on the Upload JMeter page. After uploading successfully, you can use the performance testing capability provided by the platform.</p>
 <p class="qaq-content" style="margin-top: 15px">Here is how this tool handles the uploaded zip packages:</p>
-<p class="qaq-content">1. After uploading, firstly use `zip` command to decompress the package. So, only the zip format is supported.</p>
+<p class="qaq-content">1. After uploading, firstly use <code>zip</code> command to decompress the package. So, only the zip format is supported.</p>
 <p class="qaq-content">2. After decompressing, find JMeter scripts(jmx format) directly in the extracted folder, and there must be only one jmx file in the compressed package; When compressing, select files compression instead of selecting folders to compress;</p>
 <p class="qaq-content">3. After checking, the zip package is uploaded to the file system;</p>
-<p class="qaq-content">4. Generate a record, and then modify the performance testing parameters on the page, like the `Test Plan`. As follows:</p>
+<p class="qaq-content">4. Generate a record, and then modify the performance testing parameters on the page, like the <code>Test Plan</code>. As follows:</p>
 <img src="{% static 'img/upload_home.JPG' %}" alt="">
 <p class="qaq-content" style="margin-top: 15px">When starting the performance testing, the JMeter file will be modified, as follows:
 <p class="qaq-content">1. Download the package from the file system and decompress it;</p>
-<p class="qaq-content">2. If the running type is `Specify TPS`, a `Constant Throughput Timer` is added to the JMeter script. If the running type is `Specified number of threads`, the parameters of the `Thread Group` in the JMeter script will be modified;</p>
+<p class="qaq-content">2. If the running type is <code>Specify TPS</code>, a <code>Constant Throughput Timer</code> is added to the JMeter script. If the running type is <code>Specified number of threads</code>, the parameters of the <code>Thread Group</code> in the JMeter script will be modified;</p>
 <p class="qaq-content">3. Package the modified jmx file, and other dependent files, then start performance testing;</p>
 <h2 id="test-task">Test Task</h2>
-<p class="qaq-content">Click `Test Task` on the left to view all test tasks, all pending, executing, and stopped test tasks are displayed here, Only performance testing is completed, the Sample, TPS, RT, and Error will be displayed.</p>
+<p class="qaq-content">Click <code>Test Task</code> on the left to view all test tasks, all pending, executing, and stopped test tasks are displayed here, Only performance testing is completed, the Sample, TPS, RT, and Error will be displayed.</p>
 <img src="{% static 'img/task_home.JPG' %}" alt="">
-<p class="qaq-content" style="margin-top: 15px">In the `Actions` column, the JMeter files for each task execution can be downloaded. If something goes wrong with the performance testing, you can download the file to see what went wrong.</p>
+<p class="qaq-content" style="margin-top: 15px">In the <code>Actions</code> column, the JMeter files for each task execution can be downloaded. If something goes wrong with the performance testing, you can download the file to see what went wrong.</p>
 <h3>View Detail</h3>
 <p class="qaq-content">You can view the performance testing details during or after the performance testing is executed.
 When the performance testing is started, it automatically redirects to the Detail page of performance testing. Since it takes time to initialize the performance testing and generate the results, you will need to wait a while before you see the data on the page.</p>
@@ -337,10 +337,10 @@ When the performance testing is started, it automatically redirects to the Detai
 <h3>Hot mounting of the pressure machine</h3>
 <p class="qaq-content">Also implemented using Redis. When it is found that the pressure is not enough during the performance testing and the pressure machine needs to be added, you only need to start a pressure machine under the current performance testing task (that is, view the performance testing details page), instead of opening another performance testing task separately (the data between the two tasks is independent). When you need to drop a pressure machine, you can directly click the stop button of the pressure machine to immediately go offline, pressure can be adjusted more flexibly.</p>
 <h1>QAQ</h1>
-<p class="qaq-title">1. Why does the `shell` often remind `Session is in closed status`?</p>
+<p class="qaq-title">1. Why does the <code>shell</code> often remind <code>Session is in closed status</code>?</p>
 <p class="qaq-content">To avoid possible invalid connections consuming server resources, close connections that have not any interaction for more than 10 minutes. At the same time, due to client network problems or other various exceptions, the server also needs to close invalid connections promptly.</p>
-<p class="qaq-title">2. Why does the automatic `agent` deployment fail?</p>
-<p class="qaq-content">First, check whether the Linux system distribution version and CPU architecture are consistent with the deployment package, then review the deployment logs. The deployment path is `deployPath` in the `config.conf`.</p>
+<p class="qaq-title">2. Why does the automatic <code>agent</code> deployment fail?</p>
+<p class="qaq-content">First, check whether the Linux system distribution version and CPU architecture are consistent with the deployment package, then review the deployment logs. The deployment path is <code>deployPath</code> in the <code>config.conf</code>.</p>
 <p class="qaq-title">3. How can I determine whether to increase the number of cluster nodes?</p>
 <p class="qaq-content">For platform: When connecting to Linux remotely, if the response speed of commands often can't keep up with your hand speed due to non-network reasons and server stuttering, then you should increase the number of cluster nodes of the platform;</p>
 <p class="qaq-content">For collector-agent: Since server resource monitoring is second-level and near real-time, when viewing the monitoring result, if the display time is 5 to 10 seconds later than the current time after refreshing the page, then you need to increase the number of collector-agent cluster nodes.</p>
@@ -348,10 +348,10 @@ When the performance testing is started, it automatically redirects to the Detai
 <p class="qaq-title">4. How much QPS does a single pressure machine support?</p>
 <p class="qaq-content">The QPS for each pressure machine is recommended not to exceed 3000/s. If the pressure doesn't come up, please eliminate the problem of the pressure machine and the system, and then add a pressure machine.</p>
 <p class="qaq-title">5. How does the performance testing distinguish between pressure flow and normal flow?</p>
-<p class="qaq-content">If you edit the script manually on the page, and when the script executes, the value of `User-Agent` in the request header will be automatically set to `PerformanceTest`, so the performance testing flow can be distinguished according to the `User-Agent`.</p>
-<p class="qaq-content">If you are manually uploading the local debugged script on the `Upload JMeter` page, then the request header in the script must contain the `User-Agent` field. When the script is executed, the value of `User-Agent` in the request header is automatically replaced with `PerformanceTest`. So the request header in local script must contain the `User-Agent` field.</p>
+<p class="qaq-content">If you edit the script manually on the page, and when the script executes, the value of <code>User-Agent</code> in the request header will be automatically set to <code>PerformanceTest</code>, so the performance testing flow can be distinguished according to the <code>User-Agent</code>.</p>
+<p class="qaq-content">If you are manually uploading the local debugged script on the <code>Upload JMeter</code> page, then the request header in the script must contain the <code>User-Agent</code> field. When the script is executed, the value of <code>User-Agent</code> in the request header is automatically replaced with <code>PerformanceTest</code>. So the request header in local script must contain the <code>User-Agent</code> field.</p>
 <p class="qaq-title">6. How can an interface of performance testing be mock or written to shadow tables/shadow databases?</p>
-<p class="qaq-content">The platform only provides general performance testing capabilities, which can distinguish whether it is a performance testing traffic according to the `User-Agent` of the request header. Due to the different deployment architecture, language, and business, it is impossible to provide probes in each language. You can write probes based on actual situations to implement mock functions, or write data to shadow tables/databases, or shadow links.</p>
+<p class="qaq-content">The platform only provides general performance testing capabilities, which can distinguish whether it is a performance testing traffic according to the <code>User-Agent</code> of the request header. Due to the different deployment architecture, language, and business, it is impossible to provide probes in each language. You can write probes based on actual situations to implement mock functions, or write data to shadow tables/databases, or shadow links.</p>
 <p class="qaq-title">7. Server resource monitoring has been running, but why do I get an error message when querying the monitoring results?</p>
 <p class="qaq-content">Generally, this situation occurs because the project group and server room which the server belongs to have been modified after the monitor-agent is running. The modified information is not synchronized to the monitor-agent, resulting in inconsistent data. So, you need to restart the monitor-agent or redeploy it.</p>
 </article>
