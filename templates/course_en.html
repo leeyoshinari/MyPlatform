@@ -1,0 +1,373 @@
+{% load static compress %}
+<!doctype html>
+<html lang="en">
+  <head>
+	  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+      <title>MyPlatform</title>
+      <link rel="shutcut icon" type="image/png" sizes="96x96" href="{% static 'img/favicon.ico' %}">
+      {% compress css %}
+      <link href="{% static 'course/style/github-bf51422f4bb36427d391e4b75a1daa083c2d840e.css' %}" media="all" rel="stylesheet" type="text/css"/>
+      <link href="{% static 'course/style/github2-d731afd4f624c99a4b19ad69f3083cd6d02b81d5.css' %}" media="all" rel="stylesheet" type="text/css"/>
+      <link href="{% static 'course/css/zTreeStyle/zTreeStyle.css' %}" media="all" rel="stylesheet" type="text/css"/>
+      {% endcompress %}
+	  <style>
+		pre{counter-reset:line-numbering;border:solid 1px #d9d9d9;border-radius:0;background:#fff;padding:0;line-height:23px;margin-bottom:30px;white-space:pre;overflow-x:auto;word-break:inherit;word-wrap:inherit}
+        pre a::before{content:counter(line-numbering);counter-increment:line-numbering;padding-right:1em;width:25px;text-align:right;opacity:0.7;display:inline-block;color:#aaa;background:#eee;margin-right:16px;padding:2px 10px;font-size:13px;-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+        pre a:first-of-type::before{padding-top:10px}
+        pre a:last-of-type::before{padding-bottom:10px}
+        pre a:only-of-type::before{padding:10px}
+        .highlight{background-color:#ffffcc}
+		</style>
+  </head>
+  <body>
+  <div class="container1"><div class="home_list"><a href="{% url 'home' %}">Home</a><span>&gt;&gt;</span><a href="{% url 'course' %}">Course</a></div><a href="{% url 'user:logout' %}">Logout</a></div><div>
+<div style='width:25%;'><ul id="tree" class="ztree"></ul></div>
+<div id='readme' style='width:70%;margin-left:20%;'><article class='markdown-body'>
+<p class="qaq-title" style="float: right; padding-top: 12px;"><a href="{% url 'course' %}?_lang=zh">中文文档</a></p>
+<p class="qaq-title">Welcome to use, the link: <a href="https://github.com/leeyoshinari/MyPlatform">https://github.com/leeyoshinari/MyPlatform</a></p>
+<h1>Introduction</h1>
+<p>It is a platform mainly used for performance testing, here are some simple features brief:</p>
+<p>1. Server Management, can view server's basic information uniformly</p>
+<p>2. Shell Remote Connection, support for files upload and download between local and server</p>
+<p>3. Server resource usage monitoring</p>
+<p>4. Nginx's access.log traffic collection</p>
+<p>5. Performance Testing tool, support for automated and distributed performance testing</p>
+<h1>Directory</h1><ul>
+<li>MyPlatform - project files</li>
+<li>staticfiles - static files</li>
+<li>templates - html templates files</li>
+<li>templateFilter - custom filter</li>
+<li>common - generic functions</li>
+<li>user - user related</li>
+<li>shell - shell tool</li>
+<li>monitor - monitor tool</li>
+<li>performance - performance testing tool</li>
+</ul><h1>Middleware</h1><ul>
+<li>Relational Database: SQLite3 or MySQL - used to store platform data</li>
+<li>Time-Series Database: InfluxDB - used to store monitoring data</li>
+<li>Key-value Database: Redis - used to cluster/distributed data synchronization</li>
+<li>File Server: MinIO - used to store files</li>
+<li>Performance Testing tool: JMeter - used to execute JMeter file</li>
+</ul><h1>Architecture</h1>
+<img src="{% static 'img/myPlarform.png' %}" alt="">
+<p class="qaq-content">If you need to satisfy more users, please deploy cluster; if you need high availability, please deploy keepalive.</p>
+<p class="qaq-title" style="margin-top: 15px">Explain</p>
+<p style="margin-top: 15px"><strong>collector-agent</strong></p>
+<p class="qaq-content">Data Collector. All agents' data will be sent to collector-agent, and then collector-agent writes data to InfluxDB/redis.</p>
+<p class="qaq-content">It can be avoid a problem: If each agent connects to the database separately, it may cause the database connection to run out or exceed the number of connections allowed by the server. But if too many agents cause the collector-agent to not be able to write database in time, increasing the thread pool size of the collector-agent is needed; if still not, increasing the number of collector-agent cluster nodes is needed.</p>
+<p style="margin-top: 15px"><strong>monitor-agent</strong></p>
+<p class="qaq-content">Server resource monitor. Execute Linux commands to collect the server's CPU, Memory, Disk, Network, TCP, and other data in real time.</p>
+<p style="margin-top: 15px"><strong>nginx-agent</strong></p>
+<p class="qaq-content">Nginx traffic collector. Process Nginx's access log (access.log) in real time, the access information (access time, client IP, interface name, request method, protocol, status code, response body size, response time) is stored in database.</p>
+<p style="margin-top: 15px"><strong>jmeter-agent</strong></p>
+<p class="qaq-content">Performance testing tool. Call JMeter to execute performance testing, and supports distributed performance testing and full-link performance testing.</p>
+<h1>Third-party Package</h1>
+<p>Local dev environment:</p><ul>
+<li>python 3.9.10</li></ul>
+<p>Third-party packages version:</p><ul>
+<li>aiohttp==3.7.4.post0</li>
+<li>aiohttp-jinja2==1.5</li>
+<li>channels==3.0.4</li>
+<li>daphne==3.0.2</li>
+<li>Django==4.0.1</li>
+<li>influxdb==2.6.0</li>
+<li>Jinja2==3.0.3</li>
+<li>minio==7.1.3</li>
+<li>paramiko==2.10.3</li>
+<li>PyMySQL==1.0.2</li>
+<li>redis==4.1.1</li>
+<li>requests==2.27.1</li>
+<li>sqlparse==0.4.2</li>
+</ul><h1>Deploy</h1>
+<p style="margin-top: 15px">1. Clone Repository </p>
+<pre><code>git clone https://github.com/leeyoshinari/MyPlatform.git</code></pre>
+<p style="margin-top: 15px">2. Install MySQL(SQLite3 can be used directly, doesn't need to be installed), InfluxDB, Redis, MinIO(Optional installation); (ps：InfluxDB2.x is not supported, <a href="https://dl.influxdata.com/influxdb/releases/influxdb-1.8.3.x86_64.rpm">influxdb-1.8.3</a> is recommended.)</p>
+<p style="margin-top: 15px">3. Install third-packages</p>
+<pre><code>pip3 install -r requirements.txt</code></pre>
+<p style="margin-top: 15px">4. Modify<code>config.conf</code>;</p>
+<p style="margin-top: 15px">5. Initialize database, and execute commands;</p>
+<pre><code>python3 manage.py migrate
+python3 manage.py makemigrations shell performance
+python3 manage.py migrate</code></pre>
+<p style="margin-top: 15px">6. Create super administrator;</p>
+<pre><code>python3 manage.py createsuperuser</code></pre>
+<p style="margin-top: 15px">7. Initialize data;</p>
+<pre><code>python3 manage.py loaddata initdata.json</code></pre>
+<p style="margin-top: 15px">8. Collect all static files;</p>
+<pre><code>python3 manage.py collectstatic --clear --noinput</code></pre>
+<p style="margin-top: 15px">9. Compress static files (css and js);</p>
+<pre><code>python3 manage.py compress --force</code></pre>
+<p style="margin-top: 15px">10. Modify Port in <code>startup.sh</code>;</p>
+<p style="margin-top: 15px">11. Deploy<code>nginx</code>, the <code>location</code> configuration is as follows: (ps: The <code>platform</code> in the configuration is the prefix, that is the URL prefix in the URL path, which can be modified according to your needs.)</p>
+<p>(1) upstream configuration:</p>
+<pre><code>upstream myplatform-server {
+    server 127.0.0.1:15200;
+    server 127.0.0.1:15201;
+}</code></pre>
+<p>(2) static request: Use Nginx to access static files directly</p>
+<pre><code>location /platform/static {
+    alias /home/MyPlatform/static;
+}
+</code></pre>
+<p>(3) dynamic request:</p>
+<pre><code>location /platform {
+     proxy_pass http://myplatform-server;
+     proxy_set_header Host $proxy_host;
+     proxy_set_header X-Real-IP $remote_addr;
+     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}</code></pre>
+<p>(4) websocket protocol:</p>
+<pre><code>location /shell {  # must be shell, don't modify it
+    proxy_pass http://myplatform-server;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection &quot;upgrade&quot;;
+}</code></pre>
+<p style="margin-top: 15px">12. Startup</p>
+<pre><code>sh startup.sh</code></pre>
+<p>Run <code>sh shutdown.sh</code> to stop.</p>
+<p style="margin-top: 15px">13. Access home page, url: <code>http://ip:port/(prefix in config.conf)</code>
+<img src="{% static 'img/home.JPG' %}" alt=""></p>
+<p style="margin-top: 15px">14. Access permission management page, url: <code>http://ip:port/config.conf中的prefix/admin</code></p>
+<p style="margin-top: 15px">15. Deploy collector-agent, <a href="https://github.com/leeyoshinari/collector_agent">please click me</a></p>
+<p style="margin-top: 15px">16. Deploy monitor-agent, <a href="https://github.com/leeyoshinari/monitor_agent">please click me</a></p>
+<p style="margin-top: 15px">17. Deploy jmeter-agent, <a href="https://github.com/leeyoshinari/jmeter_agent">please click me</a></p>
+<p style="margin-top: 15px">18. Deploy nginx-agent, <a href="https://github.com/leeyoshinari/nginx_agent">please click me</a></p>
+<h1>Shell Tool</h1>
+<p class="qaq-content">In Shell Tool, you can view and manage servers, and remote connect Linux on browser directly.</p>
+<img src="{% static 'img/shell_home.JPG' %}" alt="">
+<h2>Setting Project Group</h2>
+<p class="qaq-content">Click <code>Create Group</code> to create project, the project name and unique identifier for application of project are needed. Unique identifier is unique throughout the company, for linux server,  use <code>ps -ef | grep Unique Identifier | grep -v grep</code> to find a unique process.</p>
+<p class="qaq-content" style="margin-top: 15px">The button is visible only to the administrator.</p>
+<h2>Setting the Server Room</h2>
+<p class="qaq-content">Click <code>Create Server Room</code> to create server room, there are three options for setting the server room: application, middleware, and pressure test. Why are there three?</p>
+<p class="qaq-content">For example, there are 100 servers in a server room, and Project group A uses 40 servers to deploy its own services, Project group B uses 40 servers to deploy its own services, and 10 servers to deploy middleware, and remaining 10 servers used to performance testing. Because of this Repository integrates Server Management, Server Monitor and Performance Test together, the three options are added in order to distinguish them. It's not like company's platform that different people develop different services and just hanging the front page together.</p>
+<p class="qaq-content" style="margin-top: 15px">The button is visible only to the administrator.</p>
+<h2>Add Servers</h2>
+<p class="qaq-content">Click <code>Add Server</code> to create server, you need to set the project to which the server belongs, the server room where the server is, and the server IP address, user name, and login password.</p>
+<h2>User Management</h2>
+<p class="qaq-content">Click <code>Add User</code> to add a user to a project or remove a user from a project. After user is added, that user can view and access all servers in the project. Administrator can view all servers by default.</p>
+<p class="qaq-content" style="margin-top: 15px">The button is visible only to the administrator.</p>
+<h2>Server's List</h2>
+<p class="qaq-content">Each added server is displayed in the list, giving you an overview of the basic information about the server (system, CPU, memory, disk). The Action column allows you to operate the server, where you can open the Shell to remotely connect to Linux; The edit and delete buttons are visible only to the creator and administrator.</p>
+<h2>Remote Connection to the Server</h2>
+<p class="qaq-content">Click <code>OpenShell</code> to open Shell remote connection to Linux, and you can open many pages at the same time, as follows:</p>
+<img src="{% static 'img/shell_ternimal.JPG' %}" alt="">
+<p class="qaq-content">To provide a better experience, the Ctrl+C(copy) and Ctrl+V(paste) shortcuts are provided. Not only that, but the Ctrl+C shortcut is still able to terminate foreground processes in the linux shell, which is not supported by most popular shell tools.</p>
+<p class="qaq-content" style="margin-top: 15px">In the open Shell, you can upload files to the server or download files from server to local. The entry for uploading and downloading can also be closed for security.</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">When uploading file, the input box will pop up firstly, and then need to enter the directory which the folder is uploaded to (absolute path, default <code>/home</code>), and then Upload.</li>
+<li style="text-indent: 1em; list-style-position: inside">When downloading file, the input box will also pop up, and then need to enter the complete path (absolute path) of the file, and then download to local. You must enter the file path, not the folder path.</li>
+</ul>
+<h2>Deploy Agent</h2>
+<p class="qaq-content">Click <code>Deploy</code> to open a new page, in this page, you can upload deployment packages, auto-deploy and uninstall.</p>
+<img src="{% static 'img/shell_deploy.JPG' %}" alt="">
+<p class="qaq-content">Owing to deployment packages differ from Linux distribution and CPU architecture. Therefore, you need to prepare the deployment packages and upload them to the platform for deployment. If the deployment package doesn't differentiate between Linux distribution and CPU architecture, you can choose one of them randomly when uploading the deployment package.</p>
+<p class="qaq-content">All agents can be automatically deployed on this platform (Currently, only <a href="https://github.com/leeyoshinari/monitor_agent">monitor-agent</a>, <a href="https://github.com/leeyoshinari/jmeter_agent">jmeter-agent</a>, <a href="https://github.com/leeyoshinari/nginx_agent">nginx-agent</a>, java, jmeter can be deployed). For the convenience of deployment, all agent configuration files have been simplified. Generally, there is no need to modify any configuration, and all configurations are automatically obtained from the platform. Suggested deployment sequence: first deploy Java (only the pressure machine is deployed and has not been deployed), then deploy JMeter (only the pressure machine is deployed), then deploy the collector-agent, and deploy other agents that need to be deployed.</p>
+<p class="qaq-content" style="margin-top: 15px">Before clicking Deploy/Uninstall, please carefully check whether the Linux system release version and CPU architecture of the current server are consistent with the Linux system release version and CPU architecture of the deployment package.</p>
+<p class="qaq-content" style="margin-top: 15px">Note: In rare cases, you need to modify the agent configuration file. For example, your nginx deployment method is different from 99% of people. It cannot automatically obtain the nginx log path. In this case, you need to modify the configuration file.</p>
+<h3>Packaging collector-agent</h3>
+<h3>Packaging monitor-agent</h3>
+<h3>Packaging nginx-agent</h3>
+<h3>Packaging jmeter-agent</h3>
+<h1>Server Monitoring</h1>
+<p class="qaq-content">This tool (<a href="https://github.com/leeyoshinari/monitor_agent">click me</a>)is mainly used to monitor server resource usage, and the functions are:</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Monitor the CPU usage, io wait, memory usage, disk IO, network  and TCP connections of the entire server</li>
+<li style="text-indent: 1em; list-style-position: inside">Monitor the TCP state of the port</li>
+<li style="text-indent: 1em; list-style-position: inside">For java applications, you can monitor the jvm  and GC; when the frequency of Full GC is too high, an email reminders can be sent</li>
+<li style="text-indent: 1em; list-style-position: inside">When the CPU usage of the system is too high, or the remaining memory is too low, an email reminder can be sent; the cache can be automatically cleared</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">Compared with the previous server resource monitoring tool (<a href="https://github.com/leeyoshinari/performance_monitor">click me</a>), it has been greatly improved now. First of all, it is no longer a separate tool, but integrated into the platform, which can be seamlessly connected with other tools in the platform; secondly It uses a new interaction and monitoring solution, and introduces project groups and server rooms, which are more suitable for large-scale cluster deployment applications.</p>
+<h2>Home Page</h2>
+<p class="qaq-content">The home page shows all the servers that have been monitored, where you can get an overview of the current usage of server resources. This entry can only be seen by the administrator, and can be queried by project group.
+<img src="{% static 'img/monitor_home.JPG' %}" alt=""></p>
+<h2>Visualization</h2>
+<p class="qaq-content">Data visualization, view by project group and server room, you can choose any time period (the monitoring data retention period is set in the configuration).</p>
+<img src="{% static 'img/monitor_figure.JPG' %}" alt="">
+<p class="qaq-content">Mainly monitor the following data:</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">CPU: total CPU usage, iowait usage</li>
+<li style="text-indent: 1em; list-style-position: inside">Memory: remaining memory, available memory, JVM memory (only for Java)</li>
+<li style="text-indent: 1em; list-style-position: inside">Disk: disk read and write speed, disk IO</li>
+<li style="text-indent: 1em; list-style-position: inside">Network: network uplink and downlink speed, network usage</li>
+<li style="text-indent: 1em; list-style-position: inside">TCP: the total number of TCP connections in the system, the number of TCP retransmissions, the number of TCP ports, the number of time-wait, and the number of close-wait</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">When viewing the monitoring datas, the average value of all server resources under the specified project group and server room is displayed by default. The server list is displayed on the left, sorted according to the weight of CPU, IO, and network usage (5:3:2), and the color is also calculated and displayed according to this weight. Click on a server to view the monitoring data of the server. All data on the page is refreshed every 10s.</p>
+<h1>Nginx Flow Collect</h1>
+<p class="qaq-content">This tool (<a href="https://github.com/leeyoshinari/nginx_agent">click me</a>) is mainly used to parse the access.log of Nginx and extract interface access data from the log.</p>
+<p class="qaq-content" style="margin-top: 15px">The information displayed on the home page is based on the aggregated results of interfaces (requests for static files are filtered out), sorted by QPS by default, and optionally sorted by response time, response body size, and number of response errors; you can view performance testing traffic and normal traffic separately.</p>
+<img src="{% static 'img/nginx_summary.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Click on each interface to view the data change graph of the interface per second.</p>
+<img src="{% static 'img/nginx_detail.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Note: <strong>In order to collect the above data, the nginx log format needs to be modified, see <a href="https://github.com/leeyoshinari/nginx_agent">nginx-agent</a> for details</strong>.</p>
+<h1>Performance Testing</h1>
+<p class="qaq-content" style="margin-top: 15px">Now the open-source and best-used performance testing tool is JMeter. Many companies' performance testing platforms are based on JMeter, so this platform is also based on JMeter, and it retains all the original functions of JMeter, let you use JMeter as silky and smooth as you use locally.</p>
+<p class="qaq-content" style="margin-top: 15px">The tool(<a href="https://github.com/leeyoshinari/jmeter_agent">click me</a>) has the following functions:</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">JMeter scripts can be edited on the page, or also import existing JMeter scripts;</li>
+<li style="text-indent: 1em; list-style-position: inside">Support to adjust TPS at any time according to the performance testing situation, the total TPS can be adjusted, and the TPS of each pressure machine can also be adjusted;</li>
+<li style="text-indent: 1em; list-style-position: inside">Support distributed performance testing, can dynamically increase/decrease the pressure machines;</li>
+<li style="text-indent: 1em; list-style-position: inside">Support automatic performance testing;</li>
+<li style="text-indent: 1em; list-style-position: inside">Powerful enabling ability, the functions of this platform can be used in almost all JMeter scripts;</li>
+<li style="text-indent: 1em; list-style-position: inside">The original taste retains all the functions of JMeter. As long as the script can be run locally, it can be run with this tool, so it also supports all extensions of JMeter;</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">Let's see the basic process of using JMeter to do HTTP interface performance testing:</p>
+<p class="qaq-content">1. Create a jmx file and write a stress test script. The structure of the stress test script is: <code>Test Plan—>Thread Group—>Controller—>HTTP Sample</code>;
+In addition, there are some auxiliary components such as: <code>CSV Data Set Config</code>, <code>Constant Throughput Timer</code>, <code>HTTP Cookie Manager</code>, etc.</p>
+<p class="qaq-content">2. Determine the number of concurrency, and set duration;</p>
+<p class="qaq-content">3. Execute performance testing;</p>
+<p class="qaq-content">4. View the performance testing results;</p>
+<p class="qaq-content" style="margin-top: 15px">Above, so the function of this platform is to streamline, facilitate and automate the above steps.</p>
+<h2>Add JMeter scripts on the page</h2>
+<h3>Add Test Plan</h3>
+<p class="qaq-content">Click <code>Test Plan</code> on the left to view the test plans. The list of test plans is as follows:</p>
+<img src="{% static 'img/plan_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">In the <code>Server Room</code> column, you can view the number of idle pressure machines in the server room;</p>
+<p class="qaq-content" style="margin-top: 15px">Some operations in the <code>Action</code> column:</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled: corresponding to <code>Disable/Enable</code> in the right-click menu of JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Copy: quickly copy a test plan;</li>
+<li style="text-indent: 1em; list-style-position: inside">Variables: Set global variables, corresponding to the "user-defined variables" in the test plan in JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">ThreadGroup: View all thread groups in the test plan;</li>
+<li style="text-indent: 1em; list-style-position: inside">StartTest: Start performance testing. If it is executed manually, the performance testing will start immediately; if it is executed automatically, a performance testing task will also be generated and wait for the time to start execution;</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">Click <code>Variables</code> to set global variables, as follows:</p>
+<img src="{% static 'img/plan_variable.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the <code>question mark</code> to view the prompt)</p>
+<img src="{% static 'img/plan_add.JPG' %}" alt="">
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">tearDown: Run tearDown Thread Groups after shutdown of main threads;</li>
+<li style="text-indent: 1em; list-style-position: inside">Serialize: Run Thread Groups consecutively (i.e. one at a time);</li>
+<li style="text-indent: 1em; list-style-position: inside">runType: Specify the running type of the test script, and can choose to run with a specified number of threads or a specified TPS;</li>
+<li style="text-indent: 1em; list-style-position: inside">Target TPS/Thread Num: When the running type is the specified TPS, this is the target TPS; when the running type is the specified number of threads, this is the number of threads;</li>
+<li style="text-indent: 1em; list-style-position: inside">Duration: The performance testing execution time, unit: seconds; corresponding to the setting "Duration (seconds)" in Thread Group in JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Schedule: Execution mode of performance testing, manual execution or automatic execution can be selected. When selecting automatic execution, you need to set the automatic execution time;</li>
+<li style="text-indent: 1em; list-style-position: inside">Time Setting: Used to set the automatic execution time, which only takes effect when the Schedule is set to automatic execution. After setting the time, you can click Preview to preview the pressure change curve;</li>
+<li style="text-indent: 1em; list-style-position: inside">Server Room: The test script will run on the pressure machines in the set server room (General, performance testing should avoid crossing computer rooms as much as possible to reduce the impact of the network). During the performance testing, the server room must have some available (idle) pressure machines;</li>
+<li style="text-indent: 1em; list-style-position: inside">Server Number: The number of pressure machines. During the performance testing, there must be a sufficient number of idle pressure machines in the server room;</li>
+<li style="text-indent: 1em; list-style-position: inside">isDebug: If it's Debug mode, the script will generate a <code>jtl</code> file during execution, which contains the results of each request. It is recommended to set a non-Debug mode during formal testing to avoid affecting the performance of the pressure machines;</li>
+</ul>
+<h3>Add Thread Group</h3>
+<p class="qaq-content">Click <code>Thread Group</code> on the left to view all thread groups; if you click <code>ThreadGroup</code> in <code>Test Plan</code>, you can view all thread groups under the test plan. The thread groups list is as follows:</p>
+<img src="{% static 'img/group_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Some operations in the <code>Action</code> column:</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled: corresponding to <code>Disable/Enable</code> in the right-click menu of JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Copy: quickly copy a thread group;</li>
+<li style="text-indent: 1em; list-style-position: inside">Cookies: If the performance testing requires cookies, you can set them here; corresponding to the <code>HTTP Cookie Manager</code> in JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Controller: View all controllers in the thread group;</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">The Cookies settings page is as follows:</p>
+<img src="{% static 'img/group_cookie.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the <code>question mark</code> to view the prompt)</p>
+<img src="{% static 'img/group_add.JPG' %}" alt="">
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Plan ID: Bind the thread group to the specified test plan;</li>
+<li style="text-indent: 1em; list-style-position: inside">Ramp Time: Start all threads within this time, corresponding to the "Ramp-up period (seconds)" in the JMeter thread group;</li>
+<li style="text-indent: 1em; list-style-position: inside">CSVDataSet: Upload the files required for performance testing. It is the same as the <code>CSV Data Set Config</code> in JMeter;</li>
+</ul>
+<h3>Add Controller</h3>
+<p class="qaq-content">Click <code>Controller</code> on the left to view all controllers; if you click <code>Controller</code> in <code>Thread Group</code>, you can view all controllers under the thread group. The list of controllers is as follows:</p>
+<img src="{% static 'img/controller_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Some operations in the <code>Action</code> column:</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Enabled/Disabled: corresponding to <code>Disable/Enable</code> in the right-click menu of JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Copy: quickly copy a controller;</li>
+<li style="text-indent: 1em; list-style-position: inside">HTTPSample: View all samplers in the controller;</li>
+</ul>
+<h3>Add HTTP Sample</h3>
+<p class="qaq-content">Click <code>HTTP Sample</code> on the left to view all samplers; if you click <code>HttpSample</code> in <code>Controller</code>, you can view all samplers under the controller. The list of samplers is as follows:</p>
+<img src="{% static 'img/sample_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Click Add or Edit, and the following page will display: (If you don’t know the meaning of each field, you can click the <code>question mark</code> to view the prompt)</p>
+<img src="{% static 'img/sample_add.JPG' %}" alt="">
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Controller ID: Bind the sampler to the specified controller;</li>
+<li style="text-indent: 1em; list-style-position: inside">Protocol: optional HTTP or HTTPs;</li>
+<li style="text-indent: 1em; list-style-position: inside">Domain Name: domain name or ip;</li>
+<li style="text-indent: 1em; list-style-position: inside">Port: port number;</li>
+<li style="text-indent: 1em; list-style-position: inside">Path: url path;</li>
+<li style="text-indent: 1em; list-style-position: inside">Method: http request method;</li>
+<li style="text-indent: 1em; list-style-position: inside">Arguments: HTTP request parameters, the optional request parameter format is json or form, corresponding to the parameter settings of the sampler in JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">HTTP Header: Select the request header, the request header is configured in the HTTP Header; if there is no request header, it needs to be set in advance;</li>
+<li style="text-indent: 1em; list-style-position: inside">Assertion: Optional type is Contain, Equal or Match, corresponding to the response assertion in JMeter;</li>
+<li style="text-indent: 1em; list-style-position: inside">Post Extractor: Used to extract the data in the response body, only JSON extractor and regular extractor are supported;</li>
+<li style="text-indent: 1em; list-style-position: inside">contentEncoding: Optional None or UTF-8, corresponding to the "Content encoding" in the sampler in JMeter;</li>
+</ul>
+<p class="qaq-content" style="margin-top: 15px">All the above settings are the same as the functions in JMeter.</p>
+<h3>Add HTTP Header</h3>
+<p class="qaq-content">Click <code>HTTP Header</code> on the left to view all request headers;</p>
+<img src="{% static 'img/header_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">When setting the request header, just fill in the fields and values. Variables can also be referenced, and the reference format is the same as JMeter.</p>
+<img src="{% static 'img/header_add.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">Above, the manual editing of the performance testing script on this platform is completed. If you already have a local JMeter script that has been debugged and follows the structure mentioned above, you can directly click the <code>Import Plan</code> button on the <code>Test Plan</code> page to import it into the system. After importing, the file will be parsed, and there may be a little modification, which can be checked and modified manually on the page.</p>
+<h2>Upload JMeter</h2>
+<p class="qaq-content">Considering that the stress test scripts of some performance testing scenarios are very complicated, for example, there are BeanShell scripts, for/if, etc., but you still want to use the performance testing capabilities provided by the platform, you can package the JMeter script that has passed local debugging, together with the external files that need to be used, into a zip archive, and then upload the archive on the Upload JMeter page. After uploading successfully, you can use the performance testing capability provided by the platform.</p>
+<p class="qaq-content" style="margin-top: 15px">Here is how this tool handles the uploaded zip packages:</p>
+<p class="qaq-content">1. After uploading, firstly use <code>zip</code> command to decompress the package. So, only the zip format is supported.</p>
+<p class="qaq-content">2. After decompressing, find JMeter scripts(jmx format) directly in the extracted folder, and there must be only one jmx file in the compressed package; When compressing, select files compression instead of selecting folders to compress;</p>
+<p class="qaq-content">3. After checking, the zip package is uploaded to the file system;</p>
+<p class="qaq-content">4. Generate a record, and then modify the performance testing parameters on the page, like the <code>Test Plan</code>. As follows:</p>
+<img src="{% static 'img/upload_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">When starting the performance testing, the JMeter file will be modified, as follows:
+<p class="qaq-content">1. Download the package from the file system and decompress it;</p>
+<p class="qaq-content">2. If the running type is <code>Specify TPS</code>, a <code>Constant Throughput Timer</code> is added to the JMeter script. If the running type is <code>Specified number of threads</code>, the parameters of the <code>Thread Group</code> in the JMeter script will be modified;</p>
+<p class="qaq-content">3. Package the modified jmx file, and other dependent files, then start performance testing;</p>
+<h2 id="test-task">Test Task</h2>
+<p class="qaq-content">Click <code>Test Task</code> on the left to view all test tasks, all pending, executing, and stopped test tasks are displayed here, Only performance testing is completed, the Sample, TPS, RT, and Error will be displayed.</p>
+<img src="{% static 'img/task_home.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">In the <code>Actions</code> column, the JMeter files for each task execution can be downloaded. If something goes wrong with the performance testing, you can download the file to see what went wrong.</p>
+<h3>View Detail</h3>
+<p class="qaq-content">You can view the performance testing details during or after the performance testing is executed.
+When the performance testing is started, it automatically redirects to the Detail page of performance testing. Since it takes time to initialize the performance testing and generate the results, you will need to wait a while before you see the data on the page.</p>
+<img src="{% static 'img/task_detail.JPG' %}" alt="">
+<p class="qaq-content" style="margin-top: 15px">The operations on the performance testing details page are as follows (upper-right corner of the page):</p>
+<ul>
+<li style="text-indent: 1em; list-style-position: inside">Stop: Stop performance testing immediately;</li>
+<li style="text-indent: 1em; list-style-position: inside">Change TPS: Adjust TPS of all pressure machines uniformly;</li>
+<li style="text-indent: 1em; list-style-position: inside">Download File: Download JMeter script of the test task;</li>
+</ul><p class="qaq-content" style="margin-top: 15px">The operations of every pressure machines are as follows:</p><ul>
+<li style="text-indent: 1em; list-style-position: inside">View: View test result of a single pressure machine;</li>
+<li style="text-indent: 1em; list-style-position: inside">Start: Start performance testing. It takes a little time for starting performance testing, and when it starts, the TPS of the pressure machine can be adjusted;</li>
+<li style="text-indent: 1em; list-style-position: inside">Stop: Stop the pressure machine, and the other pressure machines do not stop;</li>
+<li style="text-indent: 1em; list-style-position: inside">Download logs: Download the JMeter log of the pressure machine;</li>
+<li style="text-indent: 1em; list-style-position: inside">Change TPS: Adjust the TPS of a single pressure machine;</li>
+</ul>
+<h3>Distributed performance testing</h3>
+<p class="qaq-content">Redis is used to synchronize the distributed performance testing of the data between the each pressure machine. Each pressure machine's data and all pressure machines' data are provided by InfluxDB. It breaks through the limitation that the system time, Java version, and JMeter version of each pressure machine must be the same when using JMeter for distributed performance testing, which can make distributed performance testing more convenient.</p>
+<h3>Hot mounting of the pressure machine</h3>
+<p class="qaq-content">Also implemented using Redis. When it is found that the pressure is not enough during the performance testing and the pressure machine needs to be added, you only need to start a pressure machine under the current performance testing task (that is, view the performance testing details page), instead of opening another performance testing task separately (the data between the two tasks is independent). When you need to drop a pressure machine, you can directly click the stop button of the pressure machine to immediately go offline, pressure can be adjusted more flexibly.</p>
+<h1>QAQ</h1>
+<p class="qaq-title">1. Why does the <code>shell</code> often remind <code>Session is in closed status</code>?</p>
+<p class="qaq-content">To avoid possible invalid connections consuming server resources, close connections that have not any interaction for more than 10 minutes. At the same time, due to client network problems or other various exceptions, the server also needs to close invalid connections promptly.</p>
+<p class="qaq-title">2. Why does the automatic <code>agent</code> deployment fail?</p>
+<p class="qaq-content">First, check whether the Linux system distribution version and CPU architecture are consistent with the deployment package, then review the deployment logs. The deployment path is <code>deployPath</code> in the <code>config.conf</code>.</p>
+<p class="qaq-title">3. How can I determine whether to increase the number of cluster nodes?</p>
+<p class="qaq-content">For platform: When connecting to Linux remotely, if the response speed of commands often can't keep up with your hand speed due to non-network reasons and server stuttering, then you should increase the number of cluster nodes of the platform;</p>
+<p class="qaq-content">For collector-agent: Since server resource monitoring is second-level and near real-time, when viewing the monitoring result, if the display time is 5 to 10 seconds later than the current time after refreshing the page, then you need to increase the number of collector-agent cluster nodes.</p>
+<p class="qaq-content">Please increase the number of cluster nodes reasonably according to the actual situation.</p>
+<p class="qaq-title">4. How much QPS does a single pressure machine support?</p>
+<p class="qaq-content">The QPS for each pressure machine is recommended not to exceed 3000/s. If the pressure doesn't come up, please eliminate the problem of the pressure machine and the system, and then add a pressure machine.</p>
+<p class="qaq-title">5. How does the performance testing distinguish between pressure flow and normal flow?</p>
+<p class="qaq-content">If you edit the script manually on the page, and when the script executes, the value of <code>User-Agent</code> in the request header will be automatically set to <code>PerformanceTest</code>, so the performance testing flow can be distinguished according to the <code>User-Agent</code>.</p>
+<p class="qaq-content">If you are manually uploading the local debugged script on the <code>Upload JMeter</code> page, then the request header in the script must contain the <code>User-Agent</code> field. When the script is executed, the value of <code>User-Agent</code> in the request header is automatically replaced with <code>PerformanceTest</code>. So the request header in local script must contain the <code>User-Agent</code> field.</p>
+<p class="qaq-title">6. How can an interface of performance testing be mock or written to shadow tables/shadow databases?</p>
+<p class="qaq-content">The platform only provides general performance testing capabilities, which can distinguish whether it is a performance testing traffic according to the <code>User-Agent</code> of the request header. Due to the different deployment architecture, language, and business, it is impossible to provide probes in each language. You can write probes based on actual situations to implement mock functions, or write data to shadow tables/databases, or shadow links.</p>
+<p class="qaq-title">7. Server resource monitoring has been running, but why do I get an error message when querying the monitoring results?</p>
+<p class="qaq-content">Generally, this situation occurs because the project group and server room which the server belongs to have been modified after the monitor-agent is running. The modified information is not synchronized to the monitor-agent, resulting in inconsistent data. So, you need to restart the monitor-agent or redeploy it.</p>
+</article>
+</div></div>
+{% compress js %}
+<script type="text/javascript" src="{% static 'course/js/jquery-1.4.4.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'course/js/jquery.ztree.all-3.5.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'course/js/ztree_toc.js' %}"></script>
+<script type="text/javascript" src="{% static 'course/js/toc_conf.js' %}"></script>
+{% endcompress %}
+<SCRIPT type="text/javascript" >
+$(document).ready(function(){
+    var css_conf = eval(markdown_panel_style);
+    $('#readme').css(css_conf)
+    var conf = eval(jquery_ztree_toc_opts);
+		$('#tree').ztree_toc(conf);
+});
+</SCRIPT>
+</body></html>
