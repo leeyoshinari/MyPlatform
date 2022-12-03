@@ -1,21 +1,15 @@
 {% extends 'template.html' %}
 {% load static compress %}
-
 {% block addcss %}
     {% compress css %}
     <link rel="stylesheet" type="text/css" href="{% static 'user/css/login.css' %}">
     {% endcompress %}
 {% endblock %}
-
 {% block addbody %}
 <div class="wrap" id="wrap">
 	<div class="logGet">
-        <div class="lgT">
-            <p class="p2">My Platform</p>
-        </div>
-        <div class="logD logDtip">
-            <p class="p1">Login</p>
-        </div>
+        <div class="lgT"><p class="p2">My Platform</p></div>
+        <div class="logD logDtip"><p class="p1">Login</p></div>
         <div class="lgD">
             <img src="{% static 'img/login_user.png' %}" width="20" height="20" alt=""/>
             <input type="text" placeholder="Please input username ~" id="username">

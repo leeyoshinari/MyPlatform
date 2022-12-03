@@ -1,65 +1,30 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/header.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
-    <a href="{% url 'perf:header_home' %}">HTTP Header</a>
-    <span>>></span>
-    <span>Add HTTP Header</span>
+    <a href="{% url 'perf:header_home' %}">HTTP Header</a><span>>></span><span>Add HTTP Header</span>
 {% endblock %}
-
 {% block detail %}
     <div class="list-body">
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Name:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="name" placeholder="Please input name ~">
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Method:</label>
-            </div>
-            <div class="value-div">
-                <select id="method">
-                    {% for k, v in methods.items %}
-                        <option value="{{ v }}">{{ k }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Request Header:</label>
-            </div>
-            <div class="value-div">
-                <button onclick="add_headers();">Add Header + </button>
-                <button onclick="delete_headers();">Del Header - </button>
-            </div>
-            <div id="add_headers"></div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Comment:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="comment" placeholder="Please input http header comment ~">
-            </div>
-        </div>
-    </div>
-    <div class="list-footer">
-        <div>
-            <a href="{% url 'perf:header_home' %}">Cancel</a>
-            <a href="#" onclick="save_header('{% url 'perf:header_add' %}', '{% url 'perf:header_home' %}')">Submit</a>
-        </div>
-    </div>
+        <div class="row-cols"><div class="label-div"><label>Name:</label></div>
+            <div class="value-div"><input type="text" id="name" placeholder="Please input name ~"></div></div>
+        <div class="row-cols"><div class="label-div"><label>Method:</label></div>
+            <div class="value-div"><select id="method">
+                {% for k, v in methods.items %}
+                    <option value="{{ v }}">{{ k }}</option>
+                {% endfor %}
+            </select></div></div>
+        <div class="row-cols"><div class="label-div"><label>Request Header:</label></div>
+            <div class="value-div"><button onclick="add_headers();">Add Header + </button>
+                <button onclick="delete_headers();">Del Header - </button></div><div id="add_headers"></div></div>
+        <div class="row-cols"><div class="label-div"><label>Comment:</label></div>
+            <div class="value-div"><input type="text" id="comment" placeholder="Please input http header comment ~"></div></div></div>
+    <div class="list-footer"><div><a href="{% url 'perf:header_home' %}">Cancel</a>
+        <a href="#" onclick="save_header('{% url 'perf:header_add' %}', '{% url 'perf:header_home' %}')">Submit</a></div></div>
 {% endblock %}
 {% block define_js %}
     <script type="text/javascript">

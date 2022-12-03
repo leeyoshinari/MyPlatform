@@ -1,12 +1,10 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/group.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
     {% if plan_id %}
         <a href="{% url 'perf:group_home' %}?id={{ plan_id }}">Thread Group</a>
@@ -14,7 +12,6 @@
         <a href="{% url 'perf:group_home' %}">Thread Group</a>
     {% endif %}
 {% endblock %}
-
 {% block detail_action %}
     {% if plan_id %}
         <a href="{% url 'perf:group_add' %}?id={{ plan_id }}">Add Thread Group</a>
@@ -47,7 +44,6 @@
         <th width="30%">Actions</th>
     </tr>
 {% endblock %}
-
 {% block table_body %}
     {% for group in groups %}
         {% if group.is_valid == 'false' %}
@@ -76,7 +72,6 @@
                 {% else %}
                     <a href="#" onclick="Delete('{% url 'perf:delete' %}', '{% url 'perf:group_home' %}', 'group', {{ group.id }})">Delete</a>
                 {% endif %}
-
             </td>
         </tr>
     {% endfor %}

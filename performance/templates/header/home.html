@@ -1,16 +1,13 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/header.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
     <a href="{% url 'perf:header_home' %}">HTTP Header</a>
 {% endblock %}
-
 {% block detail_action %}
     <a href="{% url 'perf:header_add' %}">Add HTTP Header</a>
 {% endblock %}
@@ -36,7 +33,6 @@
         <th width="23%">Actions</th>
     </tr>
 {% endblock %}
-
 {% block table_body %}
     {% for header in headers %}
             <tr>

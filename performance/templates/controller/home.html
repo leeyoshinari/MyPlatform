@@ -1,12 +1,10 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/controller.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
     {% if group_id %}
         <a href="{% url 'perf:controller_home' %}?id={{ group_id }}">Controller</a>
@@ -14,7 +12,6 @@
         <a href="{% url 'perf:controller_home' %}">Controller</a>
     {% endif %}
 {% endblock %}
-
 {% block detail_action %}
     {% if group_id %}
         <a href="{% url 'perf:controller_add' %}?id={{ group_id }}">Add Controller</a>
@@ -47,7 +44,6 @@
         <th width="25%">Actions</th>
     </tr>
 {% endblock %}
-
 {% block table_body %}
     {% for ctl in controllers %}
         {% if ctl.is_valid == 'false' %}

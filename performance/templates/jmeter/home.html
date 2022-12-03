@@ -1,17 +1,14 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
 {% load myFilter %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/jmeter.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
     <a href="{% url 'perf:jmeter_home' %}">Upload JMeter</a>
 {% endblock %}
-
 {% block detail_action %}
     <a title="Run type. Specify thread group or Specify TPS." href="#" onclick="upload_file('{% url 'perf:jmeter_upload' %}');">Upload File</a>
     <input type="file" id="fileUpload-input" accept=".zip" style="display: none">
@@ -38,7 +35,6 @@
         <th width="28%">Actions</th>
     </tr>
 {% endblock %}
-
 {% block table_body %}
     {% for plan in plans %}
         {% if plan.is_valid == 'false' %}

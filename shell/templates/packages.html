@@ -1,12 +1,9 @@
 {% extends 'shell_home.html' %}
 {% load static compress %}
 {% load myFilter %}
-
 {% block container2 %}
     <div id="filter">
-        <div style="width: 30%; float: none;">
-            <button id="upload-package">Upload Package</button>
-        </div>
+        <div style="width: 30%; float: none;"><button id="upload-package">Upload Package</button></div>
         {% if servers %}
             <div>
                 <span>Current Server <strong>{{ servers.host }}</strong>: System release version is
@@ -53,29 +50,16 @@
 
     <div class="myModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h2 id="title-name">Upload Package</h2>
-            </div>
+            <div class="modal-header"><span class="close">&times;</span><h2 id="title-name">Upload Package</h2></div>
             <div class="modal-body">
-                <div class="modal-col">
-                    <div class="label">
-                        <label>System: </label>
-                     </div>
-                    <div class="input">
+                <div class="modal-col"><div class="label"><label>System: </label></div><div class="input">
                         <select id="system-version">
                             <option value="Ubuntu">Ubuntu</option>
                             <option value="CentOS">CentOS</option>
                             <option value="Debian">Debian</option>
                             <option value="RedHat">Red Hat</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>CPU Arch: </label>
-                     </div>
-                    <div class="input">
+                        </select></div></div>
+                <div class="modal-col"><div class="label"><label>CPU Arch: </label></div><div class="input">
                         <select id="cpu-arch">
                             <option value="x86_64">X86 Arch 64bits</option>
                             <option value="x86">X86 Arch 32bits</option>
@@ -83,14 +67,8 @@
                             <option value="arm32">Arm Arch 32bits</option>
                             <option value="amd64">Amd Arch 64bits</option>
                             <option value="amd32">Amd Arch 32bits</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>Package Type: </label>
-                     </div>
-                    <div class="input">
+                        </select></div></div>
+                <div class="modal-col"><div class="label"><label>Package Type: </label></div><div class="input">
                         <select id="agent-type">
                             <option value="collector-agent">Collector Agent</option>
                             <option value="monitor-agent">Monitor Agent</option>
@@ -98,16 +76,8 @@
                             <option value="nginx-agent">Nginx Agent</option>
                             <option value="java">JAVA</option>
                             <option value="jmeter">JMeter</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <a class="cancel">Cancel</a>
-                <a class="submit">Submit</a>
-            </div>
-        </div>
-    </div>
+                        </select></div></div></div>
+            <div class="modal-footer"><a class="cancel">Cancel</a><a class="submit">Submit</a></div></div></div>
     <input type="file" name="filename" id="uploadpackage" accept=".zip, .tar.gz" style="display: none">
     <div class="modal_cover"><div class="modal_gif"></div></div>
 {% endblock %}
@@ -119,4 +89,3 @@
         document.getElementsByClassName('home_list')[0].innerHTML = '<a href="{% url 'home' %}">Home</a><span>>></span><a href="{% url 'shell:index' %}">Shell</a><span>>></span><a href="{% url 'shell:package_home' %}">Package</a>';
     </script>
 {% endblock %}
-

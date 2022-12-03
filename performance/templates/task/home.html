@@ -1,17 +1,14 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
 {% load myFilter %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/plan.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
     <a href="{% url 'perf:plan_home' %}">Test Plan</a>
 {% endblock %}
-
 {% block detail_action %}
 {% endblock %}
 {% block searchBlock %}
@@ -31,7 +28,6 @@
         <th width="15%">Actions</th>
     </tr>
 {% endblock %}
-
 {% block table_body %}
     {% for task in tasks %}
         <tr>

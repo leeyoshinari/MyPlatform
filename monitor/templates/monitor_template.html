@@ -22,29 +22,20 @@
         {% block addjs %}
         {% endblock %}
     </head>
-
     <body>
         {% block body %}
             {% block navbar %}
                 <div class="navbar navbar-inverse" role="navigation" style="min-height: 30px; height: 40px; margin-bottom: 15px;">
-                    <div style="float: left; margin-top: 8px; font-size: large; margin-right: 11%; margin-left: 1%;">
-                        <a href="{% url 'home' %}" style="color:aliceblue; text-decoration: none;">Home</a>
-                        <span style="color:aliceblue;">>></span>
-                        <a href="{% url 'monitor:home' %}" style="color:aliceblue; text-decoration: none;">Monitor</a>
-                    </div>
+                    <div style="float: left; margin-top: 8px; font-size: large; margin-right: 11%; margin-left: 1%;"><a href="{% url 'home' %}" style="color:aliceblue; text-decoration: none;">Home</a>
+                        <span style="color:aliceblue;">>></span><a href="{% url 'monitor:home' %}" style="color:aliceblue; text-decoration: none;">Monitor</a></div>
                     {% if is_staff %}
                         <div class="container" style="float: left; margin-right: 20px; width: 200px;">
                             <div class="navbar-header">
-                                <a class="navbar-brand" style="padding: 10px;" href="{% url 'monitor:home' %}">
-                                    Home
-                                </a>
+                                <a class="navbar-brand" style="padding: 10px;" href="{% url 'monitor:home' %}">Home</a>
                             </div>
                             <div class="navbar-left">
-                                <a class="navbar-brand" style="padding: 10px;" href="{% url 'monitor:visualize' %}">
-                                    Visualize
-                                </a>
-                            </div>
-                        </div>
+                                <a class="navbar-brand" style="padding: 10px;" href="{% url 'monitor:visualize' %}">Visualize</a>
+                            </div></div>
                     {% endif %}
                 </div>
             {% endblock %}
@@ -54,7 +45,6 @@
                     {% endblock %}
                 </div>
             {% endblock %}
-
             {% block myjs %}
             {% endblock %}
         {% endblock %}

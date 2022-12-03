@@ -1,7 +1,6 @@
 {% extends 'shell_home.html' %}
 {% load static compress %}
 {% load myFilter %}
-
 {% block container2 %}
     <div id="filter">
         <div style="width: 30%">
@@ -13,14 +12,10 @@
             <button id="addServer">Add Server</button>
         </div>
         <div style="width: 60%;">
-            <label>ServerRoom: </label>
-            <input id="ServerRoom" type="text" placeholder="Server Room Name ~">
-            <label>Group: </label>
-            <input id="groupName" type="text" placeholder="Group Name ~">
-            <label>Server: </label>
-            <input id="serverName" type="text" placeholder="Server Name or Server IP ~">
-            <button id="searchServer" name="{% url 'shell:index' %}">Search</button>
-        </div>
+            <label>ServerRoom: </label><input id="ServerRoom" type="text" placeholder="Server Room Name ~">
+            <label>Group: </label><input id="groupName" type="text" placeholder="Group Name ~">
+            <label>Server: </label><input id="serverName" type="text" placeholder="Server Name or Server IP ~">
+            <button id="searchServer" name="{% url 'shell:index' %}">Search</button></div>
     </div>
     <table id="layout-table" border="1" cellspacing="0" cellpadding="6">
         <thead>
@@ -66,250 +61,94 @@
 
     <div class="myModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h2 id="title-name">Add Server</h2>
-            </div>
-            <div class="modal-body">
-                <div class="modal-col" style="display: none;">
-                    <div class="label">
-                        <label>ID: </label>
-                     </div>
-                    <div class="input">
-                        <input id="ID" type="text" disabled readonly>
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>GroupName: </label>
-                     </div>
-                    <div class="input">
-                        <select id="GroupName">
+            <div class="modal-header"><span class="close">&times;</span><h2 id="title-name">Add Server</h2></div>
+            <div class="modal-body"><div class="modal-col" style="display: none;"><div class="label"><label>ID: </label></div>
+                    <div class="input"><input id="ID" type="text" disabled readonly></div></div>
+                <div class="modal-col"><div class="label"><label>GroupName: </label></div>
+                    <div class="input"><select id="GroupName">
                             <option value="" selected></option>
                             {% for group in groups %}
                                 <option value="{{ group.id }}">{{ group.name }}</option>
                             {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>ServerRoom: </label>
-                     </div>
-                    <div class="input">
-                        <select id="Server-room">
+                        </select></div></div>
+                <div class="modal-col"><div class="label"><label>ServerRoom: </label></div>
+                    <div class="input"><select id="Server-room">
                             <option value=""></option>
                             {% for room in rooms %}
                                 {% if room.id != '520' %}
                                     <option value="{{ room.id }}">{{ room.name }} - {{ room.type|get_value_from_list:'room_type' }}</option>
                                 {% endif %}
                             {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>ServerName: </label>
-                     </div>
-                    <div class="input">
-                        <input id="ServerName" type="text" placeholder="Please input server's name">
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>ServerIP: </label>
-                    </div>
-                    <div class="input">
-                        <input id="ServerIP" type="text" placeholder="Please input server IP">
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>Port：</label>
-                    </div>
-                    <div class="input">
-                        <input id="Port" type="text" value="22" placeholder="Please input server IP">
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>UserName：</label>
-                    </div>
-                    <div class="input">
-                        <input id="UserName" type="text" value="root" placeholder="Please input server username">
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>Password：</label>
-                    </div>
-                    <div class="input">
-                        <input id="Password" type="password" placeholder="Please input server password">
-                    </div>
-                </div>
+                        </select></div></div>
+                <div class="modal-col"><div class="label"><label>ServerName: </label></div><div class="input">
+                    <input id="ServerName" type="text" placeholder="Please input server's name"></div></div>
+                <div class="modal-col"><div class="label"><label>ServerIP: </label></div><div class="input">
+                    <input id="ServerIP" type="text" placeholder="Please input server IP"></div></div>
+                <div class="modal-col"><div class="label"><label>Port：</label></div><div class="input">
+                    <input id="Port" type="text" value="22" placeholder="Please input server IP"></div></div>
+                <div class="modal-col"><div class="label"><label>UserName：</label></div><div class="input">
+                    <input id="UserName" type="text" value="root" placeholder="Please input server username"></div></div>
+                <div class="modal-col"><div class="label"><label>Password：</label></div><div class="input">
+                    <input id="Password" type="password" placeholder="Please input server password"></div></div>
             </div>
-            <div class="modal-footer">
-                <a class="cancel">Cancel</a>
-                <a class="submit">Submit</a>
-            </div>
-        </div>
-    </div>
+            <div class="modal-footer"><a class="cancel">Cancel</a><a class="submit">Submit</a></div></div></div>
     <div class="myModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h2 id="title-name">Edit User</h2>
-            </div>
-            <div class="modal-body">
-                <div class="modal-col">
-                    <div class="label">
-                        <label>Operation: </label>
-                     </div>
-                    <div class="input">
-                        <select id="operator">
+            <div class="modal-header"><span class="close">&times;</span><h2 id="title-name">Edit User</h2></div>
+            <div class="modal-body"><div class="modal-col"><div class="label"><label>Operation: </label></div>
+                    <div class="input"><select id="operator">
                             <option value="add">Add User to Group</option>
                             <option value="delete">Remove User from Group</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>GroupName: </label>
-                     </div>
-                    <div class="input">
-                        <select id="group_name_1">
+                        </select></div></div>
+                <div class="modal-col"><div class="label"><label>GroupName: </label></div>
+                    <div class="input"><select id="group_name_1">
                             <option value="" selected></option>
                             {% for group in groups %}
                                 <option value="{{ group.id }}">{{ group.name }}</option>
                             {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-col">
-                    <div class="label">
-                        <label>UserName：</label>
-                    </div>
-                    <div class="input">
-                        <input id="user_name_1" type="text" placeholder="Please input username ~">
-                    </div>
-                </div>
+                        </select></div></div>
+                <div class="modal-col"><div class="label"><label>UserName：</label></div><div class="input">
+                    <input id="user_name_1" type="text" placeholder="Please input username ~"></div></div>
             </div>
-            <div class="modal-footer">
-                <a class="cancel">Cancel</a>
-                <a class="submit">Submit</a>
-            </div>
-        </div>
-    </div>
+            <div class="modal-footer"><a class="cancel">Cancel</a><a class="submit">Submit</a></div></div></div>
     <div class="myModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h2 id="title-name">Create Group</h2>
-            </div>
-            <div class="modal-body">
-                <div class="modal-col">
-                    <div class="label">
-                        <label>Operation: </label>
-                    </div>
-                    <div class="input">
-                        <select id="group_operator">
+            <div class="modal-header"><span class="close">&times;</span><h2 id="title-name">Create Group</h2></div>
+            <div class="modal-body"><div class="modal-col"><div class="label"><label>Operation: </label></div>
+                    <div class="input"><select id="group_operator">
                             <option value="add">Add Group</option>
                             <option value="delete">Delete Group</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-col" id="group_input">
-                    <div class="label">
-                        <label>GroupName：</label>
-                    </div>
-                    <div class="input">
-                        <input id="group_name_2" type="text" placeholder="Please input group name ~">
-                    </div>
-                </div>
-                <div class="modal-col" id="group_identifier">
-                    <div class="label">
-                        <label>Identifier：</label>
-                    </div>
-                    <div class="input">
-                        <input id="group_identifier_2" type="text" placeholder="Please input group unique identifier ~">
-                    </div>
-                </div>
-                <div class="modal-col" id="group_prefix">
-                    <div class="label">
-                        <label>Url Prefix：</label>
-                    </div>
-                    <div class="input">
-                        <input id="url-prefix" type="text" placeholder="Please input url path prefix ~">
-                    </div>
-                </div>
-                <div class="modal-col" id="group_select" style="display: none;">
-                    <div class="label">
-                        <label>GroupName：</label>
-                    </div>
-                    <div class="input">
-                        <select id="group_id" name="{% url 'shell:get_group' %}"></select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <a class="cancel">Cancel</a>
-                <a class="submit" name="{% url 'shell:create_group' %}">Submit</a>
-            </div>
-        </div>
-    </div>
+                        </select></div></div>
+                <div class="modal-col" id="group_input"><div class="label"><label>GroupName：</label></div><div class="input">
+                    <input id="group_name_2" type="text" placeholder="Please input group name ~"></div></div>
+                <div class="modal-col" id="group_identifier"><div class="label"><label>Identifier：</label></div><div class="input">
+                    <input id="group_identifier_2" type="text" placeholder="Please input group unique identifier ~"></div></div>
+                <div class="modal-col" id="group_prefix"><div class="label"><label>Url Prefix：</label></div><div class="input">
+                    <input id="url-prefix" type="text" placeholder="Please input url path prefix ~"></div></div>
+                <div class="modal-col" id="group_select" style="display: none;"><div class="label"><label>GroupName：</label></div>
+                    <div class="input"><select id="group_id" name="{% url 'shell:get_group' %}"></select></div></div></div>
+            <div class="modal-footer"><a class="cancel">Cancel</a><a class="submit" name="{% url 'shell:create_group' %}">Submit</a></div>
+        </div></div>
     <div class="myModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h2 id="title-name">Create Server Room</h2>
-            </div>
-            <div class="modal-body">
-                <div class="modal-col">
-                    <div class="label">
-                        <label>Operation: </label>
-                    </div>
-                    <div class="input">
-                        <select id="room_operator">
-                            <option value="add">Add Server Room</option>
-                            <option value="delete">Delete Server Room</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-col" id="room_input">
-                    <div class="label">
-                        <label>Name：</label>
-                    </div>
-                    <div class="input">
-                        <input id="room_name" type="text" placeholder="Please input server room name ~">
-                    </div>
-                </div>
-                <div class="modal-col" id="room_type_select">
-                    <div class="label">
-                        <label>Type: </label>
-                     </div>
-                    <div class="input">
+            <div class="modal-header"><span class="close">&times;</span><h2 id="title-name">Create Server Room</h2></div>
+            <div class="modal-body"><div class="modal-col"><div class="label"><label>Operation: </label></div>
+                    <div class="input"><select id="room_operator">
+                        <option value="add">Add Server Room</option>
+                        <option value="delete">Delete Server Room</option>
+                    </select></div></div>
+                <div class="modal-col" id="room_input"><div class="label"><label>Name：</label></div><div class="input">
+                    <input id="room_name" type="text" placeholder="Please input server room name ~"></div></div>
+                <div class="modal-col" id="room_type_select"><div class="label"><label>Type: </label></div><div class="input">
                         <select id="room_type">
                             <option value="0" selected>Used to Applications</option>
                             <option value="1">Used to Middleware</option>
                             <option value="2">Used to Pressure Test</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-col" id="room_id_select" style="display: none;">
-                    <div class="label">
-                        <label>ServerRoom: </label>
-                     </div>
-                    <div class="input">
-                        <select id="room_id" name="{% url 'shell:get_room' %}"></select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <a class="cancel">Cancel</a>
-                <a class="submit" name="{% url 'shell:create_room' %}">Submit</a>
-            </div>
-        </div>
-    </div>
+                        </select></div></div>
+                <div class="modal-col" id="room_id_select" style="display: none;"><div class="label"><label>ServerRoom: </label></div>
+                    <div class="input"><select id="room_id" name="{% url 'shell:get_room' %}"></select></div></div></div>
+            <div class="modal-footer"><a class="cancel">Cancel</a><a class="submit" name="{% url 'shell:create_room' %}">Submit</a></div>
+        </div></div>
     <div class="modal_cover"><div class="modal_gif"></div></div>
 {% endblock %}
 {% block define_js %}
@@ -322,4 +161,3 @@
     });
     </script>
 {% endblock %}
-

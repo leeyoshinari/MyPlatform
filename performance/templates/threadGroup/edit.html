@@ -1,35 +1,20 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
 {% load myFilter %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/group.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
-    <a href="{% url 'perf:group_home' %}?id={{ groups.plan_id }}">Thread Group</a>
-    <span>>></span>
-    <span>Edit Thread Group</span>
+    <a href="{% url 'perf:group_home' %}?id={{ groups.plan_id }}">Thread Group</a><span>>></span><span>Edit Thread Group</span>
 {% endblock %}
-
 {% block detail %}
     <div class="list-body">
-        <div class="row-cols">
-            <div class="label-div">
-                <label>ID:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="ID" readonly value="{{ groups.id }}" disabled>
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Plan ID: </label>
-            </div>
-            <div class="value-div">
-                <select id="planid">
+        <div class="row-cols"><div class="label-div"><label>ID:</label></div>
+            <div class="value-div"><input type="text" id="ID" readonly value="{{ groups.id }}" disabled></div></div>
+        <div class="row-cols"><div class="label-div"><label>Plan ID: </label></div>
+            <div class="value-div"><select id="planid">
                     {% for foo in plans %}
                         {% if foo.id == groups.plan_id %}
                             <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
@@ -37,31 +22,12 @@
                             <option value="{{ foo.id }}">{{ foo.name }}</option>
                         {% endif %}
                     {% endfor %}
-                </select>
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Name:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="name" placeholder="Please input name ~" value="{{ groups.name }}">
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="Ramp-up period (seconds). Only TPS Type valid.">?</span></div>
-                <label>Ramp Time:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="ramp_time" placeholder="Please input ramp time ~" value="{{ groups.ramp_time }}">
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <div class="helpstyle"><span data-tooltip="CSV Data Set Config, that stores variables used during running.">?</span></div>
-                <label>CSVDataSet:</label>
-            </div>
+                </select></div></div>
+        <div class="row-cols"><div class="label-div"><label>Name:</label></div>
+            <div class="value-div"><input type="text" id="name" placeholder="Please input name ~" value="{{ groups.name }}"></div></div>
+        <div class="row-cols"><div class="label-div"><div class="helpstyle"><span data-tooltip="Ramp-up period (seconds). Only TPS Type valid.">?</span></div><label>Ramp Time:</label></div>
+            <div class="value-div"><input type="text" id="ramp_time" placeholder="Please input ramp time ~" value="{{ groups.ramp_time }}"></div></div>
+        <div class="row-cols"><div class="label-div"><div class="helpstyle"><span data-tooltip="CSV Data Set Config, that stores variables used during running.">?</span></div><label>CSVDataSet:</label></div>
             {% if groups.file %}
                 <div class="value-div">
                     <button id="upload_file" onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 10%;">Upload File</button>
@@ -69,27 +35,17 @@
                     <button id="delete_file" onclick="delete_file('{% url 'perf:group_delete_file' %}', '{{ groups.id }}')" style="width: 10%;">Delete File</button>
                     <input type="file" id="fileUpload-input" accept=".xls,.xlsx,.csv,.txt" style="display: none;">
                     <input type="text" id="file_path" name="{{ groups.file.file_path }}" value="{{ groups.file.file_path | parse_url_name }}" readonly style="width: 16%; margin-left: 2%; border: none; background-color: white;" disabled>
-                </div>
-                <div class="small-div">
-                    <div class="label">
-                        <div class="helpstyle"><span data-tooltip="Variable Names (comma-delimited). Each variable corresponds to each column in the CSV file.">?</span></div>
-                        <label>Variable Names:</label>
-                    </div>
+                </div><div class="small-div"><div class="label">
+                    <div class="helpstyle"><span data-tooltip="Variable Names (comma-delimited). Each variable corresponds to each column in the CSV file.">?</span></div>
+                    <label>Variable Names:</label></div>
                     <input type="text" id="variable_names" placeholder="Please input variable names, split by ',' ~" value="{{ groups.file.variable_names }}">
-                </div>
-                <div class="small-div">
-                    <div class="label">
-                        <div class="helpstyle"><span data-tooltip="Delimiter (use '\t' for tab)">?</span></div>
-                        <label>Delimiter:</label>
-                    </div>
+                </div><div class="small-div"><div class="label">
+                    <div class="helpstyle"><span data-tooltip="Delimiter (use '\t' for tab)">?</span></div>
+                    <label>Delimiter:</label></div>
                     <input type="text" id="delimiter" placeholder="Please input delimiter ~" value="{{ groups.file.delimiter }}">
-                </div>
-                <div class="small-div">
-                    <div class="label">
-                        <div class="helpstyle"><span data-tooltip="Recycle on EOF ? True: recycle when EOF. False: stop when EOF.">?</span></div>
-                        <label>Recycle:</label>
-                    </div>
-                    <select id="recycle">
+                </div><div class="small-div"><div class="label">
+                    <div class="helpstyle"><span data-tooltip="Recycle on EOF ? True: recycle when EOF. False: stop when EOF.">?</span></div>
+                    <label>Recycle:</label></div><select id="recycle">
                         {% if groups.file.recycle == 'true' %}
                             <option value="true" selected>True</option>
                             <option value="false">False</option>
@@ -97,14 +53,8 @@
                             <option value="true">True</option>
                             <option value="false" selected>False</option>
                         {% endif %}
-                    </select>
-                </div>
-                <div class="small-div">
-                    <div class="label">
-                        <div class="helpstyle"><span data-tooltip="Threads Sharing mode">?</span></div>
-                        <label>Share Mode:</label>
-                    </div>
-                    <select id="share_mode">
+                    </select></div>
+                <div class="small-div"><div class="label"><div class="helpstyle"><span data-tooltip="Threads Sharing mode">?</span></div><label>Share Mode:</label></div><select id="share_mode">
                         {% for k, v in share_mode.items %}
                             {% if v == groups.file.share_mode %}
                                 <option value="{{ v }}" selected>{{ k}}</option>
@@ -112,8 +62,7 @@
                                 <option value="{{ v }}">{{ k}}</option>
                             {% endif %}
                         {% endfor %}
-                    </select>
-                </div>
+                    </select></div>
             {% else %}
                 <div class="value-div">
                     <button id="upload_file" onclick="upload_file('{% url 'perf:group_upload_file' %}');" style="width: 10%;">Upload File</button>
@@ -121,57 +70,31 @@
                     <button id="delete_file" onclick="delete_file('{% url 'perf:group_delete_file' %}', '{{ groups.id }}')" style="width: 10%; display: none;">Delete File</button>
                     <input type="file" id="fileUpload-input" accept=".xls,.xlsx,.csv,.txt" style="display: none;">
                     <input type="text" id="file_path" value="" readonly style="width: 16%; margin-left: 2%; border: none; background-color: white;" disabled>
-                </div>
-                <div class="small-div" style="display:none;">
-                    <div class="label">
-                        <div class="helpstyle"><span data-tooltip="Variable Names (comma-delimited). Each variable corresponds to each column in the CSV file.">?</span></div>
-                        <label>Variable Names:</label>
-                    </div>
-                    <input type="text" id="variable_names" placeholder="Please input variable names, split by ',' ~">
-                </div>
-                <div class="small-div" style="display:none;">
-                    <div class="label">
-                        <div class="helpstyle"><span data-tooltip="Delimiter (use '\t' for tab)">?</span></div>
-                        <label>Delimiter:</label>
-                    </div>
-                    <input type="text" id="delimiter" placeholder="Please input delimiter ~" value=",">
-                </div>
-                <div class="small-div" style="display:none;">
-                    <div class="label">
-                        <div class="helpstyle"><span data-tooltip="Recycle on EOF ? True: recycle when EOF. False: stop when EOF.">?</span></div>
-                        <label>Recycle:</label>
-                    </div>
+                </div><div class="small-div" style="display:none;"><div class="label">
+                    <div class="helpstyle"><span data-tooltip="Variable Names (comma-delimited). Each variable corresponds to each column in the CSV file.">?</span></div>
+                    <label>Variable Names:</label></div>
+                    <input type="text" id="variable_names" placeholder="Please input variable names, split by ',' ~"></div>
+                <div class="small-div" style="display:none;"><div class="label">
+                    <div class="helpstyle"><span data-tooltip="Delimiter (use '\t' for tab)">?</span></div>
+                    <label>Delimiter:</label></div>
+                    <input type="text" id="delimiter" placeholder="Please input delimiter ~" value=","></div>
+                <div class="small-div" style="display:none;"><div class="label">
+                    <div class="helpstyle"><span data-tooltip="Recycle on EOF ? True: recycle when EOF. False: stop when EOF.">?</span></div>
+                    <label>Recycle:</label></div>
                     <select id="recycle">
                         <option value="true">True</option>
                         <option value="false">False</option>
-                    </select>
-                </div>
-                <div class="small-div" style="display:none;">
-                    <div class="label">
-                        <div class="helpstyle"><span data-tooltip="Threads Sharing mode">?</span></div>
-                        <label>Share Mode:</label>
-                    </div>
+                    </select></div>
+                <div class="small-div" style="display:none;"><div class="label">
+                    <div class="helpstyle"><span data-tooltip="Threads Sharing mode">?</span></div><label>Share Mode:</label></div>
                     <select id="share_mode">
                         <{% for k, v in share_mode.items %}
                             <option value="{{ v }}">{{ k}}</option>
                         {% endfor %}
-                    </select>
-                </div>
+                    </select></div>
             {% endif %}
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Comment:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="comment" placeholder="Please input thread group comment ~" value="{{ groups.comment }}">
-            </div>
-        </div>
-    </div>
-    <div class="list-footer">
-        <div>
-            <a href="{% url 'perf:group_home' %}?id={{ groups.plan_id }}">Cancel</a>
-            <a href="#" onclick="edit_group('{% url 'perf:group_edit' %}', '{% url 'perf:group_home' %}', {{ groups.plan_id }})">Submit</a>
-        </div>
-    </div>
+        </div><div class="row-cols"><div class="label-div"><label>Comment:</label></div><div class="value-div">
+            <input type="text" id="comment" placeholder="Please input thread group comment ~" value="{{ groups.comment }}"></div></div></div>
+    <div class="list-footer"><div><a href="{% url 'perf:group_home' %}?id={{ groups.plan_id }}">Cancel</a>
+        <a href="#" onclick="edit_group('{% url 'perf:group_edit' %}', '{% url 'perf:group_home' %}', {{ groups.plan_id }})">Submit</a></div></div>
 {% endblock %}
