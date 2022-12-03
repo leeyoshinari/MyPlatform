@@ -1,17 +1,14 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
 {% load myFilter %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/plan.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
     <a href="{% url 'perf:plan_home' %}">Test Plan</a>
 {% endblock %}
-
 {% block detail_action %}
     <a href="{% url 'perf:plan_add' %}">Add Plan</a>
     <a href="#" onclick="upload_file('{% url 'perf:plan_upload_file' %}');">Import Plan</a>
@@ -38,7 +35,6 @@
         <th width="40%">Actions</th>
     </tr>
 {% endblock %}
-
 {% block table_body %}
     {% for plan in plans %}
         {% if plan.is_valid == 'false' %}

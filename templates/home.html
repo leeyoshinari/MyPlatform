@@ -1,33 +1,26 @@
 {% extends 'template.html' %}
 {% load static compress %}
-
 {% block addcss %}
     {% compress css %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'user/css/home.css' %}">
     {% endcompress %}
 {% endblock %}
-
 {% block addjs %}
     {% compress js %}
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
-
 {% block addbody %}
 <div id="wrapper">
     <!-- NAVBAR -->
     <nav class="navbar navbar-default navbar-fixed-top" style="height: 50px">
-        <div class="brand">
-            <a href="{% url 'home' %}" style="text-decoration: none;"><h3 style="margin-top: 10px; margin-left: 10px;">Home</h3></a>
-        </div>
+        <div class="brand"><a href="{% url 'home' %}" style="text-decoration: none;"><h3 style="margin-top: 10px; margin-left: 10px;">Home</h3></a></div>
         <div class="container-fluid" style="height: 50px">
             <div id="navbar-menu">
                 <ul class="nav navbar-nav navbar-right" style="height: 50px">
                     <li class="dropdown" style="height: 50px">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="height: 50px">
-                            <!-- <img src="/static/img/user.png" class="img-circle" alt="Avatar"> -->
                             <h3 style="margin-top: -5px;">{{ username }}</h3></a>
                         <ul class="dropdown-menu">
                             <li><a href="#"><span>My Profile</span></a></li>
@@ -84,8 +77,6 @@
     </div>
 </div>
 <div class="footer" id="foot">
-    <div class="copyright">
-        <p>Copyright © 2022~2023 leeyoshinari. All Rights Reserved.</p>
-    </div>
+    <div class="copyright"><p>Copyright © 2022~2023 leeyoshinari. All Rights Reserved.</p></div>
 </div>
 {% endblock %}

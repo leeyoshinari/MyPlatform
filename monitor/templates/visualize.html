@@ -1,6 +1,5 @@
 {% extends "monitor_template.html" %}
 {% load static compress %}
-
 {% block addcss %}
     {% compress css %}
     <link href="{% static 'monitor/css/visualize.css' %}" rel="stylesheet">
@@ -12,7 +11,6 @@
     <script src="{% static 'monitor/js/plot_system.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block content %}
 <div style="width: 96%; margin-left: 3%;">
     Group: <select id="group" style="width: 8%; height: 26px; margin-right: 20px;" onchange="change_group();">
@@ -48,41 +46,26 @@
 <div id="left-container" style="height: 1525px;">
     {% for h in ip %}
         <div class="host-card">
-            <div style="margin: 5px;">
-                <span class="host-ip">{{ h.host }}</span>
-            </div>
-            <div>
-                <div>
-                    <span class="host-label">CPU: <span class="host-value">{{ h.cpu_usage|floatformat:2 }}%</span></span>
-                    <span class="host-label">Mem: <span class="host-value">{{ h.mem_usage|floatformat:2 }}%</span></span>
-                </div>
-                <div>
-                    <span class="host-label">&nbsp;&nbsp;&nbsp;IO: <span class="host-value">{{ h.io_usage|floatformat:2 }}%</span></span>
+            <div style="margin: 5px;"><span class="host-ip">{{ h.host }}</span></div>
+            <div><div><span class="host-label">CPU: <span class="host-value">{{ h.cpu_usage|floatformat:2 }}%</span></span>
+                    <span class="host-label">Mem: <span class="host-value">{{ h.mem_usage|floatformat:2 }}%</span></span></div>
+                <div><span class="host-label">&nbsp;&nbsp;&nbsp;IO: <span class="host-value">{{ h.io_usage|floatformat:2 }}%</span></span>
                     <span class="host-label">Net: <span class="host-value">{{ h.net_usage|floatformat:2 }}%</span></span>
-                </div>
-            </div>
-        </div>
+                </div></div></div>
     {% endfor %}
 </div>
-<div class="figure-region">
-    <div id="figure" style="width: 99%; height:1525px; margin: 0 auto;"></div>
-    <input id="start-time" type="text" value="" style="display: none;">
-</div>
-<br>
-<div class="modal_cover"><div class="modal_gif"></div></div>
+<div class="figure-region"><div id="figure" style="width: 99%; height:1525px; margin: 0 auto;"></div><input id="start-time" type="text" value="" style="display: none;"></div>
+<br><div class="modal_cover"><div class="modal_gif"></div></div>
 {% endblock %}
 
 {% block myjs %}
 <script type="text/javascript">
     let specific_host = '{{ spec_host }}';
     let colors = ['fcf8e3', 'f7ecb5', 'f7e1b5', 'f0c948', 'f0ad4e', 'ec971f', 'd58512', 'ff3333', 'ff0000', 'c9302c', 'c9302c'];
-
     $('#figure').removeAttr("_echarts_instance_").empty();
     let figure = document.getElementById('figure');
     let myChart = echarts.init(figure);
-    let plot_timer = setInterval(function () {
-        plot_delta();
-    }, 10000);
+    let plot_timer = setInterval(function () {plot_delta();}, 10000);
     plot_init(specific_host);
     change_room(0);
 
@@ -165,9 +148,7 @@
             clearInterval(plot_timer);
             return;
         }
-        if (document.getElementById('time-period').value === '0') {
-            return;
-        }
+        if (document.getElementById('time-period').value === '0') {return;}
         let starttime = document.getElementById('start-time').value;
         let group = document.getElementById('group').value;
         let room = document.getElementById('room').value;
@@ -194,21 +175,13 @@
                                 data['post_data']['port_tcp'], data['post_data']['close_wait'], data['post_data']['time_wait'], data['flag']);
                             document.getElementById('start-time').value = data['post_data']['time'];
                         }
-                    } else {
-                        $.Toast(data['msg'], 'error');
-                    }
+                    } else {$.Toast(data['msg'], 'error');}
                 }
             });
         })
     }
-
-    function get_color(v1, v2, v3) {
-        return colors[parseInt((v1 * 0.5 + v2 * 0.3 + v3 * 0.2) / 10)];
-    }
-
-    $("#MonitorList").click(function () {
-        plot_init('all');
-    });
+    function get_color(v1, v2, v3) {return colors[parseInt((v1 * 0.5 + v2 * 0.3 + v3 * 0.2) / 10)];}
+    $("#MonitorList").click(function () {plot_init('all');});
     function change_group() {
         let group_id = document.getElementById('group').value;
         let roomObj = document.getElementById('room');
@@ -261,8 +234,6 @@
         })
     }
 
-    let server_timer = setInterval(function () {
-        change_room(0);
-    }, 10000);
+    let server_timer = setInterval(function () {change_room(0);}, 10000);
 </script>
 {% endblock %}

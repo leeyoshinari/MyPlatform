@@ -1,12 +1,10 @@
 {% extends "monitor_template.html" %}
 {% load static compress %}
-
 {% block addjs %}
     {% compress js %}
     <script src="{% static 'js/fenye.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block page_content %}
 <div class="page-header" style="margin-top: 1px;">
     <div style="margin-bottom: 2%;">
@@ -20,8 +18,7 @@
                         <option value="{{ g.id }}">{{ g.name }}</option>
                     {% endif %}
                 {% endfor %}
-            </select>
-        </div>
+            </select></div>
         <div style="float: left; width: 350px;">
             <label>Host: </label>
             {% if key_word %}
@@ -29,9 +26,7 @@
             {% else %}
                 <input id="host" placeholder="Please input server IP ~" style="width: 190px; height: 30px;">
             {% endif %}
-        </div>
-        <div><button style="width: 125px; height: 26px;" id="search">Search</button></div>
-    </div>
+        </div><div><button style="width: 125px; height: 26px;" id="search">Search</button></div></div>
     <table width="99%" border="1" cellspacing="0" cellpadding="6" align="center" id="monitor">
         <tr style="align: center; margin: auto; background-color: #99CCFF">
             <th width=13% style="text-align: center;">Server</th>
@@ -71,7 +66,6 @@
 </div>
 <div class="fenye"><ul id="paging" class="pagination"></ul></div>
 {% endblock %}
-
 {% block myjs %}
     <script type="text/javascript">
         {% if key_word %}

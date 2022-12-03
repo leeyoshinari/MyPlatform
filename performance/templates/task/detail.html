@@ -1,7 +1,6 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
 {% load myFilter %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/echarts.common.js' %}"></script>
@@ -9,42 +8,27 @@
     <script src="{% static 'performance/js/task.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
     <a href="{% url 'perf:task_home' %}">Test Task</a>
 {% endblock %}
-
 {% block detail_action %}
     {% if tasks %}
-    <div style="height: 50px;">
-        <div>
-            <h3>Test Plan Name:
+    <div style="height: 50px;"><div><h3>Test Plan Name:
                 <span><a href="{% url 'perf:plan_home' %}?keyWord={{ tasks.plan.name }}">{{ tasks.plan.name }}</a></span>
-                <span style="margin-left: 10%; color: {{ tasks.status | get_value_from_list:'task_color' }}">{{ tasks.status | get_value_from_list:'task_status' }}</span>
-            </h3>
-            <span style="float: right; margin-right: 30px; width: 110px;">
-                <a target="_blank" href="{{ tasks.path }}">Download File</a>
-            </span>
+                <span style="margin-left: 10%; color: {{ tasks.status | get_value_from_list:'task_color' }}">{{ tasks.status | get_value_from_list:'task_status' }}</span></h3>
+            <span style="float: right; margin-right: 30px; width: 110px;"><a target="_blank" href="{{ tasks.path }}">Download File</a></span>
             {% if tasks.status == 1 %}
-                <span style="float: right; margin-right: 30px; width: 42px;">
-                    <a href="#" onclick="stop_test('{% url 'perf:task_stop' %}', {{ tasks.id }}, 'all')">Stop</a>
-                </span>
+                <span style="float: right; margin-right: 30px; width: 42px;"><a href="#" onclick="stop_test('{% url 'perf:task_stop' %}', {{ tasks.id }}, 'all')">Stop</a></span>
             {% endif %}
             {% if tasks.plan.type == 1 and tasks.status == 1 %}
-                <span style="float: right; margin-right: 30px; width: 100px;">
-                    <a onclick="change_tps('{% url 'perf:change_tps' %}', {{ tasks.id }}, 'all')">Change TPS</a>
-                </span>
+                <span style="float: right; margin-right: 30px; width: 100px;"><a onclick="change_tps('{% url 'perf:change_tps' %}', {{ tasks.id }}, 'all')">Change TPS</a></span>
             {% endif %}
-        </div>
-    </div>
-    <div style="height: 50px; margin-left: 3%;">
-        <div class="plan-detail">
+        </div></div>
+    <div style="height: 50px; margin-left: 3%;"><div class="plan-detail">
             {% if tasks.plan.type == 0 %}
-                <label>Fixed Thread Num: </label>
-                <span>{{ tasks.plan.target_num }}</span>
+                <label>Fixed Thread Num: </label><span>{{ tasks.plan.target_num }}</span>
             {% else %}
-                <label>Target TPS: </label>
-                <span>{{ tasks.plan.target_num }}/s</span>
+                <label>Target TPS: </label><span>{{ tasks.plan.target_num }}/s</span>
             {% endif %}
         </div>
         {% if tasks.status == 1 %}
@@ -52,49 +36,20 @@
         {% else %}
             <div class="plan-detail" style="display: none;">
         {% endif %}
-                <label>Current TPS: </label>
-                <span>{{ tasks.plan.duration }}/s</span>
-            </div>
-        <div class="plan-detail">
-            <label>StartTime: </label>
-            <span>{{ tasks.start_time | date:"Y-m-d H:i:s" }}</span>
-        </div>
+                <label>Current TPS: </label><span>{{ tasks.plan.duration }}/s</span></div>
+        <div class="plan-detail"><label>StartTime: </label><span>{{ tasks.start_time | date:"Y-m-d H:i:s" }}</span></div>
         {% if tasks.status > 1 %}
             <div class="plan-detail">
         {% else %}
             <div class="plan-detail" style="display: none;">
         {% endif %}
-        <!--div class="plan-detail" style="width: 260px;"-->
-            <label>EndTime: </label>
-            <span>{{ tasks.end_time | date:"Y-m-d H:i:s" }}</span>
-        </div>
-    </div>
-    <div style="height: 50px; margin-left: 3%;">
-        <div class="plan-detail">
-            <label>Samples: </label>
-            <span>{{ tasks.samples }}</span>
-        </div>
-        <div class="plan-detail">
-            <label>Average TPS: </label>
-            <span>{{ tasks.tps }}/s</span>
-        </div>
-        <div class="plan-detail">
-            <label>RT(avg): </label>
-            <span>{{ tasks.average_rt }} ms</span>
-        </div>
-        <div class="plan-detail">
-            <label>RT(min): </label>
-            <span>{{ tasks.min_rt }} ms</span>
-        </div>
-        <div class="plan-detail">
-            <label>RT(max): </label>
-            <span>{{ tasks.max_rt }} ms</span>
-        </div>
-        <div class="plan-detail">
-            <label>Error(%): </label>
-            <span>{{ tasks.error }}%</span>
-        </div>
-    </div>
+            <label>EndTime: </label><span>{{ tasks.end_time | date:"Y-m-d H:i:s" }}</span></div></div>
+    <div style="height: 50px; margin-left: 3%;"><div class="plan-detail"><label>Samples: </label><span>{{ tasks.samples }}</span></div>
+        <div class="plan-detail"><label>Average TPS: </label><span>{{ tasks.tps }}/s</span></div>
+        <div class="plan-detail"><label>RT(avg): </label><span>{{ tasks.average_rt }} ms</span></div>
+        <div class="plan-detail"><label>RT(min): </label><span>{{ tasks.min_rt }} ms</span></div>
+        <div class="plan-detail"><label>RT(max): </label><span>{{ tasks.max_rt }} ms</span></div>
+        <div class="plan-detail"><label>Error(%): </label><span>{{ tasks.error }}%</span></div></div>
     {% endif %}
 {% endblock %}
 {% block other_content %}
@@ -102,39 +57,18 @@
     <div><h3 style="float: left;">Monitor Figure</h3>
         <input id="figure-title" type="text" value="(All Servers)" name="all" style="border: none; margin-left: 1%; vertical-align: bottom; background-color: white;" disabled readonly>
         <input id="start-time" type="text" value="{{ tasks.start_time | date:"Y-m-d H:i:s" }}" style="display: none;">
-    </div>
-    <div id="figure" style="width: 100%;height:480px;margin: 0 auto;"></div>
-    <div style="margin-top: 20px;">
-        <h3>Pressure Server <span id="total-server" style="font-size: medium; font-weight: normal;"></span></h3>
-        <div style="float: right; margin-right: 30px;">
-            <a id="view-all" title="View all servers summary data." style="text-decoration: none; cursor: pointer; color: blue; margin-right: 20px;">View All</a>
+    </div><div id="figure" style="width: 100%;height:480px;margin: 0 auto;"></div>
+    <div style="margin-top: 20px;"><h3>Pressure Server <span id="total-server" style="font-size: medium; font-weight: normal;"></span></h3>
+        <div style="float: right; margin-right: 30px;"><a id="view-all" title="View all servers summary data." style="text-decoration: none; cursor: pointer; color: blue; margin-right: 20px;">View All</a>
             {% if tasks.status == 1 %}
                 <a id="show-server" title="View idle servers." style="text-decoration: none; cursor: pointer; color: blue; margin-right: 20px;">Show More</a>
             {% endif %}
-        </div>
-    </div>
-    <div class="myModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h2 id="title-name" style="margin-top: 3%;">Change Total TPS to</h2>
-            </div>
-            <div class="modal-body">
-                <div class="modal-col">
-                    <div class="label">
-                        <label>TPS Ratio(%)：</label>
-                    </div>
-                    <div class="input">
-                        <input id="tps-ratio" type="number" name="{{ tasks.plan.target_num }}" placeholder="Please input TPS ratio (%)" style="width: 66%;">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <a class="cancel">Cancel</a>
-                <a class="submit">Submit</a>
-            </div>
-        </div>
-    </div>
+        </div></div>
+    <div class="myModal"><div class="modal-content">
+            <div class="modal-header"><span class="close">&times;</span><h2 id="title-name" style="margin-top: 3%;">Change Total TPS to</h2></div>
+            <div class="modal-body"><div class="modal-col"><div class="label"><label>TPS Ratio(%)：</label></div>
+                <div class="input"><input id="tps-ratio" type="number" name="{{ tasks.plan.target_num }}" placeholder="Please input TPS ratio (%)" style="width: 66%;"></div></div></div>
+            <div class="modal-footer"><a class="cancel">Cancel</a><a class="submit">Submit</a></div></div></div>
     {% endif %}
 {% endblock %}
 {% block table_head %}
@@ -165,11 +99,9 @@
         let W = window.screen.width;
         document.getElementsByClassName('toolbar')[0].style.width = (W - 200) + 'px';
         document.getElementsByClassName('detail')[0].style.width = (W * 0.99 - 200) + 'px';
-
         $('#figure').removeAttr("_echarts_instance_").empty();
         let figure = document.getElementById('figure');
         let myChart = echarts.init(figure);
-
         plot(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}');
         {% if tasks.status > 1 %}
             get_used_server({{ tasks.id }}, '{% url 'perf:get_used_server' %}', '{% url 'perf:task_download_log' %}');
@@ -178,15 +110,11 @@
                 '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}', {{ tasks.plan.type }});
         {% endif %}
         {% if tasks.status == 1 %}
-            let timer = setInterval(function () {
-                plot_delta(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}')
-            }, 10000);
-
+            let timer = setInterval(function () {plot_delta(myChart, {{ tasks.id }}, '{% url 'perf:task_query' %}')}, 10000);
             let query_server_timer = setInterval(function () {
                 get_running_server({{ tasks.id }}, '{% url 'perf:get_running_server' %}', {{ tasks.status }}, '{% url 'perf:task_start' %}',
                 '{% url 'perf:change_tps' %}', '{% url 'perf:task_download_log' %}', '{% url 'perf:task_query' %}', '{% url 'perf:task_stop' %}', {{ tasks.plan.type }})
             }, 10000);
-
             document.getElementById('show-server').addEventListener('click', function () {
                 let title = document.getElementById('show-server').innerText;
                 if (title === 'Show More') {

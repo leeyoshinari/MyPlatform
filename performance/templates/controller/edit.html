@@ -1,34 +1,20 @@
 {% extends 'perf_home.html' %}
 {% load static compress %}
-
 {% block add_js %}
     {% compress js %}
     <script src="{% static 'performance/js/controller.js' %}"></script>
     {% endcompress %}
 {% endblock %}
-
 {% block navigate %}
-    <a href="{% url 'perf:controller_home' %}?id={{ controllers.thread_group_id }}">Controller</a>
-    <span>>></span>
-    <span>Edit Controller</span>
+    <a href="{% url 'perf:controller_home' %}?id={{ controllers.thread_group_id }}">Controller</a><span>>></span><span>Edit Controller</span>
 {% endblock %}
 
 {% block detail %}
     <div class="list-body">
-        <div class="row-cols">
-            <div class="label-div">
-                <label>ID:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="ID" readonly value="{{ controllers.id }}" disabled>
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Thread Group ID: </label>
-            </div>
-            <div class="value-div">
-                <select id="groupid">
+        <div class="row-cols"><div class="label-div"><label>ID:</label></div>
+            <div class="value-div"><input type="text" id="ID" readonly value="{{ controllers.id }}" disabled></div></div>
+        <div class="row-cols"><div class="label-div"><label>Thread Group ID: </label></div>
+            <div class="value-div"><select id="groupid">
                     {% for foo in groups %}
                         {% if foo.id == controllers.thread_group_id %}
                             <option value="{{ foo.id }}" selected>{{ foo.name }}</option>
@@ -36,31 +22,12 @@
                             <option value="{{ foo.id }}">{{ foo.name }}</option>
                         {% endif %}
                     {% endfor %}
-                </select>
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Name:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="name" placeholder="Please input name ~" value="{{ controllers.name }}">
-            </div>
-        </div>
-        <div class="row-cols">
-            <div class="label-div">
-                <label>Comment:</label>
-            </div>
-            <div class="value-div">
-                <input type="text" id="comment" placeholder="Please input controllers comment ~" value="{{ controllers.comment }}">
-            </div>
-        </div>
-    </div>
-    <div class="list-footer">
-        <div>
-            <a href="{% url 'perf:controller_home' %}?id={{ controllers.thread_group_id }}">Cancel</a>
-            <a href="#" onclick="edit_controller('{% url 'perf:controller_edit' %}', '{% url 'perf:controller_home' %}', {{ controllers.thread_group_id }})">Submit</a>
-        </div>
-    </div>
+                </select></div></div>
+        <div class="row-cols"><div class="label-div"><label>Name:</label></div>
+            <div class="value-div"><input type="text" id="name" placeholder="Please input name ~" value="{{ controllers.name }}"></div></div>
+        <div class="row-cols"><div class="label-div"><label>Comment:</label></div>
+            <div class="value-div"><input type="text" id="comment" placeholder="Please input controllers comment ~" value="{{ controllers.comment }}"></div></div></div>
+    <div class="list-footer"><div><a href="{% url 'perf:controller_home' %}?id={{ controllers.thread_group_id }}">Cancel</a>
+        <a href="#" onclick="edit_controller('{% url 'perf:controller_edit' %}', '{% url 'perf:controller_home' %}', {{ controllers.thread_group_id }})">Submit</a></div></div>
 {% endblock %}
 
