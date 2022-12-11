@@ -36,6 +36,8 @@ def delete_file_from_disk(file_path):
 def delete(request):
     if request.method == 'POST':
         try:
+            username = request.user.username
+            ip = request.headers.get('x-real-ip')
             delete_type = request.POST.get('type')
             delete_id = request.POST.get('id')
             if delete_type == 'plan':
@@ -60,7 +62,7 @@ def delete(request):
                 if task.path:
                     delete_file_from_disk(task.path)
                 task.delete()
-            logger.info(f'{delete_type} {delete_id} is deleted success ~')
+            logger.info(f'{delete_type} {delete_id} is deleted success, operator: {username}, IP: {ip}')
             return result(msg='Delete success ~')
         except ProtectedError:
             logger.error(traceback.format_exc())
@@ -73,6 +75,7 @@ def is_valid(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             set_type = request.POST.get('set_type')
             set_id = request.POST.get('id')
             is_valid = request.POST.get('is_valid')
@@ -87,7 +90,7 @@ def is_valid(request):
             res.is_valid = is_valid
             res.operator = username
             res.save()
-            logger.info(f'{set_type} {set_id} status is set to {is_valid} success, operator: {username}')
+            logger.info(f'{set_type} {set_id} status is set to {is_valid} success, operator: {username}, IP: {ip}')
             return result(msg='Set success ~')
         except:
             logger.error(traceback.format_exc())
@@ -95,7 +98,10 @@ def is_valid(request):
 
 def request_auto_run(request):
     if request.method == 'GET':
+        username = request.user.username
+        ip = request.headers.get('x-real-ip')
         start_thread(auto_run_task, ())
+        logger.info(f'Auto run performance test task success, operator: {username}, IP: {ip}')
         return result(msg='success')
 
 def auto_run_task():

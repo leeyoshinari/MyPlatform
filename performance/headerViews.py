@@ -21,6 +21,7 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
             key_word = request.GET.get('keyWord')
@@ -34,7 +35,7 @@ def home(request):
                 total_page = HTTPRequestHeader.objects.all().count()
                 headers = HTTPRequestHeader.objects.all().order_by('-create_time')[page_size * (page - 1): page_size * page]
 
-            logger.info(f'Get controller success, operator: {username}')
+            logger.info(f'Get controller success, operator: {username}, IP: {ip}')
             return render(request, 'header/home.html', context={'headers': headers, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
@@ -48,6 +49,7 @@ def add_header(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             data = json.loads(request.body)
             name = data.get('name')
             method = data.get('method')
@@ -55,7 +57,7 @@ def add_header(request):
             comment = data.get('comment')
             headers = HTTPRequestHeader.objects.create(id=primaryKey(), name=name, comment=comment, method=method,
                           value=header, operator=username)
-            logger.info(f'HTTP request header {name} {headers.id} is save success, operator: {username}')
+            logger.info(f'HTTP request header {name} {headers.id} is save success, operator: {username}, IP: {ip}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
@@ -67,6 +69,7 @@ def edit_header(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             data = json.loads(request.body)
             header_id = data.get('id')
             name = data.get('name')
@@ -80,7 +83,7 @@ def edit_header(request):
             headers.comment = comment
             headers.operator = username
             headers.save()
-            logger.info(f'HTTP request header {header_id} is edit success, operator: {username}')
+            logger.info(f'HTTP request header {header_id} is edit success, operator: {username}, IP: {ip}')
             return result(msg='Edit success ~')
         except:
             logger.error(traceback.format_exc())
@@ -95,13 +98,14 @@ def copy_header(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             header_id = request.GET.get('id')
             headers = HTTPRequestHeader.objects.get(id=header_id)
             headers.id = primaryKey()
             headers.name = headers.name + ' - Copy'
             headers.operator = username
             headers.save()
-            logger.info(f'Copy HTTP Header {header_id} success, target HTTP Header is {headers.id}, operator: {username}')
+            logger.info(f'Copy HTTP Header {header_id} success, target HTTP Header is {headers.id}, operator: {username}, IP: {ip}')
             return redirect('perf:header_home')
         except:
             logger.error(traceback.format_exc())

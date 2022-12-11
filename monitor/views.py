@@ -29,8 +29,9 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             if not request.user.is_staff:
-                logger.warning(f'You have no permission to access monitor home page, operator: {username}')
+                logger.warning(f'You have no permission to access monitor home page, operator: {username}, IP: {ip}')
                 return render(request, '404.html')
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
@@ -49,7 +50,7 @@ def home(request):
                 servers = Servers.objects.values('host').filter(group_id=group_id).order_by('-create_time')[page_size * (page - 1): page_size * page]
             agents = monitor_server.get_all_keys()
             datas = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in agents]
-            logger.info(f'Get monitor servers list, operator: {username}')
+            logger.info(f'Get monitor servers list, operator: {username}, IP: {ip}')
             return render(request, 'server_list.html', context={'datas': datas, 'groups': groups, 'group': group_id, 'key_word': key_word,
                                                                  'page': page, 'total_page': (total_page + page_size - 1) // page_size})
         except:
@@ -122,6 +123,7 @@ def visualize(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             spec_host = request.GET.get('host')
             spec_host = spec_host if spec_host else 'all'
             spec_group = request.GET.get('group')
@@ -135,13 +137,12 @@ def visualize(request):
                 servers = Servers.objects.values('host', 'room_id').filter(group__in=groups).order_by('-id')
             room_list = [s['room_id'] for s in servers]
             rooms = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
-            hosts=['127']
-            # keys = monitor_server.get_all_keys()
-            # hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
-            # if not hosts:
-            #     logger.error(f'You have no servers to view, please check permission ~')
-            #     return render(request, '404.html')
-            # logger.info(f'Access visualization page, operaotr: {username}')
+            keys = monitor_server.get_all_keys()
+            hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
+            if not hosts:
+                logger.error(f'You have no servers to view, please check permission, operator: {username}, IP: {ip}')
+                return render(request, '404.html')
+            logger.info(f'Access visualization page, operaotr: {username}, IP: {ip}')
             return render(request, 'visualize.html', context={'ip': hosts, 'groups': groups,'rooms': rooms, 'starttime': starttime, 'is_staff': request.user.is_staff,
                 'endtime': endtime, 'row_name': ['75%', '90%', '95%', '99%'], 'spec_host': spec_host, 'spec_group': spec_group, 'spec_room': spec_room})
         except:
@@ -211,12 +212,13 @@ def plot_monitor(request):
     """
     if request.method == 'POST':
         username = request.user.username
+        ip = request.headers.get('x-real-ip')
         host = request.POST.get('host')
         group_id = request.POST.get('group')
         try:
             _ = request.user.groups.get(id=group_id)
         except Group.DoesNotExist:
-            logger.warning(f'You have no permission to access this group, operator: {username}')
+            logger.warning(f'You have no permission to access this group, operator: {username}, IP: {ip}')
             return result(code=1, msg='You have no permission to access this group ~')
         room_id = request.POST.get('room')
         start_time = request.POST.get('startTime')
@@ -253,7 +255,7 @@ def plot_monitor(request):
                         res['flag'] = 0
                     return JsonResponse(res)
                 else:
-                    logger.error(f'Server {host} has not monitored. operator: {username}')
+                    logger.error(f'Server {host} has not monitored. operator: {username}, IP: {ip}')
                     return result(code=1, msg=f'Server {host} has not monitored.')
         except:
             logger.error(traceback.format_exc())
@@ -300,6 +302,7 @@ def change_group(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             group_id = request.GET.get('group')
             _ = request.user.groups.get(id=group_id)
             servers = Servers.objects.values('host', 'room_id').filter(group_id=group_id)
@@ -309,10 +312,10 @@ def change_group(request):
             room_list = [s['room_id'] for s in servers]
             rooms_obj = ServerRoom.objects.values('id', 'name').filter(id__in=set(room_list)).order_by('-id')
             rooms = [{'id': r['id'], 'name': r['name']} for r in rooms_obj]
-            logger.info(f'Query all servers and rooms in group {group_id}, operator: {username}')
+            logger.info(f'Query all servers and rooms in group {group_id}, operator: {username}, IP: {ip}')
             return result(msg='Query success ~', data={'hosts': hosts, 'rooms': rooms})
         except Group.DoesNotExist:
-            logger.warning(f'You have no permission to access this group, operator: {username}')
+            logger.warning(f'You have no permission to access this group, operator: {username}, IP: {ip}')
             return result(code=1, msg='You have no permission to access this group ~')
         except:
             logger.error(traceback.format_exc())
@@ -323,6 +326,7 @@ def change_room(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             group_id = request.GET.get('group')
             room_id = request.GET.get('room')
             _ = request.user.groups.get(id=group_id)
@@ -330,10 +334,10 @@ def change_room(request):
             keys = monitor_server.get_all_keys()
             hosts = [monitor_server.get_value_by_host('Server_' + s['host']) for s in servers if 'Server_' + s['host'] in keys]
             hosts.sort(key=lambda x: (-(x['cpu_usage'] * 0.5 + x['io_usage'] * 0.3 + x['net_usage'] * 0.2), -x['mem_usage']))
-            logger.info(f'Query all servers in group {group_id} and room {room_id}, operator: {username}')
+            logger.info(f'Query all servers in group {group_id} and room {room_id}, operator: {username}, IP: {ip}')
             return result(msg='Query success ~', data={'hosts': hosts})
         except Group.DoesNotExist:
-            logger.warning(f'You have no permission to access this group, operator: {username}')
+            logger.warning(f'You have no permission to access this group, operator: {username}, IP: {ip}')
             return result(code=1, msg='You have no permission to access this group ~')
         except:
             logger.error(traceback.format_exc())
@@ -344,11 +348,13 @@ def nginx_home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             groups = request.user.groups.all()
             group_key = GroupIdentifier.objects.values('key', 'group_id').filter(group__in=groups)
             group_key_dict = {}
             for keys in group_key:
                 group_key_dict.update({str(keys['group_id']): keys['key']})
+            logger.info(f'Access Nginx home page success, operator: {username}, IP: {ip}')
             return render(request, 'nginx.html', context={'groups': groups, 'groupKey': group_key_dict})
         except:
             logger.error(traceback.format_exc())
@@ -359,6 +365,7 @@ def query_nginx_summary(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             group_key = request.POST.get('groupKey')
             source = request.POST.get('source')
             sort_key = request.POST.get('sortKey')
@@ -374,8 +381,9 @@ def query_nginx_summary(request):
                 end_time = strfDeltaTime()
             res = query_nginx_detail_summary(group_key, source, sort_key, 'desc', start_time, end_time, int(limit_num), path)
             if res['code'] == 1:
+                logger.error(f'Not Found Nginx summary data, operator: {username}, IP: {ip}')
                 return result(code=1, msg='Not Found Nginx summary data, please check it again ~')
-            logger.info(f'Query nginx summary data success, operator: {username}')
+            logger.info(f'Query nginx summary data success, operator: {username}, IP: {ip}')
             return JsonResponse(res)
         except:
             logger.error(traceback.format_exc())
@@ -386,6 +394,7 @@ def query_nginx_detail(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             group_key = request.POST.get('groupKey')
             source = request.POST.get('source')
             path = request.POST.get('path')
@@ -394,8 +403,9 @@ def query_nginx_detail(request):
             end_time = request.POST.get('endTime')
             res = query_nginx_detail_by_path(group_key, source, path, start_time, end_time)
             if res['code'] == 1:
+                logger.error(f'No Nginx data is found, operator: {username}, IP: {ip}')
                 return result(code=1, msg='No Nginx data is found, please check it again ~')
-            logger.info(f'Query nginx data success, operator: {username}')
+            logger.info(f'Query nginx data success, operator: {username}, IP: {ip}')
             return JsonResponse(res)
         except:
             logger.error(traceback.format_exc())
