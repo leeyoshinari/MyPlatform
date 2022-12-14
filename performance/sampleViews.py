@@ -25,6 +25,7 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             groups = request.user.groups.all().values('id')
             ctl_id = request.GET.get('id')
             page_size = request.GET.get('pageSize')
@@ -46,7 +47,7 @@ def home(request):
                 total_page = HTTPSampleProxy.objects.filter(group__in=groups).count()
                 samples = HTTPSampleProxy.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
-            logger.info(f'Get http samples success, operator: {username}')
+            logger.info(f'Get http samples success, operator: {username}, IP: {ip}')
             return render(request, 'httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'controller_id': ctl_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
@@ -60,6 +61,7 @@ def get_from_header(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             groups = request.user.groups.all().values('id')
             header_id = request.GET.get('id')
             page_size = request.GET.get('pageSize')
@@ -81,7 +83,7 @@ def get_from_header(request):
                 total_page = HTTPSampleProxy.objects.filter(group__in=groups).count()
                 samples = HTTPSampleProxy.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
-            logger.info(f'Get http samples success, operator: {username}')
+            logger.info(f'Get http samples success, operator: {username}, IP: {ip}')
             return render(request, 'httpSample/home.html', context={'samples': samples, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'header_id': header_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
@@ -95,6 +97,7 @@ def add_sample(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             data = json.loads(request.body)
             name = data.get('name')
             controller_id = data.get('controller_id')
@@ -115,7 +118,7 @@ def add_sample(request):
                           domain=domain, port=port, path=path, method=method, http_header_id=http_header, assert_type=assertion_type,
                           assert_content=assertion_string, argument=argument, extractor=extractor, controller_id=controller_id,
                           contentEncoding=contentEncoding, group=group['group'], operator=username)
-            logger.info(f'Http Sample {name} {sample.id} is save success, operator: {username}')
+            logger.info(f'Http Sample {name} {sample.id} is save success, operator: {username}, IP: {ip}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
@@ -142,6 +145,7 @@ def edit_sample(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             data = json.loads(request.body)
             sample_id = data.get('sample_id')
             name = data.get('name')
@@ -177,7 +181,7 @@ def edit_sample(request):
             samples.comment = comment
             samples.operator = username
             samples.save()
-            logger.info(f'HTTP Sample {sample_id} is edit success, operator: {username}')
+            logger.info(f'HTTP Sample {sample_id} is edit success, operator: {username}, IP: {ip}')
             return result(msg='Edit success ~')
         except:
             logger.error(traceback.format_exc())
@@ -200,9 +204,10 @@ def copy_sample(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             sample_id = request.GET.get('id')
             controller_id = request.GET.get('controller_id')
-            copy_one_sample(controller_id, sample_id, username)
+            copy_one_sample(controller_id, sample_id, username, ip)
             return redirect(resolve_url('perf:sample_home') + '?id=' + controller_id)
         except:
             logger.error(traceback.format_exc())
@@ -212,10 +217,11 @@ def get_header_by_method(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             method = request.GET.get('method')
             headers = HTTPRequestHeader.objects.values('id', 'name').filter(method=method).order_by('-id')
             if headers:
-                logger.info(f'Get headers success, operator: {username}')
+                logger.info(f'Get headers success, operator: {username}, IP: {ip}')
                 return result(msg='Get headers success ~', data=list(headers))
             else:
                 return result(code=1, msg=f'Method {method} has no headers, pls set it firstly ~')
@@ -223,11 +229,11 @@ def get_header_by_method(request):
             logger.error(traceback.format_exc())
             return result(code=1, msg='Get headers error ~')
 
-def copy_one_sample(controller_id, sample_id, username):
+def copy_one_sample(controller_id, sample_id, username, ip):
     samples = HTTPSampleProxy.objects.get(id=sample_id)
     samples.id = primaryKey()
     samples.name = samples.name + ' - Copy'
     if controller_id: samples.controller_id = controller_id
     samples.operator = username
     samples.save()
-    logger.info(f'Copy HTTP Sample {sample_id} success, target HTTP Sample is {samples.id}, operator: {username}')
+    logger.info(f'Copy HTTP Sample {sample_id} success, target HTTP Sample is {samples.id}, operator: {username}, IP: {ip}')

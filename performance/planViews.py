@@ -27,6 +27,7 @@ def home(request):
         try:
             server_num_rooms = {}
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             groups = request.user.groups.all()
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
@@ -42,7 +43,7 @@ def home(request):
                 plans = TestPlan.objects.filter(is_file=0, group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
             if plans:
                 server_num_rooms = get_idle_server_num()
-            logger.info(f'Get test plan success, operator: {username}')
+            logger.info(f'Get test plan success, operator: {username}, IP: {ip}')
             return render(request, 'plan/home.html', context={'plans': plans, 'page': page, 'page_size': page_size, 'server_num_rooms': server_num_rooms,
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
@@ -55,6 +56,7 @@ def add(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             data = json.loads(request.body)
             name = data.get('name')
             teardown = data.get('teardown')
@@ -73,7 +75,7 @@ def add(request):
                             type=run_type, schedule=schedule, server_room_id=server_room, group_id=group_id, server_number=server_num,
                             target_num=target_number,time_setting=time_setting, duration=duration,
                             is_debug=is_debug, comment=comment, operator=username)
-            logger.info(f'Test plan {name} is save success, id is {plans.id}, operator: {username}')
+            logger.info(f'Test plan {name} is save success, id is {plans.id}, operator: {username}, IP: {ip}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
@@ -88,6 +90,7 @@ def edit(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             data = json.loads(request.body)
             plan_id = data.get('plan_id')
             plan = TestPlan.objects.get(id=plan_id)
@@ -107,7 +110,7 @@ def edit(request):
             plan.comment = data.get('comment')
             plan.operator = username
             plan.save()
-            logger.info(f'Test plan {plan_id} is edited success, operator: {username}')
+            logger.info(f'Test plan {plan_id} is edited success, operator: {username}, IP: {ip}')
             return result(msg='Edit success ~')
         except:
             logger.error(traceback.format_exc())
@@ -128,13 +131,14 @@ def edit_variable(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             data = json.loads(request.body)
             plan_id = data.get('plan_id')
             variables = data.get('variables')
             plans = TestPlan.objects.get(id=plan_id)
             plans.variables = variables
             plans.save()
-            logger.info(f'Test Plan {plan_id} variable save success, operator: {username}')
+            logger.info(f'Test Plan {plan_id} variable save success, operator: {username}, IP: {ip}')
             return result(msg='Save variables success ~')
         except:
             logger.error(traceback.format_exc())
@@ -142,9 +146,10 @@ def edit_variable(request):
     else:
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             plan_id = request.GET.get('id')
             variables = TestPlan.objects.get(id=plan_id)
-            logger.info(f'Get test plan variables success, operator: {username}')
+            logger.info(f'Get test plan variables success, operator: {username}, IP: {ip}')
             return render(request, 'plan/variable.html', context={'variables': variables})
         except:
             logger.error(traceback.format_exc())
@@ -154,6 +159,7 @@ def edit_variable(request):
 def upload_file(request):
     if request.method == 'POST':
         username = request.user.username
+        ip = request.headers.get('x-real-ip')
         groups = request.user.groups.all().order_by('-id')
         form = request.FILES['file']
         file_name = form.name
@@ -161,7 +167,7 @@ def upload_file(request):
         try:
             res = read_jmeter_from_byte(file_byte)
             parse_jmx_to_database(res, groups[0].id, username)
-            logger.info(f'{file_name} Import Success, operator: {username}')
+            logger.info(f'{file_name} Import Success, operator: {username}, IP: {ip}')
             return result(msg=f'{file_name} Import Success ~', data=file_name)
         except:
             logger.error(traceback.format_exc())
@@ -198,6 +204,7 @@ def copy_plan(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             plan_id = request.GET.get('id')
             plans = TestPlan.objects.get(id=plan_id)
             keyWord = plans.name
@@ -207,8 +214,8 @@ def copy_plan(request):
             plans.save()
             thread_groups = ThreadGroup.objects.filter(plan_id=plan_id)
             for thread_group in thread_groups:
-                copy_one_group(plans.id, thread_group.id, username)
-            logger.info(f'Copy plan {plan_id} success, target plan is {plans.id}, operator: {username}')
+                copy_one_group(plans.id, thread_group.id, username, ip)
+            logger.info(f'Copy plan {plan_id} success, target plan is {plans.id}, operator: {username}, IP: {ip}')
             return redirect(resolve_url('perf:plan_home') + '?keyWord=' + keyWord)
         except:
             logger.error(traceback.format_exc())
@@ -238,7 +245,6 @@ def get_idle_server_num(is_name=False):
     result = {}
     try:
         registered_servers = get_all_host()
-        # available_servers = ['127.0.10.1', '127.0.0.2', '127.0.0.3', '127.0.0.4', '127.0.0.5', '127.0.0.6']
         available_servers = [s['host'] for s in registered_servers if s['status'] == 0]
         servers = Servers.objects.values('room_id').filter(room__type=2, host__in=available_servers).annotate(count=Count('room_id'))
         logger.info(servers.query)

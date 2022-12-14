@@ -20,6 +20,7 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             groups = request.user.groups.all().values('id')
             group_id = request.GET.get('id')
             page_size = request.GET.get('pageSize')
@@ -41,7 +42,7 @@ def home(request):
                 total_page = TransactionController.objects.filter(group__in=groups).count()
                 controllers = TransactionController.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
-            logger.info(f'Get controller success, operator: {username}')
+            logger.info(f'Get controller success, operator: {username}, IP: {ip}')
             return render(request, 'controller/home.html', context={'controllers': controllers, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'group_id': group_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
@@ -55,13 +56,14 @@ def add_group(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             name = request.POST.get('name')
             group_id = request.POST.get('group_id')
             comment = request.POST.get('comment')
             my_group = ThreadGroup.objects.values('group').get(id=group_id)
             controller = TransactionController.objects.create(id=primaryKey(), name=name, comment=comment, is_valid='true',
                           thread_group_id=group_id, group=my_group['group'], operator=username)
-            logger.info(f'Controller {name} {controller.id} is save success, operator: {username}')
+            logger.info(f'Controller {name} {controller.id} is save success, operator: {username}, IP: {ip}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
@@ -84,6 +86,7 @@ def edit_group(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             controller_id = request.POST.get('id')
             name = request.POST.get('name')
             group_id = request.POST.get('group_id')
@@ -96,7 +99,7 @@ def edit_group(request):
             controllers.comment = comment
             controllers.operator = username
             controllers.save()
-            logger.info(f'Controller {controller_id} is edit success, operator: {username}')
+            logger.info(f'Controller {controller_id} is edit success, operator: {username}, IP: {ip}')
             return result(msg='Edit success ~')
         except:
             logger.error(traceback.format_exc())
@@ -115,15 +118,16 @@ def copy_controller(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             controller_id = request.GET.get('id')
             group_id = request.GET.get('group_id')
-            copy_one_controller(group_id, controller_id, username)
+            copy_one_controller(group_id, controller_id, username, ip)
             return redirect(resolve_url('perf:controller_home') + '?id=' + group_id)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Copy controller Failure ~')
 
-def copy_one_controller(group_id, controller_id, username):
+def copy_one_controller(group_id, controller_id, username, ip):
     controllers = TransactionController.objects.get(id=controller_id)
     controllers.id = primaryKey()
     controllers.name = controllers.name + ' - Copy'
@@ -132,5 +136,5 @@ def copy_one_controller(group_id, controller_id, username):
     controllers.save()
     samples = HTTPSampleProxy.objects.filter(controller_id=controller_id)
     for sample in samples:
-        copy_one_sample(controllers.id, sample.id, username)
-    logger.info(f'Copy controller {controller_id} success, target controller is {controllers.id}, operator: {username}')
+        copy_one_sample(controllers.id, sample.id, username, ip)
+    logger.info(f'Copy controller {controller_id} success, target controller is {controllers.id}, operator: {username}, IP: {ip}')

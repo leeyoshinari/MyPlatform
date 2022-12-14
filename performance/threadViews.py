@@ -24,6 +24,7 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             my_groups = request.user.groups.all().values('id')
             plan_id = request.GET.get('id')
             page_size = request.GET.get('pageSize')
@@ -45,7 +46,7 @@ def home(request):
                 total_page = ThreadGroup.objects.filter(group__in=my_groups).count()
                 groups = ThreadGroup.objects.filter(group__in=my_groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
 
-            logger.info(f'Get thread group success, operator: {username}')
+            logger.info(f'Get thread group success, operator: {username}, IP: {ip}')
             return render(request, 'threadGroup/home.html', context={'groups': groups, 'page': page, 'page_size': page_size,
                                                                      'key_word': key_word, 'plan_id': plan_id, 'total_page': (total_page + page_size - 1) // page_size})
         except:
@@ -59,6 +60,7 @@ def add_group(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             name = request.POST.get('name')
             plan_id = request.POST.get('plan_id')
             ramp_time = request.POST.get('ramp_time')
@@ -76,7 +78,7 @@ def add_group(request):
             plan = TestPlan.objects.values('group_id').get(id=plan_id)
             group = ThreadGroup.objects.create(id=primaryKey(), name=name, ramp_time=ramp_time, comment=comment, group=plan['group_id'],
                                                is_valid='true', plan_id=plan_id, file=file_dict, operator=username)
-            logger.info(f'Thread Group {name} {group.id} is save success, operator: {username}')
+            logger.info(f'Thread Group {name} {group.id} is save success, operator: {username}, IP: {ip}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
@@ -100,6 +102,7 @@ def edit_group(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             group_id = request.POST.get('id')
             name = request.POST.get('name')
             plan_id = request.POST.get('plan_id')
@@ -125,16 +128,19 @@ def edit_group(request):
             groups.file = file_dict
             groups.operator = username
             groups.save()
-            logger.info(f'Thread Group {group_id} is edit success, operator: {username}')
+            logger.info(f'Thread Group {group_id} is edit success, operator: {username}, IP: {ip}')
             return result(msg='Edit success ~')
         except:
             logger.error(traceback.format_exc())
             return  result(code=1, msg='Edit failure ~')
     else:
         try:
+            username = request.user.username
+            ip = request.headers.get('x-real-ip')
             group_id = request.GET.get('id')
             groups = ThreadGroup.objects.get(id=group_id)
             plans = TestPlan.objects.filter(group_id=groups.plan.group_id, is_file=0).order_by('-create_time')
+            logger.info(f'Open threadGroup edit page success, group: {group_id}, operator: {username}, IP: {ip}')
             return render(request, 'threadGroup/edit.html', context={'groups': groups, 'plans': plans, 'share_mode': share_mode})
         except:
             logger.error(traceback.format_exc())
@@ -143,6 +149,8 @@ def edit_group(request):
 
 def upload_file(request):
     if request.method == 'POST':
+        username = request.user.username
+        ip = request.headers.get('x-real-ip')
         form = request.FILES['file']
         file_name = form.name
         plan_id = request.POST.get('plan_id')
@@ -158,6 +166,7 @@ def upload_file(request):
             else:
                 res = settings.MINIO_CLIENT.upload_file_bytes(file_name, form.file, form.size)
                 file_url = f'{settings.FILE_URL}{res.bucket_name}/{res.object_name}'
+            logger.info(f'Upload file success, filename: {file_name}, operator: {username}, IP: {ip}')
             return result(msg=f'{file_name} Upload Success ~', data=file_url)
         except:
             logger.error(traceback.format_exc())
@@ -168,6 +177,7 @@ def delete_file(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             group_id = request.POST.get('group_id')
             file_path = request.POST.get('file_path')
             delete_file_from_disk(file_path)
@@ -175,7 +185,7 @@ def delete_file(request):
                 group = ThreadGroup.objects.get(id=group_id)
                 group.file = None
                 group.save()
-            logger.info(f'Delete file {file_path} success, operator: {username}')
+            logger.info(f'Delete file {file_path} success, operator: {username}, IP: {ip}')
             return result(msg='Delete file success ~')
         except:
             logger.error(traceback.format_exc())
@@ -186,6 +196,7 @@ def edit_cookie(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             data = json.loads(request.body)
             plan_id = data.get('plan_id')
             cookies = data.get('cookies')
@@ -193,7 +204,7 @@ def edit_cookie(request):
             group.cookie = cookies
             group.operator = username
             group.save()
-            logger.info(f'Thread Group {group.name} {group.id} cookies is save success, operator: {username}')
+            logger.info(f'Thread Group {group.name} {group.id} cookies is save success, operator: {username}, IP: {ip}')
             return result(msg='Save success ~')
         except:
             logger.error(traceback.format_exc())
@@ -201,9 +212,10 @@ def edit_cookie(request):
     else:
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             group_id = request.GET.get('id')
             cookies = ThreadGroup.objects.get(id=group_id)
-            logger.info(f'Get thread group cookies success, operator: {username}')
+            logger.info(f'Get thread group cookies success, operator: {username}, IP: {ip}')
             return render(request, 'threadGroup/cookie.html', context={'cookies': cookies})
         except:
             logger.error(traceback.format_exc())
@@ -214,16 +226,17 @@ def copy_group(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             group_id = request.GET.get('id')
             plan_id = request.GET.get('plan_id')
-            copy_one_group(plan_id, group_id, username)
+            copy_one_group(plan_id, group_id, username, ip)
             return redirect(resolve_url('perf:group_home') + '?id=' + plan_id)
         except:
             logger.error(traceback.format_exc())
             return result(code=1, msg='Copy thread group Failure ~')
 
 
-def copy_one_group(plan_id, group_id, username):
+def copy_one_group(plan_id, group_id, username, ip):
     groups = ThreadGroup.objects.get(id=group_id)
     groups.id = primaryKey()
     groups.name = groups.name + ' - Copy'
@@ -232,5 +245,5 @@ def copy_one_group(plan_id, group_id, username):
     groups.save()
     controllers = TransactionController.objects.filter(thread_group_id=group_id)
     for controller in controllers:
-        copy_one_controller(groups.id, controller.id, username)
-    logger.info(f'Copy thread group {group_id} success, target thread group is {groups.id}, operator: {username}')
+        copy_one_controller(groups.id, controller.id, username, ip)
+    logger.info(f'Copy thread group {group_id} success, target thread group is {groups.id}, operator: {username}, IP: {ip}')

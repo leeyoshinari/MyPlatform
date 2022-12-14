@@ -87,7 +87,9 @@ def parse_pwd(password: str, s: str):
 def home(request):
     if request.method == 'GET':
         username = request.user.username
+        ip = request.headers.get('x-real-ip')
         is_staff = request.user.is_staff
+        logger.info(f'Access Home Page success, operator: {username}, ip: {ip}')
         return render(request, 'home.html', context={'username': username, 'is_monitor': settings.IS_MONITOR,
                                                      'isATIJMeter': settings.IS_ATIJMETER, 'is_staff': is_staff,
                                                      'is_perf': settings.IS_PERF, 'is_nginx': settings.IS_NGINX})
@@ -108,9 +110,10 @@ def course(request):
 
 def register_first(request):
     if request.method == 'POST':
+        ip = request.headers.get('x-real-ip')
         value = request.body.decode()
         data = json.loads(value)
-        logger.info(f"Agent: {data['host']}:{data['port']} registers successfully ~")
+        logger.info(f"Agent: {data['host']}:{data['port']} registers successfully, ip: {ip}")
         return result(msg='Agent registers successfully ~',data={'influx': {'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
                       'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE},
                       'redis': {'host': settings.REDIS_HOST, 'port': settings.REDIS_PORT, 'password': settings.REDIS_PWD,

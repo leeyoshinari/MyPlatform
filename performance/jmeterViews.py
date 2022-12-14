@@ -29,6 +29,7 @@ def home(request):
         try:
             server_num_rooms = {}
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             groups = request.user.groups.all()
             page_size = request.GET.get('pageSize')
             page = request.GET.get('page')
@@ -44,7 +45,7 @@ def home(request):
                 plans = TestPlan.objects.filter(is_file=1, group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
             if plans:
                 server_num_rooms = get_idle_server_num()
-            logger.info(f'Get test plan success, operator: {username}')
+            logger.info(f'Get test plan success, operator: {username}, IP: {ip}')
             return render(request, 'jmeter/home.html', context={'plans': plans, 'page': page, 'page_size': page_size, 'server_num_rooms': server_num_rooms,
                                                                      'key_word': key_word, 'total_page': (total_page + page_size - 1) // page_size})
         except:
@@ -57,6 +58,7 @@ def edit(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             data = json.loads(request.body)
             plan_id = data.get('plan_id')
             plan = TestPlan.objects.get(id=plan_id)
@@ -74,7 +76,7 @@ def edit(request):
             plan.comment = data.get('comment')
             plan.operator = username
             plan.save()
-            logger.info(f'Test plan {plan_id} is edited success, operator: {username}')
+            logger.info(f'Test plan {plan_id} is edited success, operator: {username}, IP: {ip}')
             return result(msg='Edit success ~')
         except:
             logger.error(traceback.format_exc())
@@ -95,6 +97,7 @@ def edit(request):
 def upload_file(request):
     if request.method == 'POST':
         username = request.user.username
+        ip = request.headers.get('x-real-ip')
         groups = request.user.groups.all().order_by('-id')
         form = request.FILES['file']
         file_name = form.name
@@ -110,9 +113,11 @@ def upload_file(request):
             jmx_file = [f for f in os.listdir(temp_file_path) if f.endswith('.jmx')]
             if len(jmx_file) == 0:
                 _ = delete_local_file(temp_file_path)
+                logger.error('Not found ".jmx" file, Please zip file not folder ~')
                 return result(code=1, msg='Not found ".jmx" file, Please zip file not folder ~')
             if len(jmx_file) > 1:
                 _ = delete_local_file(temp_file_path)
+                logger.error('Too many ".jmx" files, Only one ".jmx" file is allowed ~')
                 return result(code=1, msg='Too many ".jmx" files, Only one ".jmx" file is allowed ~')
             # upload file
             if settings.FILE_STORE_TYPE == '0':
@@ -132,7 +137,7 @@ def upload_file(request):
                 logger.error(del_file['msg'])
             task_path = f'{settings.FILE_URL}{zip_file_url}'
             plans = TestPlan.objects.create(id=file_id, name=file_name, group_id=groups[0].id, is_valid='true',is_file=1, file_path=task_path, operator=username)
-            logger.info(f'{file_name} upload success, operator: {username}')
+            logger.info(f'{file_name} upload success, operator: {username}, IP: {ip}')
             return result(msg=f'{file_name} upload success ~', data=file_name)
         except:
             temp_file_path = os.path.join(settings.TEMP_PATH, file_id)
@@ -149,10 +154,11 @@ def add_to_task(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             plan_id = request.POST.get('plan_id')
             tasks = PerformanceTestTask.objects.filter(plan_id=plan_id, plan__schedule=1, status__lte=1)
             if len(tasks) > 0:
-                logger.info(f'Plan {plan_id} has generated task, operator: {username}')
+                logger.info(f'Plan {plan_id} has generated task, operator: {username}, IP: {ip}')
                 return result(code=1, msg='There has been task, please check it ~')
 
             plans = TestPlan.objects.get(id=plan_id)
@@ -187,18 +193,18 @@ def add_to_task(request):
                     zip_file_url = f'{res.bucket_name}/{res.object_name}'
                     os.remove(zip_file_path)
                     _ = delete_local_file(temp_file_path)
-                logger.info(f'zip file is written successfully, operator: {username}, zip file: {zip_file_url}')
+                logger.info(f'zip file is written successfully, operator: {username}, zip file: {zip_file_url}, IP: {ip}')
                 task_path = f'{settings.FILE_URL}{zip_file_url}'
                 del_file = delete_local_file(test_jmeter_path)
                 if del_file['code'] == 1:
                     logger.error(del_file['msg'])
             else:
-                logger.error('The JMeter file has been disabled ~')
+                logger.error(f'The JMeter file has been disabled, operator: {username}, IP: {ip}')
                 return result(code=1, msg='The JMeter file has been disabled ~')
 
             tasks = PerformanceTestTask.objects.create(id=task_id, plan_id=plan_id, ratio=1, status=0, number_samples=number_of_samples,
                                                       group_id=plans.group_id, server_room_id=plans.server_room_id, path=task_path, operator=username)
-            logger.info(f'Task {tasks.id} generate success, operator: {username}')
+            logger.info(f'Task {tasks.id} generate success, operator: {username}, IP: {ip}')
             if plans.schedule == 0:
                 return result(msg=f'Start success ~', data={'taskId': task_id, 'flag': 1})
             else:

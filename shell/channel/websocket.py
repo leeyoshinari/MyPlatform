@@ -70,7 +70,7 @@ class WebSSH(WebsocketConsumer):
                 info=Servers.objects.get(host=data.get('host'))
                 ssh_args={"width":int(data['cols']),"height":int(data['rows']),"auth":"pwd","host":info.host,"user":info.user,"password":info.pwd,"port":info.port, 'time': info.id}
                 self.sshConnect(ssh_args)
-                logger.info(f'ssh connect info: {ssh_args}')
+                # logger.info(f'ssh connect info: {ssh_args}')
             except Exception as err:
                 logger.error(err)
                 logger.error(traceback.format_exc())

@@ -30,6 +30,7 @@ def home(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             groups = request.user.groups.all()
             plan_id = request.GET.get('id')
             page_size = request.GET.get('pageSize')
@@ -42,7 +43,7 @@ def home(request):
             else:
                 total_page = PerformanceTestTask.objects.filter(group__in=groups).count()
                 tasks = PerformanceTestTask.objects.filter(group__in=groups).order_by('-create_time')[page_size * (page - 1): page_size * page]
-            logger.info(f'Get task success, operator: {username}')
+            logger.info(f'Get task success, operator: {username}, IP: {ip}')
             return render(request, 'task/home.html', context={'tasks': tasks, 'page': page, 'page_size': page_size,
                           'total_page': (total_page + page_size - 1) // page_size})
         except:
@@ -54,10 +55,11 @@ def home(request):
 
 def register_first(request):
     if request.method == 'POST':
+        ip = request.headers.get('x-real-ip')
         value = request.body.decode()
         host = json.loads(value).get('host')
         settings.REDIS.set(f'jmeterServer_{host}', value, ex=settings.HEARTBEAT)
-        logger.info(f'Jmeter Agent: {host} registers successfully ~')
+        logger.info(f'Jmeter Agent: {host} registers successfully, IP: {ip}')
         return result(msg='Agent registers successfully ~',data={'influx': {'host': settings.INFLUX_HOST, 'port': settings.INFLUX_PORT,
                       'username': settings.INFLUX_USER_NAME, 'password': settings.INFLUX_PASSWORD, 'database': settings.INFLUX_DATABASE},
                       'redis': {'host': settings.REDIS_HOST, 'port': settings.REDIS_PORT, 'password': settings.REDIS_PWD,
@@ -66,11 +68,12 @@ def register_first(request):
 
 def register(request):
     if request.method == 'POST':
+        ip = request.headers.get('x-real-ip')
         value = request.body.decode()
         host = json.loads(value).get('host')
         settings.REDIS.set(f'jmeterServer_{host}', value, ex=settings.HEARTBEAT)
         logger.debug(f'The request parameters are {value}')
-        logger.info(f'Jmeter Agent: {host} registers successfully ~')
+        logger.info(f'Jmeter Agent: {host} registers successfully, IP: {ip}')
         return result(msg='Agent registers successfully ~')
 
 
@@ -78,10 +81,11 @@ def add_to_task(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             plan_id = request.POST.get('plan_id')
             tasks = PerformanceTestTask.objects.filter(plan_id=plan_id, plan__schedule=1, status__lte=1)
             if len(tasks) > 0:
-                logger.info(f'Plan {plan_id} has generated task, operator: {username}')
+                logger.info(f'Plan {plan_id} has generated task, operator: {username}, IP: {ip}')
                 return result(code=1, msg='There has been task, please check it ~')
 
             plans = TestPlan.objects.get(id=plan_id)
@@ -89,7 +93,7 @@ def add_to_task(request):
 
             if plans.is_valid == 'true':
                 test_plan, duration = generate_test_plan(plans)
-                logger.info(f'Write Test Plan success, operator: {username}')
+                logger.info(f'Write Test Plan success, operator: {username}, IP: {ip}')
 
                 thread_groups = ThreadGroup.objects.filter(plan_id=plans.id, is_valid='true')
                 if len(thread_groups) == 1:
@@ -98,7 +102,7 @@ def add_to_task(request):
                     thread_group = generate_thread_group(thread_groups[0], num_threads, ramp_time, duration, plans.schedule)
                     cookie_manager = generate_cookie(thread_groups[0].cookie)
                     csv_data_set = generator_csv(thread_groups[0].file)
-                    logger.info(f'Write Thread Group success, , operator: {username}')
+                    logger.info(f'Write Thread Group success, , operator: {username}, IP: {ip}')
                     controllers = TransactionController.objects.filter(thread_group_id=thread_groups[0].id, is_valid='true').order_by('id')
                     if len(controllers) == 1:
                         http_controller = ''
@@ -115,11 +119,11 @@ def add_to_task(request):
                                     headers = HTTPRequestHeader.objects.get(id=sample.http_header_id)
                                     http_samples_proxy += generator_samples_and_header(sample, headers)
                                 else:
-                                    logger.error(f'HTTP Sample {sample.name} has no assertion ~')
+                                    logger.error(f'HTTP Sample {sample.name} has no assertion, operator: {username}, IP: {ip}')
                                     return result(code=1, msg=f'HTTP Sample {sample.name} has no assertion ~')
                             http_controller += generator_controller(controllers[0]) + '<hashTree>' + http_samples_proxy + '</hashTree>'
                         else:
-                            logger.error('The Controller has no HTTP Samples ~')
+                            logger.error(f'The Controller has no HTTP Samples, operator: {username}, IP: {ip}')
                             return result(code=1, msg='The Controller has no HTTP Samples, Please add HTTP Samples ~')
 
                         all_threads = thread_group + '<hashTree>' + throughput + cookie_manager + csv_data_set + http_controller + '</hashTree>'
@@ -139,7 +143,7 @@ def add_to_task(request):
                             csv_file_path_url = thread_groups[0].file['file_path']
                             csv_file_path = os.path.join(test_jmeter_path, csv_file_path_url.split('/')[-1])
                             download_file_to_path(csv_file_path_url, csv_file_path)
-                        logger.info(f'jmx file and csv file are written successfully, operator: {username}')
+                        logger.info(f'jmx file and csv file are written successfully, operator: {username}, IP: {ip}')
                         # write zip file to temp path
                         temp_file_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
                         if not os.path.exists(temp_file_path):
@@ -154,28 +158,28 @@ def add_to_task(request):
                             zip_file_url = f'{res.bucket_name}/{res.object_name}'
                             os.remove(zip_file_path)
                             _ = delete_local_file(temp_file_path)
-                        logger.info(f'zip file is written successfully, operator: {username}, zip file: {zip_file_url}')
+                        logger.info(f'zip file is written successfully, operator: {username}, zip file: {zip_file_url}, IP: {ip}')
                         task_path = f'{settings.FILE_URL}{zip_file_url}'
                         del_file = delete_local_file(test_jmeter_path)
                         if del_file['code'] == 1:
                             logger.error(del_file['msg'])
                     else:
-                        logger.error(f'The Thread Group has no or many Controllers, current controller No is {len(controllers)} ~')
+                        logger.error(f'The Thread Group has no or many Controllers, current controller No is {len(controllers)}, operator: {username}, IP: {ip}')
                         if len(controllers) < 1:
                             msg = 'The Thread Group has no Controllers, Please add Controller ~'
                         else:
                             msg = 'The Thread Group has too many Controllers, Please disabled Controller ~'
                         return result(code=1, msg=msg)
                 else:
-                    logger.error('The Test Plan can only have one enable Thread Group ~')
+                    logger.error(f'The Test Plan can only have one enable Thread Group, operator: {username}, IP: {ip}')
                     return result(code=1, msg='The Test Plan can only have one enable Thread Group, Please check it ~')
             else:
-                logger.error('The Test Plan has been disabled ~')
+                logger.error(f'The Test Plan has been disabled, operator: {username}, IP: {ip}')
                 return result(code=1, msg='The Test Plan has been disabled ~')
 
             tasks = PerformanceTestTask.objects.create(id=task_id, plan_id=plan_id, ratio=1, status=0, number_samples=number_of_samples,
                                                       group_id=plans.group_id, server_room_id=plans.server_room_id, path=task_path, operator=username)
-            logger.info(f'Task {tasks.id} generate success, operator: {username}')
+            logger.info(f'Task {tasks.id} generate success, operator: {username}, IP: {ip}')
             if plans.schedule == 0:
                 return result(msg=f'Start success ~', data={'taskId': task_id, 'flag': 1})
             else:
@@ -195,19 +199,20 @@ def delete_task(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.GET.get('id')
             task = PerformanceTestTask.objects.get(id=task_id)
             if settings.FILE_STORE_TYPE == '0':
                 local_file_path = os.path.join(settings.FILE_ROOT_PATH, task_id)
                 del_file = delete_local_file(local_file_path)
                 if del_file['code'] == 1:
-                    logger.error(del_file['msg'])
+                    logger.error(f"{del_file['msg']}, operator: {username}, IP: {ip}")
                     return result(code=1, msg=del_file['msg'])
             else:
                 path_list = task.path.split('/')
                 settings.MINIO_CLIENT.delete_file(path_list[-2], path_list[-1])
             task.delete()
-            logger.info(f'Delete task {task.id} success, operator: {username}')
+            logger.info(f'Delete task {task.id} success, operator: {username}, IP: {ip}')
             return result(msg='Delete task success ~')
         except:
             logger.error(traceback.format_exc())
@@ -217,12 +222,13 @@ def delete_task(request):
 def start_task(request):
     if request.method == 'POST':
         username = request.user.username
+        ip = request.headers.get('x-real-ip')
         task_id = request.POST.get('task_id')
         host = request.POST.get('host')
-        return start_test(task_id, host, username)
+        return start_test(task_id, host, username, ip)
 
 
-def start_test(task_id, host, username):
+def start_test(task_id, host, username, ip):
     try:
         tasks = PerformanceTestTask.objects.get(id=task_id)
         post_data = {
@@ -244,13 +250,13 @@ def start_test(task_id, host, username):
                 res = http_request('post', host, host_info['port'], 'runTask', json=post_data)
                 response_data = json.loads(res.content.decode())
                 if response_data['code'] == 0:
-                    logger.info(f'Task {task_id} is starting, host: {host}, operator: {username}')
+                    logger.info(f'Task {task_id} is starting, host: {host}, operator: {username}, IP: {ip}')
                     return result(msg=f'Task {task_id} is starting, please wait a minute ~ ~')
                 else:
-                    logger.error(f'Task {task_id} run task failure, host: {host}, operator: {username}')
+                    logger.error(f'Task {task_id} run task failure, host: {host}, operator: {username}, IP: {ip}')
                     return result(code=1, msg=response_data['msg'])
             else:
-                logger.error(f'Agent {host} is not registered or busy ~')
+                logger.error(f'Agent {host} is not registered or busy, operator: {username}, IP: {ip}')
                 return result(code=1, msg=f'Host {host} is not registered or busy ~')
         else:
             registered_servers = get_all_host()
@@ -258,12 +264,12 @@ def start_test(task_id, host, username):
             available_servers = Servers.objects.values('host').filter(room_id=tasks.server_room_id, host__in=idle_servers)
             logger.debug(available_servers.query)
             if len(available_servers) < tasks.plan.server_number:
-                logger.warning(f'There is not enough servers to run performance test, operator: {username}')
+                logger.warning(f'There is not enough servers to run performance test, operator: {username}, IP: {ip}')
                 return result(code=1, msg='There is not enough servers to run performance test ~')
             for i in range(tasks.plan.server_number):
                 res = http_request('post', available_servers[i]['host'], get_value_by_host('jmeterServer_' + available_servers[i]['host'], 'port'), 'runTask', json=post_data)
                 # response_data = json.loads(res.content.decode())
-            logger.info(f'Task {task_id} is starting, operator: {username}')
+            logger.info(f'Task {task_id} is starting, operator: {username}, IP: {ip}')
             return result(msg=f'Task {task_id} is starting, please wait a minute ~', data=task_id)
     except:
         logger.error(traceback.format_exc())
@@ -274,6 +280,7 @@ def stop_task(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.GET.get('id')
             host = request.GET.get('host')
             host = host if host else 'all'
@@ -287,7 +294,7 @@ def stop_task(request):
                 res = http_request('get', h, get_value_by_host('jmeterServer_'+h, 'port'), 'stopTask/'+task_id)
                 time.sleep(0.5)
                 # response_data = json.loads(res.content.decode())
-            logger.info(f'Task {task_id} is stopping, operator: {username}')
+            logger.info(f'Task {task_id} is stopping, operator: {username}, IP: {ip}')
             return result(msg=f'Task {task_id} is stopping, please wait a minute ~')
         except:
             logger.error(traceback.format_exc())
@@ -298,6 +305,7 @@ def get_running_status(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.GET.get('id')
             code = 0
             msg = ''
@@ -313,7 +321,7 @@ def get_running_status(request):
                     code = 2
                     msg = f'Task {task_id} is starting, please wait a minute ~'
                     break
-            logger.info(f'{msg}, operator: {username}')
+            logger.info(f'{msg}, operator: {username}, IP: {ip}')
             return result(code=code, msg=msg, data=tasks.status)
         except:
             logger.error(traceback.format_exc())
@@ -324,12 +332,13 @@ def download_file(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.GET.get('id')
             task = PerformanceTestTask.objects.values('path').get(id=task_id)
             response = StreamingHttpResponse(download_file_to_bytes(task.path))
             response['Content-Type'] = 'application/zip'
             response['Content-Disposition'] = f'attachment;filename="{task_id}.zip"'
-            logger.info(f'{task_id}.zip download successful, operator: {username}')
+            logger.info(f'{task_id}.zip download successful, operator: {username}, IP: {ip}')
             return response
         except:
             logger.error(traceback.format_exc())
@@ -340,13 +349,14 @@ def download_log(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.GET.get('id')
             host = request.GET.get('host')
             url = f"http://{host}:{get_value_by_host('jmeterServer_'+host, 'port')}/download/{task_id}"
             response = StreamingHttpResponse(download_file_to_response(url))
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = f'attachment;filename="{task_id}-log.zip"'
-            logger.info(f'{task_id}-log.zip download successful, operator: {username}')
+            logger.info(f'{task_id}-log.zip download successful, operator: {username}, IP: {ip}')
             return response
         except:
             logger.error(traceback.format_exc())
@@ -357,6 +367,7 @@ def change_tps(request):
     if request.method == 'POST':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.POST.get('taskId')
             tps = request.POST.get('TPS')
             host = request.POST.get('host')
@@ -382,11 +393,11 @@ def change_tps(request):
                 logger.debug(response_data)
                 if response_data['code'] != 0:
                     res_host.append(h)
-                    logger.error(f'Change TPS failure, task: {task_id}, host: {h}, operator: {username}')
+                    logger.error(f'Change TPS failure, task: {task_id}, host: {h}, operator: {username}, IP: {ip}')
 
             if res_host:
                 return result(code=1, msg=f'{",".join(res_host)} change TPS failure ~')
-            logger.info(f'Change TPS success, task: {task_id}, current tps is {current_tps}, operator: {username}')
+            logger.info(f'Change TPS success, task: {task_id}, current tps is {current_tps}, operator: {username}, IP: {ip}')
             return result(msg='Change TPS success ~')
         except:
             logger.error(traceback.format_exc())
@@ -396,6 +407,7 @@ def change_tps(request):
 def set_message(request):
     if request.method == 'POST':
         try:
+            ip = request.headers.get('x-real-ip')
             datas = json.loads(request.body.decode())
             task_id = datas.get('taskId')
             host = datas.get('host')
@@ -423,7 +435,7 @@ def set_message(request):
                     tasks.end_time = strfTime()
                     durations = time.time() - toTimeStamp(str(tasks.start_time))
                     datas = get_data_from_influx('1', task_id, host='all', start_time=str(tasks.start_time), end_time=str(tasks.end_time))
-                    logger.info(f"Task {task_id} stop success ~")
+                    logger.info(f"Task {task_id} stop success, IP: {ip}")
                     if datas['code'] == 0:
                         total_samples = sum(datas['data']['samples'])
                         avg_rt = [s * t / total_samples for s, t in zip(datas['data']['samples'], datas['data']['avg_rt'])]
@@ -436,7 +448,7 @@ def set_message(request):
                     else:
                         logger.error(datas['message'])
             tasks.save()
-            logger.info(f'Set message success, type:{task_type}, task ID: {task_id}')
+            logger.info(f'Set message success, type:{task_type}, task ID: {task_id}, IP: {ip}')
             return result(msg='Set message success ~')
         except:
             logger.error(traceback.format_exc())
@@ -447,10 +459,11 @@ def view_task_detail(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.GET.get('id')
             tasks = PerformanceTestTask.objects.get(id=task_id)
             if tasks.start_time:
-                logger.info(f'query task {task_id} detail page success, operator: {username}')
+                logger.info(f'query task {task_id} detail page success, operator: {username}, IP: {ip}')
                 return render(request, 'task/detail.html', context={'tasks': tasks})
             else:
                 return render(request, 'task/detail.html', context={'tasks': None})
@@ -465,6 +478,7 @@ def get_running_server(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.GET.get('id')
             hosts = TestTaskLogs.objects.values('value', 'action').filter(task_id=task_id, action=1)
             host_info = []
@@ -476,7 +490,7 @@ def get_running_server(request):
                     host_dict.update(server_monitor_dict)
                 host_dict.update({'action': h['action']})
                 host_info.append(host_dict)
-            logger.info(f'Query running servers success, operator: {username}')
+            logger.info(f'Query running servers success, operator: {username}, IP: {ip}')
             return result(msg='Get running servers success ~', data=host_info)
         except:
             logger.error(traceback.format_exc())
@@ -487,6 +501,7 @@ def get_used_server(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.GET.get('id')
             hosts = TestTaskLogs.objects.values('value', 'action').filter(task_id=task_id, action=2)
             host_info = []
@@ -498,7 +513,7 @@ def get_used_server(request):
                     host_dict.update(server_monitor_dict)
                 host_dict.update({'action': h['action']})
                 host_info.append(host_dict)
-            logger.info(f'Query used servers success, operator: {username}')
+            logger.info(f'Query used servers success, operator: {username}, IP: {ip}')
             return result(msg='Get used servers success ~', data=host_info)
         except:
             logger.error(traceback.format_exc())
@@ -509,6 +524,7 @@ def get_idle_server(request):
     if request.method == 'GET':
         try:
             username = request.user.username
+            ip = request.headers.get('x-real-ip')
             server_room_id = request.GET.get('id')
             servers = Servers.objects.values('host').filter(Q(room_id=server_room_id), Q(room__type=2))
             host_info = []
@@ -520,7 +536,7 @@ def get_idle_server(request):
                     if server_monitor_dict:
                         host_dict.update(server_monitor_dict)
                     host_info.append(host_dict)
-            logger.info(f'Query idle servers success, operator: {username}')
+            logger.info(f'Query idle servers success, operator: {username}, IP: {ip}')
             return result(msg='Get idle servers success ~', data=host_info)
         except:
             logger.error(traceback.format_exc())
@@ -530,6 +546,8 @@ def get_idle_server(request):
 def query_data(request):
     if request.method == 'GET':
         try:
+            username = request.user.username
+            ip = request.headers.get('x-real-ip')
             task_id = request.GET.get('id')
             host = request.GET.get('host')
             delta = request.GET.get('delta')
@@ -539,6 +557,7 @@ def query_data(request):
                 tasks = PerformanceTestTask.objects.get(id=task_id)
                 start_time = str(tasks.start_time)
                 end_time = str(tasks.end_time) if tasks.end_time else ''
+            logger.info(f'Query task {task_id} data success, operator: {username}, IP: {ip}')
             return json_result(get_data_from_influx(delta, task_id, host=host, start_time=start_time, end_time=end_time))
         except:
             logger.error(traceback.format_exc())

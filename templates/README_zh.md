@@ -32,17 +32,17 @@
 如需满足较多用户使用，请部署集群；如需高可用，请自行部署keepalive。
 
 #### 说明
-**collector-agent**<br>
+**[collector-agent](https://github.com/leeyoshinari/collector_agent )**<br>
 数据收集工具。所有agent的数据都会发给collector-agent，然后由collector-agent统一写InfluxDB/写redis。<br>
 这样可以避免：如果每个agent单独连接数据库，可能会导致数据库连接不够用或者超过服务器允许的连接数。但也会有一个问题：如果agent太多，导致collector-agent不能及时写库，那就增大collector-agent的线程池大小，如果还不行，那就集群部署，增加集群节点。
 
-**monitor-agent**<br>
+**[monitor-agent](https://github.com/leeyoshinari/monitor_agent )**<br>
 服务器资源监控工具。通过执行Linux命令实时采集服务器的 CPU、内存、磁盘、网络、TCP 等数据。
 
-**nginx-agent**<br>
+**[nginx-agent](https://github.com/leeyoshinari/nginx_agent )**<br>
 nginx流量采集工具。通过实时处理nginx的访问日志(access.log)，将接口的访问信息(访问时间、客户端IP、接口名称、请求方法、协议、状态码、响应体大小、响应时间)等存储到数据库。<br>
 
-**jmeter-agent**<br>
+**[jmeter-agent](https://github.com/leeyoshinari/jmeter_agent )**<br>
 性能测试执行工具。通过调用JMeter执行性能测试，支持分布式压测和全链路压测。
 
 ## 部署
