@@ -1,5 +1,5 @@
 # MyPlatform
-[English Document](https://github.com/leeyoshinari/MyPlatform/blob/main/README.md)
+[English Document](https://github.com/leeyoshinari/MyPlatform/blob/main/README.md) ![](https://visitor-badge.glitch.me/badge?page_id=leeyoshinari)
 
 ## 介绍
 这是一个主要用于性能测试的平台，先简单介绍一下这个平台具有的功能：<br>
