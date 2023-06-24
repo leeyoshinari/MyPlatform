@@ -32,7 +32,7 @@ body{
 
 .home_list {
     float: left;
-    width: 220px;
+    width: 13%;
     margin-top: 3px;
     margin-left: 1%;
 }
@@ -42,7 +42,7 @@ body{
 }
 .home_list span {
     float: left;
-    margin-top: 2%;
+    margin-top: 3px;
     margin-right: 3%;
 }
 

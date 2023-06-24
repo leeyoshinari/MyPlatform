@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # Author: leeyoshinari
 
-import time
 import json
 import logging
 import traceback

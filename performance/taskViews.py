@@ -127,8 +127,7 @@ def add_to_task(request):
                             return result(code=1, msg='The Controller has no HTTP Samples, Please add HTTP Samples ~')
 
                         all_threads = thread_group + '<hashTree>' + throughput + cookie_manager + csv_data_set + http_controller + '</hashTree>'
-                        test_plan = test_plan + '<hashTree>' + all_threads + '</hashTree>'
-                        jmeter_test_plan = jmeter_header + '<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.3"><hashTree>' + test_plan + '</hashTree></jmeterTestPlan>'
+                        jmeter_test_plan = jmeter_header + '<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.3"><hashTree>' + test_plan + '<hashTree>' + all_threads + '</hashTree></hashTree></jmeterTestPlan>'
 
                         # write file to local
                         test_jmeter_path = os.path.join(settings.TEMP_PATH, task_id)
@@ -288,10 +287,10 @@ def stop_task(request):
                 runnging_server = TestTaskLogs.objects.filter(task_id=task_id, action=1).values('value')
                 hosts = [h['value'] for h in runnging_server]
             else:
-                host_info = TestTaskLogs.objects.get(task_id=task_id, value=host)
+                _ = TestTaskLogs.objects.get(task_id=task_id, value=host)
                 hosts = [host]
             for h in hosts:
-                res = http_request('get', h, get_value_by_host('jmeterServer_'+h, 'port'), 'stopTask/'+task_id)
+                _ = http_request('get', h, get_value_by_host('jmeterServer_'+h, 'port'), 'stopTask/'+task_id)
                 time.sleep(0.5)
                 # response_data = json.loads(res.content.decode())
             logger.info(f'Task {task_id} is stopping, operator: {username}, IP: {ip}')
