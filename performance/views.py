@@ -25,10 +25,13 @@ is_auto_run = False
 def delete_file_from_disk(file_path):
     path_list = file_path.split('/')
     if settings.FILE_STORE_TYPE == '0':
-        file_folder = os.path.join(settings.FILE_ROOT_PATH, path_list[-2])
-        file_local_path = os.path.join(file_folder, path_list[-1])
-        os.remove(file_local_path)
-        _ = delete_local_file(file_folder)
+        try:
+            file_folder = os.path.join(settings.FILE_ROOT_PATH, path_list[-2])
+            file_local_path = os.path.join(file_folder, path_list[-1])
+            os.remove(file_local_path)
+            _ = delete_local_file(file_folder)
+        except FileNotFoundError:
+            logger.warning(f"FileNotFound: No such file: {file_path}")
     else:
         settings.MINIO_CLIENT.delete_file(path_list[-2], path_list[-1])
 
