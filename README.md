@@ -1,5 +1,5 @@
 # MyPlatform
-[中文文档](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/README_zh.md) ![](https://visitor-badge.glitch.me/badge?page_id=leeyoshinari)
+[中文文档](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/README_zh.md) 
 
 ## Introduction
 It is a platform mainly used for performance testing, here are some simple features brief: <br>

@@ -253,7 +253,7 @@ class UploadAndDownloadFile(object):
 
     def connect(self, host, port, user, password, current_time):
         self.t = paramiko.Transport((host, port))
-        self.t.connect(username = user, password = parse_pwd(current_time, password))
+        self.t.connect(username=user, password=parse_pwd(current_time, password))
         self.sftp = paramiko.SFTPClient.from_transport(self.t)
 
     def upload(self, local_path, remote_path):
@@ -263,7 +263,6 @@ class UploadAndDownloadFile(object):
         except:
             logger.error(traceback.format_exc())
             return {'code': 1, 'msg': 'upload file failure ~', 'data': local_path}
-
 
     def download(self, file_path):
         try:
