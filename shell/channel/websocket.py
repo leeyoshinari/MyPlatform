@@ -22,13 +22,11 @@ class WebSSH(WebsocketConsumer):
         self.accept()
         logger.info('socket connect success! ')
 
-    def sshConnect(self,ssh_args):
+    def sshConnect(self, ssh_args):
         auth = ssh_args.get('auth')
         # ssh_key_name = ssh_args.get('ssh_key')
-        ssh_key_name=""
-
+        ssh_key_name = ""
         self.ssh = SSH(websocket=self)
-
         ssh_connect_dict = {
             'host': ssh_args.get('host'),
             'user': ssh_args.get('user'),
@@ -62,13 +60,12 @@ class WebSSH(WebsocketConsumer):
         except:
             pass
 
-
     def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data)
-        if data.get('type')=="web":
+        if data.get('type') == "web":
             try:
-                info=Servers.objects.get(host=data.get('host'))
-                ssh_args={"width":int(data['cols']),"height":int(data['rows']),"auth":"pwd","host":info.host,"user":info.user,"password":info.pwd,"port":info.port, 'time': info.id}
+                info = Servers.objects.get(host=data.get('host'))
+                ssh_args = {"width": int(data['cols']), "height": int(data['rows']), "auth": "pwd", "host": info.host, "user": info.user, "password": info.pwd, "port": info.port, 'time': info.id}
                 self.sshConnect(ssh_args)
                 # logger.info(f'ssh connect info: {ssh_args}')
             except Exception as err:
@@ -76,9 +73,9 @@ class WebSSH(WebsocketConsumer):
                 logger.error(traceback.format_exc())
         else:
             logger.debug(f'input linux command is: {data}')
-            if data['code'] == 0:  # send data
+            if data['code'] == 0:       # send data
                 self.ssh.django_to_ssh(data['data'])
-            elif data['code'] == 2: # close session
+            elif data['code'] == 2:     # close session
                 self.ssh.close()
-            elif data['code'] == 1: # setting terminal size
+            elif data['code'] == 1:     # setting terminal size
                 self.ssh.resize_pty(cols=data['cols'], rows=data['rows'])

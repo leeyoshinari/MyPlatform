@@ -342,12 +342,11 @@ def check_agent_status(client, deploy_path):
     try:
         res = execute_cmd(client, f'ls {deploy_path} |xargs')
         if 'cannot' not in res:
-            res = execute_cmd(client, f"cat {deploy_path}/config.conf |grep port |head -3 |grep =")
-            agent_port = res.split('=')[-1].strip()
-            logger.info(f'Agent port is {agent_port}')
-            res = execute_cmd(client, f"netstat -nlp|grep {agent_port} |grep LISTEN")
-            logger.info(f'Agent port status: {res}')
-            if res:
+            res = execute_cmd(client, f"cat {deploy_path}/pid").strip()
+            logger.info(f'Agent pid is {res}')
+            res = execute_cmd(client, f"pwdx {res}").strip()
+            logger.info(f'Agent pid status: {res}')
+            if deploy_path in res:
                 return True
             else:
                 return False
