@@ -20,32 +20,6 @@ It is a platform mainly used for performance testing, here are some simple featu
 - monitor - monitor tool
 - performance - performance test tool
 
-## Middleware
-- Relational Database: SQLite3 or MySQL - used to store platform data
-- Time-Series Database: InfluxDB - used to store monitoring data
-- Key-value Database: Redis - used to cluster/distributed data synchronization
-- File Server: MinIO - used to store files
-- Performance Testing tool: JMeter - used to execute JMeter file
-
-## Architecture
-![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/myPlarform.png)
-&emsp;&emsp;If you need to satisfy more users, please deploy cluster; if you need high availability, please deploy keepalive.
-
-#### Explain
-**[collector-agent](https://github.com/leeyoshinari/collector_agent )**<br>
-&emsp;&emsp;Data Collector. All agents' data will be sent to collector-agent, and then collector-agent writes data to InfluxDB/redis.<br>
-&emsp;&emsp;It can be avoid a problem: If each agent connects to the database separately, it may cause the database connection to run out or exceed the number of connections allowed by the server. <br>
-&emsp;&emsp;But if too many agents cause the collector-agent to not be able to write database in time, increasing the thread pool size of the collector-agent is needed; if still not, increasing the number of collector-agent cluster nodes is needed.
-
-**[monitor-agent](https://github.com/leeyoshinari/monitor_agent )**<br>
-&emsp;&emsp;Server resource monitor. Execute Linux commands to collect the server's CPU, Memory, Disk, Network, TCP, and other data in real time.
-
-**[nginx-agent](https://github.com/leeyoshinari/nginx_agent )**<br>
-&emsp;&emsp;Nginx traffic collector. Process Nginx's access log (access.log) in real time, the access information (access time, client IP, interface name, request method, protocol, status code, response body size, response time) is stored in database.
-
-**[jmeter-agent](https://github.com/leeyoshinari/jmeter_agent )**<br>
-&emsp;&emsp;Performance testing tool. Call JMeter to execute performance testing, and supports distributed performance testing and full-link performance testing.
-
 ## Deploy
 1. Clone Repository
     ```shell script
@@ -132,34 +106,3 @@ It is a platform mainly used for performance testing, here are some simple featu
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/home.JPG)
 
 14. Access permission management page, url: `http://ip:port/(prefix in config.conf)/admin`
-
-15. Deploy collector-agent, [please click me](https://github.com/leeyoshinari/collector_agent)
-
-16. Deploy monitor-agent, [please click me](https://github.com/leeyoshinari/monitor_agent)
-
-17. Deploy jmeter-agent, [please click me](https://github.com/leeyoshinari/jmeter_agent)
-
-18. Deploy nginx-agent, [please click me](https://github.com/leeyoshinari/nginx_agent)
-
-## Note
-1. For more information, [please click me](https://github.com/leeyoshinari/MyPlatform/blob/main/templates/course_en.md) or view course after deployment.
-
-## Requirements
-Local dev environment:
-- python 3.9.10
-
-Third-party packages version:
-- aiohttp==3.7.4.post0
-- aiohttp-jinja2==1.5
-- channels==3.0.4
-- daphne==3.0.2
-- Django==4.0.1
-- django-compressor==4.1
-- influxdb==2.6.0
-- Jinja2==3.0.3
-- minio==7.1.3
-- paramiko==2.10.3
-- PyMySQL==1.0.2
-- redis==4.1.1
-- requests==2.27.1
-- sqlparse==0.4.2
