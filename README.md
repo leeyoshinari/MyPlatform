@@ -106,3 +106,5 @@ It is a platform mainly used for performance testing, here are some simple featu
 ![](https://github.com/leeyoshinari/MyPlatform/blob/main/staticfiles/img/home.JPG)
 
 14. Access permission management page, url: `http://ip:port/(prefix in config.conf)/admin`
+
+15. For more information, please [click me](https://blog.ihuster.top).
